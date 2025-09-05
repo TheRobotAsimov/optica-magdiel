@@ -2,8 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
 export const authenticateToken = async (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const token = req.cookies.token;
 
     if (!token) {
         return res.status(401).json({ message: 'Token de acceso requerido' });
@@ -21,5 +20,13 @@ export const authenticateToken = async (req, res, next) => {
         next();
     } catch (error) {
         return res.status(403).json({ message: 'Token inválido' });
+    }
+};
+
+export const isAdmin = (req, res, next) => {
+    if (req.user && req.user.tipo === 'Matriz') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador.' });
     }
 };

@@ -13,33 +13,26 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
-      if (token) {
-        try {
-          const response = await authService.getProfile(token);
-          setUser(response.user);
-        } catch (error) {
-          localStorage.removeItem('token');
-          setToken(null);
-          console.log(error)
-        }
+      try {
+        const response = await authService.getProfile();
+        setUser(response.user);
+      } catch (error) {
+        setUser(null);
       }
       setLoading(false);
     };
 
     initAuth();
-  }, [token]);
+  }, []);
 
   const login = async (credentials) => {
     try {
       const response = await authService.login(credentials);
-      setToken(response.token);
       setUser(response.user);
-      localStorage.setItem('token', response.token);
       return { success: true };
     } catch (error) {
       return { 
@@ -63,21 +56,16 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      if (token) {
-        await authService.logout(token);
-      }
+      await authService.logout();
     } catch (error) {
       console.error('Error en logout:', error);
     } finally {
       setUser(null);
-      setToken(null);
-      localStorage.removeItem('token');
     }
   };
 
   const value = {
     user,
-    token,
     login,
     register,
     logout,

@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import authRoutes from './routes/Auth.js';
+import userRoutes from './routes/Users.js';
 
 const app = express();
 
@@ -10,12 +12,14 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
 
 // Rutas
 app.get('/', (req, res) => {
     res.send('Hello Optica')
 })
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 
 // Manejo de errores
 app.use((err, req, res, next) => {

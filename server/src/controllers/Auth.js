@@ -53,9 +53,13 @@ export const login = async (req, res) => {
         // Remover contraseña de la respuesta
         const { contrasena: _, ...userWithoutPassword } = user;
 
-        res.json({
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            expires: new Date(Date.now() + 60 * 60 * 1000)
+        }).json({
             message: 'Inicio de sesión exitoso',
-            token,
             user: userWithoutPassword
         });
     } catch (error) {
@@ -116,5 +120,10 @@ export const getProfile = async (req, res) => {
 };
 
 export const logout = (req, res) => {
-    res.json({ message: 'Sesión cerrada exitosamente' });
+    res.cookie('token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        expires: new Date(0)
+    }).json({ message: 'Sesión cerrada exitosamente' });
 };

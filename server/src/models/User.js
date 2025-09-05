@@ -81,6 +81,58 @@ class User {
     static async comparePassword(plainPassword, hashedPassword) {
         return await bcrypt.compare(plainPassword, hashedPassword);
     }
+
+    static async getAll() {
+        const [rows] = await pool.execute('SELECT id, nombre, paterno, materno, fecnac, feccon, sueldo, telefono, sexo, correo, tipo FROM usuario');
+        return rows;
+    }
+
+    static async update(id, userData) {
+        const {
+            nombre,
+            paterno,
+            materno,
+            fecnac,
+            feccon,
+            sueldo,
+            telefono,
+            sexo,
+            correo,
+            tipo
+        } = userData;
+
+        await pool.execute(
+            `UPDATE usuario SET
+                nombre = ?,
+                paterno = ?,
+                materno = ?,
+                fecnac = ?,
+                feccon = ?,
+                sueldo = ?,
+                telefono = ?,
+                sexo = ?,
+                correo = ?,
+                tipo = ?
+            WHERE id = ?`,
+            [
+                nombre,
+                paterno,
+                materno,
+                fecnac,
+                feccon,
+                sueldo,
+                telefono,
+                sexo,
+                correo,
+                tipo,
+                id
+            ]
+        );
+    }
+
+    static async delete(id) {
+        await pool.execute('DELETE FROM usuario WHERE id = ?', [id]);
+    }
 }
 
 export default User;

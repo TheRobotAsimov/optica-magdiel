@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:1234/api';
 axios.defaults.baseURL = API_URL;
+axios.defaults.withCredentials = true;
 
 const authService = {
   login: async (credentials) => {
@@ -24,17 +25,13 @@ const authService = {
     return response.data;
   },
   
-  getProfile: async (token) => {
-    const response = await axios.get('/auth/profile', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  getProfile: async () => {
+    const response = await axios.get('/auth/profile');
     return response.data;
   },
   
-  logout: async (token) => {
-    const response = await axios.post('/auth/logout', {}, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+  logout: async () => {
+    const response = await axios.post('/auth/logout');
     return response.data;
   }
 };

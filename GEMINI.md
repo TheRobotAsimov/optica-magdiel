@@ -7,7 +7,7 @@ This is a full-stack web application for an optical store named "Optica Magdiel"
 *   **Frontend:**
     *   React
     *   Vite
-    *   React Router
+    *   React Router (it's imported as `react-router` in the code, not `react-router-dom`)
     *   Axios
     *   Tailwind CSS
 *   **Backend:**
@@ -62,3 +62,4 @@ CLIENT_URL=your_client_url
 *   **Authentication:** The application uses JWT for authentication. The backend provides endpoints for user registration, login, password reset, and profile management.
 *   **Routing:** The frontend uses React Router for client-side routing. The backend uses Express Router for defining API routes.
 *   **Database:** The backend uses `mysql2` to interact with a MySQL database. The database schema is not defined in the codebase and needs to be created separately.
+*   **Lenguage:** Use Spanish for all user-facing text in the frontend.

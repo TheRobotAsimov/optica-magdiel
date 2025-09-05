@@ -6,6 +6,8 @@ import { Register } from './components/auth/Register';
 import { ForgotPassword } from './components/auth/ForgotPassword';
 import { ResetPassword } from './components/auth/ResetPassword';
 import { Dashboard } from './components/dashboard/Dashboard';
+import UserList from './components/users/UserList';
+import UserForm from './components/users/UserForm';
 
 const App = () => {
   return (
@@ -21,6 +23,30 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/users" 
+            element={
+              <ProtectedRoute>
+                <UserList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/users/new" 
+            element={
+              <ProtectedRoute>
+                <UserForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/users/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <UserForm />
               </ProtectedRoute>
             } 
           />
