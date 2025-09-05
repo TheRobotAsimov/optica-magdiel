@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
 import { User } from 'lucide-react';
+import logo from '../../assets/logoimagen.webp';
 
 const NavComponent = () => {
     const { user, logout } = useAuth();
@@ -20,14 +21,15 @@ const NavComponent = () => {
             <div className="flex items-center">
               <div className="text-black font-bold text-xl bg-white px-3 py-1 rounded-lg">
                 <Link to="/dashboard">
-                  <img src="./logoimagen.webp" alt="Logo" />
+                  <img src={logo} alt="Logo" style={{ height: '40px' }} />
                 </Link>
               </div>
             </div>
             
             {/* Enlaces de navegación */}
             <div className="hidden md:flex space-x-8">
-                <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Users</Link>
+                <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>
+                <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
             </div>
           </div>
 
@@ -62,7 +64,8 @@ const NavComponent = () => {
         {/* Menú móvil (oculto por defecto) */}
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-600">
-              <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Users</Link>
+              <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>
+              <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
           </div>
         </div>
       </div>

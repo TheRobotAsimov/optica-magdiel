@@ -8,6 +8,8 @@ import { ResetPassword } from './components/auth/ResetPassword';
 import { Dashboard } from './components/dashboard/Dashboard';
 import UserList from './components/users/UserList';
 import UserForm from './components/users/UserForm';
+import ClientList from './components/clients/ClientList';
+import ClientForm from './components/clients/ClientForm';
 
 const App = () => {
   return (
@@ -47,6 +49,30 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <UserForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/clients" 
+            element={
+              <ProtectedRoute>
+                <ClientList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/clients/new" 
+            element={
+              <ProtectedRoute>
+                <ClientForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/clients/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <ClientForm />
               </ProtectedRoute>
             } 
           />

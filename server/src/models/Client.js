@@ -1,21 +1,62 @@
-const db = require('../config/db');
+import pool from '../config/db.js';
 
-const Client = {
-  getAll: (callback) => {
-    db.query('SELECT * FROM cliente', callback);
-  },
-  getById: (id, callback) => {
-    db.query('SELECT * FROM cliente WHERE idcliente = ?', [id], callback);
-  },
-  create: (data, callback) => {
-    db.query('INSERT INTO cliente SET ?', [data], callback);
-  },
-  update: (id, data, callback) => {
-    db.query('UPDATE cliente SET ? WHERE idcliente = ?', [data, id], callback);
-  },
-  delete: (id, callback) => {
-    db.query('DELETE FROM cliente WHERE idcliente = ?', [id], callback);
+class Client {
+  static async getAll() {
+    const [rows] = await pool.execute('SELECT * FROM cliente');
+    return rows;
   }
-};
 
-module.exports = Client;
+  static async getById(id) {
+    const [rows] = await pool.execute('SELECT * FROM cliente WHERE idcliente = ?', [id]);
+    return rows[0];
+  }
+
+  static async create(data) {
+    const {
+      nombre,
+      paterno,
+      materno,
+      fecnac,
+      telefono,
+      domicilio,
+      ruta,
+      sexo
+    } = data;
+
+    const [result] = await pool.execute(
+      `INSERT INTO cliente (nombre, paterno, materno, fecnac, telefono, domicilio, ruta, sexo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nombre, paterno, materno, fecnac, telefono, domicilio, ruta, sexo]
+    );
+    return result.insertId;
+  }
+
+  static async update(id, data) {
+    const {
+      nombre,
+      paterno,
+      materno,
+      fecnac,
+      telefono,
+      domicilio,
+      ruta,
+      sexo
+    } = data;
+
+    await pool.execute(
+      `UPDATE cliente SET
+        nombre = ?, paterno = ?, materno = ?, fecnac = ?,
+        telefono = ?, domicilio = ?, ruta = ?, sexo = ?
+       WHERE idcliente = ?`,
+      [nombre, paterno, materno, fecnac, telefono, domicilio, ruta, sexo, id]
+    );
+
+  }
+
+  static async delete(id) {
+    const [result] = await pool.execute('DELETE FROM cliente WHERE idcliente = ?', [id]);
+    return result.affectedRows;
+  }
+}
+
+export default Client;

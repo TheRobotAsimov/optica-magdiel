@@ -85,9 +85,9 @@ export const Login = () => {
             <Link to="/forgot-password" className="text-sm text-blue-600 hover:text-blue-500">
               ¿Olvidaste tu contraseña?
             </Link>
-            <Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
+            {/*<Link to="/register" className="text-sm text-blue-600 hover:text-blue-500">
               Crear cuenta
-            </Link>
+            </Link>*/}
           </div>
 
           <div>

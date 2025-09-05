@@ -23,7 +23,7 @@ This is a full-stack web application for an optical store named "Optica Magdiel"
 The project is divided into two main parts:
 
 *   **`client`:** Contains the React frontend code. It handles the user interface and interacts with the backend API.
-*   **`server`:** Contains the Node.js backend code. It provides a RESTful API for the frontend, handles business logic, and interacts with the MySQL database.
+*   **`server`:** Contains the Node.js backend code using ESModules. It provides a RESTful API for the frontend, handles business logic, and interacts with the MySQL database.
 
 # Building and Running
 

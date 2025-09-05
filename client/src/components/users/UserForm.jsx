@@ -29,6 +29,12 @@ const UserForm = () => {
         setLoading(true);
         try {
           const data = await userService.getUserById(id);
+          if (data.fecnac) {
+            data.fecnac = new Date(data.fecnac).toISOString().split('T')[0];
+          }
+          if (data.feccon) {
+            data.feccon = new Date(data.feccon).toISOString().split('T')[0];
+          }
           setUser(data);
         } catch (err) {
           setError(err.message);

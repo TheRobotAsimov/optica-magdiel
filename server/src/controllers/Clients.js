@@ -1,77 +1,57 @@
-const Client = require('../models/Client');
+import Client from '../models/Client.js';
 
-exports.getAllClients = (req, res) => {
-  Client.getAll((err, clients) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
+export const getAllClients = async (req, res) => {
+  try {
+    const clients = await Client.getAll();
     res.json(clients);
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.getClientById = (req, res) => {
-  Client.getById(req.params.id, (err, client) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (!client.length) {
+export const getClientById = async (req, res) => {
+  try {
+    const client = await Client.getById(req.params.id);
+    if (!client) {
       return res.status(404).json({ message: 'Client not found' });
     }
-    res.json(client[0]);
-  });
+    res.json(client);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.createClient = (req, res) => {
-  const newClient = {
-    nombre: req.body.nombre,
-    paterno: req.body.paterno,
-    materno: req.body.materno,
-    fecnac: req.body.fecnac,
-    telefono: req.body.telefono,
-    domicilio: req.body.domicilio,
-    ruta: req.body.ruta,
-    sexo: req.body.sexo
-  };
-
-  Client.create(newClient, (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(201).json({ id: result.insertId, ...newClient });
-  });
+export const createClient = async (req, res) => {
+  try {
+    const insertId = await Client.create(req.body);
+    res.status(201).json({ message: 'Client created successfully', id: insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.updateClient = (req, res) => {
-  const clientData = {
-    nombre: req.body.nombre,
-    paterno: req.body.paterno,
-    materno: req.body.materno,
-    fecnac: req.body.fecnac,
-    telefono: req.body.telefono,
-    domicilio: req.body.domicilio,
-    ruta: req.body.ruta,
-    sexo: req.body.sexo
-  };
-
-  Client.update(req.params.id, clientData, (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (result.affectedRows === 0) {
+export const updateClient = async (req, res) => {
+  try {
+    const affectedRows = await Client.update(req.params.id, req.body);
+    if (affectedRows === 0) {
       return res.status(404).json({ message: 'Client not found' });
     }
-    res.json({ id: req.params.id, ...clientData });
-  });
+    res.json({ message: 'Client updated successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
 };
 
-exports.deleteClient = (req, res) => {
-  Client.delete(req.params.id, (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (result.affectedRows === 0) {
+export const deleteClient = async (req, res) => {
+  try {
+    const affectedRows = await Client.delete(req.params.id);
+    if (affectedRows === 0) {
       return res.status(404).json({ message: 'Client not found' });
     }
     res.status(204).send();
-  });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };
