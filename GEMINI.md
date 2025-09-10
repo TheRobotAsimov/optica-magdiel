@@ -58,7 +58,7 @@ CLIENT_URL=your_client_url
 
 # Development Conventions
 
-*   **Code Style:** The backend follows the "standard" JavaScript style. The frontend uses ESLint for code linting.
+*   **Code Style:** The backend follows the ESModule JavaScript style. The frontend uses ESLint for code linting.
 *   **Authentication:** The application uses JWT for authentication. The backend provides endpoints for user registration, login, password reset, and profile management.
 *   **Routing:** The frontend uses React Router for client-side routing. The backend uses Express Router for defining API routes.
 *   **Database:** The backend uses `mysql2` to interact with a MySQL database. The database schema is not defined in the codebase and needs to be created separately.
