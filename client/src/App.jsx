@@ -10,6 +10,7 @@ import UserList from './components/users/UserList';
 import UserForm from './components/users/UserForm';
 import ClientList from './components/clients/ClientList';
 import ClientForm from './components/clients/ClientForm';
+import DatabaseAdmin from './components/admin/DatabaseAdmin';
 
 const App = () => {
   return (
@@ -73,6 +74,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ClientForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/database" 
+            element={
+              <ProtectedRoute>
+                <DatabaseAdmin />
               </ProtectedRoute>
             } 
           />

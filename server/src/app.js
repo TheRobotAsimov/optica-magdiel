@@ -4,6 +4,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/Auth.js';
 import userRoutes from './routes/Users.js';
 import clientRoutes from './routes/Clients.js';
+import databaseRoutes from './routes/Database.js';
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/clients', clientRoutes);
+app.use('/api/database', databaseRoutes);
 
 // Manejo de errores
 app.use((err, req, res, next) => {
