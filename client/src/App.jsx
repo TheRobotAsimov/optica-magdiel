@@ -11,6 +11,8 @@ import UserForm from './components/users/UserForm';
 import ClientList from './components/clients/ClientList';
 import ClientForm from './components/clients/ClientForm';
 import DatabaseAdmin from './components/admin/DatabaseAdmin';
+import EmpleadoList from './components/empleados/EmpleadoList';
+import EmpleadoForm from './components/empleados/EmpleadoForm';
 
 const App = () => {
   return (
@@ -74,6 +76,30 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <ClientForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/empleados" 
+            element={
+              <ProtectedRoute>
+                <EmpleadoList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/empleados/new" 
+            element={
+              <ProtectedRoute>
+                <EmpleadoForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/empleados/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <EmpleadoForm />
               </ProtectedRoute>
             } 
           />

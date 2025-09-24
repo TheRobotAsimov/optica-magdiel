@@ -30,6 +30,7 @@ const NavComponent = () => {
             <div className="hidden md:flex space-x-8">
                 <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>
                 <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
+                <Link to="/empleados" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Empleados</Link>
                   <Link to="/admin/database" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Base de Datos</Link>
             </div>
           </div>
@@ -67,6 +68,7 @@ const NavComponent = () => {
           <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-600">
               <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>
               <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
+              <Link to="/empleados" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Empleados</Link>
               {user && user.rol === 'Matriz' && (
                 <Link to="/admin/database" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Base de Datos</Link>
               )}

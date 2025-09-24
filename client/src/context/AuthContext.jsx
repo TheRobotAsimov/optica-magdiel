@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const response = await authService.getProfile();
         setUser(response.user);
-      } catch (error) {
+      } catch {
         setUser(null);
       }
       setLoading(false);
