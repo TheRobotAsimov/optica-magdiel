@@ -9,11 +9,13 @@ const ClientForm = () => {
     nombre: '',
     paterno: '',
     materno: '',
-    fecnac: '',
-    telefono: '',
-    domicilio: '',
-    ruta: '',
-    sexo: ''
+    edad: '',
+    sexo: '',
+    domicilio1: '',
+    telefono1: '',
+    domicilio2: '',
+    telefono2: '',
+    map_url: ''
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -26,10 +28,6 @@ const ClientForm = () => {
         setLoading(true);
         try {
           const data = await clientService.getClientById(id);
-          // Format date for input field
-          if (data.fecnac) {
-            data.fecnac = new Date(data.fecnac).toISOString().split('T')[0];
-          }
           setClient(data);
         } catch (err) {
           setError(err.message);
@@ -119,7 +117,7 @@ const ClientForm = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información Personal</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
                     <input type="text" name="nombre" value={client.nombre} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingrese el nombre" />
@@ -133,8 +131,8 @@ const ClientForm = () => {
                     <input type="text" name="materno" value={client.materno} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Apellido materno" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Nacimiento</label>
-                    <input type="date" name="fecnac" value={client.fecnac} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Edad</label>
+                    <input type="number" name="edad" value={client.edad} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Sexo</label>
@@ -142,20 +140,27 @@ const ClientForm = () => {
                       <option value="">Seleccionar</option>
                       <option value="M">Masculino</option>
                       <option value="F">Femenino</option>
-                      <option value="O">Otro</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
-                    <input type="tel" name="telefono" value={client.telefono} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de teléfono" />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono 1 *</label>
+                    <input type="tel" name="telefono1" value={client.telefono1} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de teléfono" />
                   </div>
-                  <div className="md:col-span-3">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio *</label>
-                    <textarea name="domicilio" value={client.domicilio} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Dirección completa"></textarea>
+                  <div class="md:col-span-3">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 1 *</label>
+                    <textarea name="domicilio1" value={client.domicilio1} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Dirección completa"></textarea>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Ruta</label>
-                    <input type="text" name="ruta" value={client.ruta} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ruta o zona" />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 2</label>
+                    <input type="text" name="domicilio2" value={client.domicilio2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Segunda dirección" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono 2</label>
+                    <input type="tel" name="telefono2" value={client.telefono2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Segundo teléfono" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">URL del Mapa</label>
+                    <input type="text" name="map_url" value={client.map_url} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="URL de Google Maps" />
                   </div>
                 </div>
               </div>

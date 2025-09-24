@@ -16,17 +16,19 @@ class Client {
       nombre,
       paterno,
       materno,
-      fecnac,
-      telefono,
-      domicilio,
-      ruta,
-      sexo
+      edad,
+      sexo,
+      domicilio1,
+      telefono1,
+      domicilio2,
+      telefono2,
+      map_url
     } = data;
 
     const [result] = await pool.execute(
-      `INSERT INTO cliente (nombre, paterno, materno, fecnac, telefono, domicilio, ruta, sexo)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, paterno, materno, fecnac, telefono, domicilio, ruta, sexo]
+      `INSERT INTO cliente (nombre, paterno, materno, edad, sexo, domicilio1, telefono1, domicilio2, telefono2, map_url)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nombre, paterno, materno, edad, sexo, domicilio1, telefono1, domicilio2, telefono2, map_url]
     );
     return result.insertId;
   }
@@ -36,19 +38,22 @@ class Client {
       nombre,
       paterno,
       materno,
-      fecnac,
-      telefono,
-      domicilio,
-      ruta,
-      sexo
+      edad,
+      sexo,
+      domicilio1,
+      telefono1,
+      domicilio2,
+      telefono2,
+      map_url
     } = data;
 
     await pool.execute(
       `UPDATE cliente SET
-        nombre = ?, paterno = ?, materno = ?, fecnac = ?,
-        telefono = ?, domicilio = ?, ruta = ?, sexo = ?
+        nombre = ?, paterno = ?, materno = ?, edad = ?,
+        sexo = ?, domicilio1 = ?, telefono1 = ?, domicilio2 = ?,
+        telefono2 = ?, map_url = ?
        WHERE idcliente = ?`,
-      [nombre, paterno, materno, fecnac, telefono, domicilio, ruta, sexo, id]
+      [nombre, paterno, materno, edad, sexo, domicilio1, telefono1, domicilio2, telefono2, map_url, id]
     );
 
   }

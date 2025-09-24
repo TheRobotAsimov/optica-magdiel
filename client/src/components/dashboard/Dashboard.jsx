@@ -1,5 +1,4 @@
 import { useAuth } from '../../context/AuthContext'
-import { Link } from 'react-router';
 import NavComponent from '../common/NavBar';
 
 export const Dashboard = () => {
