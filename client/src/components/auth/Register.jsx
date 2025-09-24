@@ -4,18 +4,10 @@ import { useAuth } from '../../context/AuthContext'
 
 export const Register = () => {
   const [formData, setFormData] = useState({
-    nombre: '',
-    paterno: '',
-    materno: '',
-    fecnac: '',
-    feccon: '',
-    sueldo: '',
-    telefono: '',
-    sexo: '',
     correo: '',
     contrasena: '',
     confirmar_contrasena: '',
-    tipo: ''
+    rol: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -79,99 +71,7 @@ export const Register = () => {
               {success}
             </div>
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Nombre</label>
-              <input
-                name="nombre"
-                type="text"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.nombre}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Apellido Paterno</label>
-              <input
-                name="paterno"
-                type="text"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.paterno}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Apellido Materno</label>
-              <input
-                name="materno"
-                type="text"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.materno}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
-              <input
-                name="fecnac"
-                type="date"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.fecnac}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Fecha de Contratación</label>
-              <input
-                name="feccon"
-                type="date"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.feccon}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Sueldo</label>
-              <input
-                name="sueldo"
-                type="number"
-                step="0.01"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.sueldo}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Número de Teléfono</label>
-              <input
-                name="telefono"
-                type="tel"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.telefono}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Sexo</label>
-              <select
-                name="sexo"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.sexo}
-                onChange={handleChange}
-              >
-                <option value="">Seleccionar</option>
-                <option value="M">Masculino</option>
-                <option value="F">Femenino</option>
-              </select>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
               <input
@@ -184,17 +84,19 @@ export const Register = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Tipo</label>
+              <label className="block text-sm font-medium text-gray-700">Rol</label>
               <select
-                name="tipo"
+                name="rol"
                 required
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.tipo}
+                value={formData.rol}
                 onChange={handleChange}
               >
                 <option value="">Seleccionar</option>
                 <option value="Optometrista">Optometrista</option>
                 <option value="Gestor">Gestor</option>
+                <option value="Matriz">Matriz</option>
+                <option value="Administrador">Administrador</option>
               </select>
             </div>
             <div>

@@ -4,17 +4,9 @@ import bcrypt from 'bcryptjs';
 class User {
     static async create(userData) {
         const {
-            nombre,
-            paterno,
-            materno,
-            fecnac,
-            feccon,
-            sueldo,
-            telefono,
-            sexo,
             correo,
             contrasena,
-            tipo
+            rol
         } = userData;
 
         // Encriptar contraseña
@@ -23,14 +15,10 @@ class User {
 
         const [result] = await pool.execute(
             `INSERT INTO usuario (
-                nombre, paterno, materno, fecnac,
-                feccon, sueldo, telefono, sexo,
-                correo, contrasena, tipo
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                correo, contrasena, rol
+            ) VALUES (?, ?, ?)`,
             [
-                nombre, paterno, materno, fecnac,
-                feccon, sueldo, telefono, sexo,
-                correo, hashedPassword, tipo
+                correo, hashedPassword, rol
             ]
         );
 
@@ -47,7 +35,7 @@ class User {
 
     static async findById(id) {
         const [rows] = await pool.execute(
-            'SELECT id, nombre, paterno, materno, fecnac, feccon, sueldo, telefono, sexo, correo, tipo FROM usuario WHERE id = ?',
+            'SELECT id, correo, rol FROM usuario WHERE id = ?',
             [id]
         );
         return rows[0];
@@ -83,48 +71,24 @@ class User {
     }
 
     static async getAll() {
-        const [rows] = await pool.execute('SELECT id, nombre, paterno, materno, fecnac, feccon, sueldo, telefono, sexo, correo, tipo FROM usuario');
+        const [rows] = await pool.execute('SELECT id, correo, rol FROM usuario');
         return rows;
     }
 
     static async update(id, userData) {
         const {
-            nombre,
-            paterno,
-            materno,
-            fecnac,
-            feccon,
-            sueldo,
-            telefono,
-            sexo,
             correo,
-            tipo
+            rol
         } = userData;
 
         await pool.execute(
             `UPDATE usuario SET
-                nombre = ?,
-                paterno = ?,
-                materno = ?,
-                fecnac = ?,
-                feccon = ?,
-                sueldo = ?,
-                telefono = ?,
-                sexo = ?,
                 correo = ?,
-                tipo = ?
+                rol = ?
             WHERE id = ?`,
             [
-                nombre,
-                paterno,
-                materno,
-                fecnac,
-                feccon,
-                sueldo,
-                telefono,
-                sexo,
                 correo,
-                tipo,
+                rol,
                 id
             ]
         );

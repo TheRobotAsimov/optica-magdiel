@@ -47,7 +47,7 @@ const UserList = () => {
             'El usuario ha sido eliminado.',
             'success'
           )
-        } catch (err) {
+        } catch {
             Swal.fire(
                 '¡Error!',
                 'No se pudo eliminar el usuario.',
@@ -88,9 +88,9 @@ const UserList = () => {
     );
   }
 
-  const getTipoBadge = (estado) => {
+  const getRolBadge = (rol) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-    switch (estado) {
+    switch (rol) {
       case 'Matriz':
         return `${baseClasses} bg-red-100 text-red-800`;
       case 'Optometrista':
@@ -149,9 +149,8 @@ const UserList = () => {
                     <thead className="bg-gray-50 border-b">
                       <tr>
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Correo</th>
+                        <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                       </tr>
                     </thead>
@@ -162,15 +161,12 @@ const UserList = () => {
                             {user.id}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {user.nombre} {user.paterno} {user.materno}
+                            {user.correo}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={getTipoBadge(user.tipo)}>
-                              {user.tipo}
+                            <span className={getRolBadge(user.rol)}>
+                              {user.rol}
                             </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {user.correo}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <div className="flex items-center space-x-2">

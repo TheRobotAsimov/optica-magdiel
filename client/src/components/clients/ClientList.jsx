@@ -46,7 +46,7 @@ const ClientList = () => {
             'The client has been deleted.',
             'success'
           )
-        } catch (err) {
+        } catch {
             Swal.fire(
                 'Error!',
                 'An error occurred while deleting the client.',

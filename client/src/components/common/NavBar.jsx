@@ -41,7 +41,7 @@ const NavComponent = () => {
               <div className="bg-white p-1 rounded-full">
                 <User className="h-5 w-5 text-blue-600" />
               </div>
-              <span className="text-white text-sm font-medium">Bienvenido(a), {user?.nombre} {user?.paterno}</span>
+              <span className="text-white text-sm font-medium">Bienvenido(a), {user?.correo}</span>
             </div>
 
              <button

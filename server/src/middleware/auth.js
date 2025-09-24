@@ -24,7 +24,7 @@ export const authenticateToken = async (req, res, next) => {
 };
 
 export const isAdmin = (req, res, next) => {
-    if (req.user && req.user.tipo === 'Matriz') {
+    if (req.user && req.user.rol === 'Matriz') {
         next();
     } else {
         res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador.' });
