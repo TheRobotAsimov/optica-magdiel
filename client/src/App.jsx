@@ -13,6 +13,8 @@ import ClientForm from './components/clients/ClientForm';
 import DatabaseAdmin from './components/admin/DatabaseAdmin';
 import EmpleadoList from './components/empleados/EmpleadoList';
 import EmpleadoForm from './components/empleados/EmpleadoForm';
+import LenteList from './components/lentes/LenteList';
+import LenteForm from './components/lentes/LenteForm';
 
 const App = () => {
   return (
@@ -100,6 +102,30 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <EmpleadoForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/lentes" 
+            element={
+              <ProtectedRoute>
+                <LenteList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/lentes/new" 
+            element={
+              <ProtectedRoute>
+                <LenteForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/lentes/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <LenteForm />
               </ProtectedRoute>
             } 
           />
