@@ -1,7 +1,7 @@
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
 import { User } from 'lucide-react';
-import logo from '../../assets/logoimagen.webp';
+import logo from '../../assets/pez_blanco.webp';
 
 const NavComponent = () => {
     const { user, logout } = useAuth();
@@ -12,27 +12,15 @@ const NavComponent = () => {
   
   return (
     <nav className="bg-gradient-to-r from-blue-700 to-blue-600 shadow-lg" style={{ backgroundColor: '#1A37A5' }}>
+      {/* Header section with logo, user info, and logout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo y navegación izquierda */}
-          <div className="flex items-center space-x-8">
-            {/* Logo placeholder - puedes reemplazar con tu logo real */}
-            <div className="flex items-center">
-              <div className="text-black font-bold text-xl bg-white px-3 py-1 rounded-lg">
-                <Link to="/dashboard">
-                  <img src={logo} alt="Logo" style={{ height: '40px' }} />
-                </Link>
-              </div>
-            </div>
-            
-            {/* Enlaces de navegación */}
-            <div className="hidden md:flex space-x-8">
-                <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>
-                <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
-                <Link to="/empleados" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Empleados</Link>
-                <Link to="/lentes" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Lentes</Link>
-                <Link to="/ventas" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Ventas</Link>
-                <Link to="/admin/database" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">BD</Link>
+          {/* Logo */}
+          <div className="flex items-center">
+            <div className="text-black font-bold text-xl">
+              <Link to="/dashboard">
+                <img src={logo} alt="Logo" style={{ height: '40px' }} />
+              </Link>
             </div>
           </div>
 
@@ -63,18 +51,33 @@ const NavComponent = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Menú móvil (oculto por defecto) */}
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-600">
-              <Link to="/users" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>
-              <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
-              <Link to="/empleados" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Empleados</Link>
-              <Link to="/lentes" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Lentes</Link>
-              <Link to="/ventas" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Ventas</Link>
+      {/* White navigation section */}
+      <div className="bg-white border-t border-gray-200 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Desktop navigation */}
+          <div className="hidden md:flex space-x-8 py-3 justify-center">
+            <Link to="/users" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Usuarios</Link>
+            <Link to="/empleados" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Empleados</Link>
+            <Link to="/clients" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Clientes</Link>
+            <Link to="/lentes" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Lentes</Link>
+            <Link to="/ventas" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Ventas</Link>
+            <Link to="/admin/database" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">BD</Link>
+          </div>
+
+          {/* Mobile navigation */}
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1">
+              <Link to="/users" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Usuarios</Link>
+              <Link to="/clients" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Clientes</Link>
+              <Link to="/empleados" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Empleados</Link>
+              <Link to="/lentes" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Lentes</Link>
+              <Link to="/ventas" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Ventas</Link>
               {user && user.rol === 'Matriz' && (
-                <Link to="/admin/database" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Base de Datos</Link>
+                <Link to="/admin/database" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Base de Datos</Link>
               )}
+            </div>
           </div>
         </div>
       </div>
