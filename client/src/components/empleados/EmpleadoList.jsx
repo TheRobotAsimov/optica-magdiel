@@ -47,7 +47,7 @@ const EmpleadoList = () => {
             'El empleado ha sido eliminado.',
             'success'
           )
-        } catch (err) {
+        } catch {
             Swal.fire(
                 '¡Error!',
                 'No se pudo eliminar el empleado.',

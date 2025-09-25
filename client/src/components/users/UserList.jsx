@@ -95,7 +95,7 @@ const UserList = () => {
         return `${baseClasses} bg-red-100 text-red-800`;
       case 'Optometrista':
         return `${baseClasses} bg-green-100 text-green-800`;
-      case 'Gestor':
+      case 'Asesor':
         return `${baseClasses} bg-blue-100 text-blue-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;

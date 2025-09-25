@@ -171,7 +171,7 @@ const EmpleadoForm = () => {
                         <label className="block text-sm font-medium text-gray-700 mb-2">Puesto</label>
                         <select name="puesto" value={empleado.puesto} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="Optometrista">Optometrista</option>
-                            <option value="Gestor">Gestor</option>
+                            <option value="Asesor">Asesor</option>
                             <option value="Matriz">Matriz</option>
                         </select>
                     </div>
