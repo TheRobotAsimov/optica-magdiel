@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
 import { User } from 'lucide-react';
@@ -32,7 +31,8 @@ const NavComponent = () => {
                 <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
                 <Link to="/empleados" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Empleados</Link>
                 <Link to="/lentes" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Lentes</Link>
-                  <Link to="/admin/database" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Base de Datos</Link>
+                <Link to="/ventas" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Ventas</Link>
+                <Link to="/admin/database" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">BD</Link>
             </div>
           </div>
 
@@ -71,6 +71,7 @@ const NavComponent = () => {
               <Link to="/clients" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
               <Link to="/empleados" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Empleados</Link>
               <Link to="/lentes" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Lentes</Link>
+              <Link to="/ventas" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Ventas</Link>
               {user && user.rol === 'Matriz' && (
                 <Link to="/admin/database" className="text-white hover:text-blue-200 block px-3 py-2 rounded-md text-base font-medium">Base de Datos</Link>
               )}

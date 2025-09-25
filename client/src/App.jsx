@@ -15,6 +15,8 @@ import EmpleadoList from './components/empleados/EmpleadoList';
 import EmpleadoForm from './components/empleados/EmpleadoForm';
 import LenteList from './components/lentes/LenteList';
 import LenteForm from './components/lentes/LenteForm';
+import VentaList from './components/ventas/VentaList';
+import VentaForm from './components/ventas/VentaForm';
 
 const App = () => {
   return (
@@ -126,6 +128,30 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <LenteForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/ventas" 
+            element={
+              <ProtectedRoute>
+                <VentaList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/ventas/new" 
+            element={
+              <ProtectedRoute>
+                <VentaForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/ventas/:folio/edit" 
+            element={
+              <ProtectedRoute>
+                <VentaForm />
               </ProtectedRoute>
             } 
           />
