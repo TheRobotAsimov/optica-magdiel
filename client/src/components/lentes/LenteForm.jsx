@@ -7,6 +7,7 @@ import { Save, ArrowLeft, User } from 'lucide-react';
 const LenteForm = () => {
   const [lente, setLente] = useState({
     idoptometrista: '',
+    folio: '',
     sintomas: '',
     uso_de_lente: '',
     armazon: '',
@@ -143,6 +144,10 @@ const LenteForm = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">ID Optometrista *</label>
                     <input type="number" name="idoptometrista" value={lente.idoptometrista} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Folio Venta *</label>
+                    <input type="text" name="folio" value={lente.folio} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Síntomas</label>

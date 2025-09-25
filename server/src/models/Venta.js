@@ -6,7 +6,6 @@ class Venta {
       folio,
       idasesor,
       idcliente,
-      idlente,
       fecha,
       tipo,
       enganche,
@@ -18,8 +17,8 @@ class Venta {
       imagen_cobranza
     } = newVenta;
     const [result] = await pool.execute(
-      'INSERT INTO venta (folio, idasesor, idcliente, idlente, fecha, tipo, enganche, total, estatus, cant_pagos, observaciones, imagen_contrato, imagen_cobranza) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [folio, idasesor, idcliente, idlente, fecha, tipo, enganche, total, estatus, cant_pagos, observaciones, imagen_contrato, imagen_cobranza]
+      'INSERT INTO venta (folio, idasesor, idcliente, fecha, tipo, enganche, total, estatus, cant_pagos, observaciones, imagen_contrato, imagen_cobranza) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [folio, idasesor, idcliente, fecha, tipo, enganche, total, estatus, cant_pagos, observaciones, imagen_contrato, imagen_cobranza]
     );
     return result.insertId;
   }
@@ -38,7 +37,6 @@ class Venta {
     const {
       idasesor,
       idcliente,
-      idlente,
       fecha,
       tipo,
       enganche,
@@ -50,8 +48,8 @@ class Venta {
       imagen_cobranza
     } = venta;
     const [result] = await pool.execute(
-      'UPDATE venta SET idasesor = ?, idcliente = ?, idlente = ?, fecha = ?, tipo = ?, enganche = ?, total = ?, estatus = ?, cant_pagos = ?, observaciones = ?, imagen_contrato = ?, imagen_cobranza = ? WHERE folio = ?',
-      [idasesor, idcliente, idlente, fecha, tipo, enganche, total, estatus, cant_pagos, observaciones, imagen_contrato, imagen_cobranza, folio]
+      'UPDATE venta SET idasesor = ?, idcliente = ?, fecha = ?, tipo = ?, enganche = ?, total = ?, estatus = ?, cant_pagos = ?, observaciones = ?, imagen_contrato = ?, imagen_cobranza = ? WHERE folio = ?',
+      [idasesor, idcliente, fecha, tipo, enganche, total, estatus, cant_pagos, observaciones, imagen_contrato, imagen_cobranza, folio]
     );
     return result.affectedRows;
   }

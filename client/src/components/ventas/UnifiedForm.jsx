@@ -87,7 +87,18 @@ const UnifiedForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // 1. Create Cliente
+      // 1. Create Venta
+      const newVenta = await ventaService.createVenta({
+        folio: formData.folio,
+        idasesor: formData.idasesor,
+        fecha: formData.fecha,
+        tipo: formData.tipo,
+        enganche: formData.enganche,
+        total: formData.total,
+        observaciones: formData.observaciones,
+      });
+
+      // 2. Create Cliente
       const newClient = await clientService.createClient({
         nombre: formData.nombre,
         paterno: formData.paterno,
@@ -98,9 +109,10 @@ const UnifiedForm = () => {
         telefono2: formData.telefono2,
       });
 
-      // 2. Create Lente
-      const newLente = await lenteService.createLente({
+      // 3. Create Lente
+      await lenteService.createLente({
         idoptometrista: formData.idoptometrista,
+        folio: formData.folio, // Use the folio from the form
         sintomas: formData.sintomas,
         uso_de_lente: formData.uso_de_lente,
         armazon: formData.armazon,
@@ -127,17 +139,10 @@ const UnifiedForm = () => {
         oi_av: formData.oi_av,
       });
 
-      // 3. Create Venta
-      await ventaService.createVenta({
-        folio: formData.folio,
-        idasesor: formData.idasesor,
+      // 4. Update Venta with Cliente ID
+      await ventaService.updateVenta(formData.folio, {
+        ...newVenta, // Use the created venta data
         idcliente: newClient.idcliente,
-        idlente: newLente.idlente,
-        fecha: formData.fecha,
-        tipo: formData.tipo,
-        enganche: formData.enganche,
-        total: formData.total,
-        observaciones: formData.observaciones,
       });
 
       navigate('/ventas');

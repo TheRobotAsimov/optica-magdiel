@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router';
 import ventaService from '../../service/ventaService';
 import empleadoService from '../../service/empleadoService';
 import clientService from '../../service/clientService';
-import lenteService from '../../service/lenteService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, ShoppingCart } from 'lucide-react';
 
@@ -12,7 +11,6 @@ const VentaForm = () => {
     folio: '',
     idasesor: '',
     idcliente: '',
-    idlente: '',
     fecha: new Date().toISOString().slice(0, 10),
     tipo: 'Contado',
     enganche: '',
@@ -25,7 +23,6 @@ const VentaForm = () => {
   });
   const [asesores, setAsesores] = useState([]);
   const [clientes, setClientes] = useState([]);
-  const [lentes, setLentes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { folio } = useParams();
@@ -35,14 +32,12 @@ const VentaForm = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [asesoresData, clientesData, lentesData] = await Promise.all([
+        const [asesoresData, clientesData] = await Promise.all([
           empleadoService.getAllEmpleados(),
           clientService.getAllClients(),
-          lenteService.getAllLentes()
         ]);
         setAsesores(asesoresData);
         setClientes(clientesData);
-        setLentes(lentesData);
 
         if (folio) {
           const ventaData = await ventaService.getVentaByFolio(folio);
@@ -154,15 +149,7 @@ const VentaForm = () => {
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Lente *</label>
-                  <select name="idlente" value={venta.idlente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                    <option value="">Seleccionar Lente</option>
-                    {lentes.map(lente => (
-                      <option key={lente.idlente} value={lente.idlente}>{lente.nombre}</option>
-                    ))}
-                  </select>
-                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
                   <input type="date" name="fecha" value={venta.fecha} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />

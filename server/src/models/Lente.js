@@ -14,6 +14,7 @@ class Lente {
   static async create(data) {
     const {
       idoptometrista,
+      folio,
       sintomas,
       uso_de_lente,
       armazon,
@@ -38,17 +39,17 @@ class Lente {
       oi_av
     } = data;
 
-    const [result] = await pool.execute(
-      `INSERT INTO lente (idoptometrista, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [idoptometrista, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av]
-    );
-    return result.insertId;
+        const [result] = await pool.execute(
+          `INSERT INTO lente (idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av]
+        );    return result.insertId;
   }
 
   static async update(id, data) {
     const {
       idoptometrista,
+      folio,
       sintomas,
       uso_de_lente,
       armazon,
@@ -76,6 +77,7 @@ class Lente {
     await pool.execute(
       `UPDATE lente SET
         idoptometrista = ?,
+        folio = ?,
         sintomas = ?,
         uso_de_lente = ?,
         armazon = ?,
@@ -99,7 +101,7 @@ class Lente {
         oi_add = ?,
         oi_av = ?
        WHERE idlente = ?`,
-      [idoptometrista, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, id]
+      [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, id]
     );
   }
 
