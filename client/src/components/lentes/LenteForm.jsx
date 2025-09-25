@@ -10,12 +10,15 @@ const LenteForm = () => {
     sintomas: '',
     uso_de_lente: '',
     armazon: '',
-    material: '',
-    tratamiento: '',
-    tipo_de_lente: 'Mono',
+    material: 'CR-39',
+    tratamiento: 'Monofocal',
+    tipo_de_lente: 'AR',
+    kit: 'Sin kit',
     tinte_color: '',
     tono: '',
     desvanecido: '',
+    blend: 'No',
+    extra: 'Procesado',
     fecha_entrega: '',
     examen_seguimiento: '',
     estatus: 'Pendiente',
@@ -155,19 +158,31 @@ const LenteForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Material *</label>
-                    <input type="text" name="material" value={lente.material} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <select name="material" value={lente.material} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="CR-39">CR-39</option>
+                        <option value="BLUERAY">BLUERAY</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tratamiento *</label>
-                    <input type="text" name="tratamiento" value={lente.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <select name="tratamiento" value={lente.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Monofocal">Monofocal</option>
+                        <option value="Bifocal FT">Bifocal FT</option>
+                        <option value="Progresivo">Progresivo</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Lente *</label>
                     <select name="tipo_de_lente" value={lente.tipo_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="Mono">Mono</option>
-                        <option value="FT">FT</option>
-                        <option value="Blend">Blend</option>
-                        <option value="Progre">Progre</option>
+                        <option value="AR">AR</option>
+                        <option value="Photo AR">Photo AR</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kit *</label>
+                    <select name="kit" value={lente.kit} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Sin kit">Sin kit</option>
+                        <option value="Completo">Completo</option>
                     </select>
                   </div>
                   <div>
@@ -176,11 +191,31 @@ const LenteForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tono</label>
-                    <input type="text" name="tono" value={lente.tono} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <select name="tono" value={lente.tono} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">No</option>
+                        <option value="Claro">Claro</option>
+                        <option value="Intermedio">Intermedio</option>
+                        <option value="Oscuro">Oscuro</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Desvanecido</label>
                     <input type="text" name="desvanecido" value={lente.desvanecido} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Blend</label>
+                    <select name="blend" value={lente.blend} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="No">No</option>
+                        <option value="Si">Si</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Extra</label>
+                    <select name="extra" value={lente.extra} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Procesado">Procesado</option>
+                        <option value="Policarbonato">Policarbonato</option>
+                        <option value="Haid index">Haid index</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Entrega *</label>
