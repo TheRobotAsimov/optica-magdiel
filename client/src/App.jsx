@@ -17,6 +17,7 @@ import LenteList from './components/lentes/LenteList';
 import LenteForm from './components/lentes/LenteForm';
 import VentaList from './components/ventas/VentaList';
 import VentaForm from './components/ventas/VentaForm';
+import UnifiedForm from './components/ventas/UnifiedForm';
 
 const App = () => {
   return (
@@ -136,6 +137,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <VentaList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/ventas/new/unified" 
+            element={
+              <ProtectedRoute>
+                <UnifiedForm />
               </ProtectedRoute>
             } 
           />

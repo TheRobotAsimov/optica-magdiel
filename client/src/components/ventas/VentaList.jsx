@@ -120,6 +120,9 @@ const VentaList = () => {
                     <button className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">
                       <Link to="/ventas/new">Nueva Venta</Link>
                     </button>
+                    <button className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors">
+                      <Link to="/ventas/new/unified">Nueva Venta (Unificada)</Link>
+                    </button>
                     <button className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors">
                       Reporte
                     </button>
