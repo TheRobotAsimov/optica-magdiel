@@ -23,45 +23,12 @@ export const getLenteById = async (req, res) => {
 };
 
 export const createLente = async (req, res) => {
-  const {
-    material,
-    tipo_de_lente,
-    kit,
-    tratamiento,
-    precio,
-    graduacion,
-    esfera,
-    cilindro,
-    eje,
-    adicion,
-    altura,
-    dip,
-    desvanecido,
-    blend,
-    extra,
-    tono,
-  } = req.body;
   try {
-    const newLente = await Lente.create({
-      material,
-      tipo_de_lente,
-      kit,
-      tratamiento,
-      precio,
-      graduacion,
-      esfera,
-      cilindro,
-      eje,
-      adicion,
-      altura,
-      dip,
-      desvanecido,
-      blend,
-      extra,
-      tono,
-    });
-    res.status(201).json({ id: newLente.id, message: 'Lente creado exitosamente' });
+    const newLenteId = await Lente.create(req.body);
+    res.status(201).json({ id: newLenteId, message: 'Lente creado exitosamente' });
   } catch (error) {
+    console.log(req.body)
+    console.log(error.message)
     res.status(500).json({ message: 'Error al crear el lente', error });
   }
 };
