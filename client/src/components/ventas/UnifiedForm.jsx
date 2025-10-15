@@ -4,6 +4,7 @@ import ventaService from '../../service/ventaService';
 import clientService from '../../service/clientService';
 import lenteService from '../../service/lenteService';
 import empleadoService from '../../service/empleadoService';
+import precioService from '../../service/precioService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, ShoppingCart } from 'lucide-react';
 
@@ -60,6 +61,7 @@ const UnifiedForm = () => {
   });
   const [asesores, setAsesores] = useState([]);
   const [optometristas, setOptometristas] = useState([]);
+  const [priceCatalog, setPriceCatalog] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -70,12 +72,14 @@ const UnifiedForm = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [asesoresData, optometristasData] = await Promise.all([
+        const [asesoresData, optometristasData, catalogData] = await Promise.all([
           empleadoService.getAllEmpleados(),
           empleadoService.getAllEmpleados(), // Assuming optometristas are also employees
+          precioService.getPriceCatalog(),
         ]);
         setAsesores(asesoresData);
         setOptometristas(optometristasData);
+        setPriceCatalog(catalogData.priceCatalog);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -84,6 +88,33 @@ const UnifiedForm = () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (priceCatalog && formData.material && formData.tipo_de_lente && formData.tratamiento) {
+      let newTotal = 0;
+      const material = priceCatalog[formData.material];
+      if (material) {
+        const tipoDeLente = material[formData.tipo_de_lente];
+        if (tipoDeLente) {
+          const tratamiento = tipoDeLente[formData.tratamiento];
+          if (tratamiento) {
+            newTotal += tratamiento.base;
+            if (formData.procesado === 'Si') {
+              newTotal += tratamiento.procesado;
+            }
+            if (formData.subtipo && tratamiento.subtipo) {
+              newTotal += tratamiento.subtipo[formData.subtipo] || 0;
+            }
+            if (formData.blend === 'Si' && tratamiento.blend) {
+              newTotal += tratamiento.blend;
+            }
+          }
+        }
+      }
+
+      setFormData((prev) => ({ ...prev, total: newTotal }));
+    }
+  }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, priceCatalog]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -492,7 +523,8 @@ const UnifiedForm = () => {
                       name="total"
                       value={formData.total}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
+                      disabled
                     />
                   </div>
                   <div>

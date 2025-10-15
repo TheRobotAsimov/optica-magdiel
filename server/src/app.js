@@ -8,6 +8,7 @@ import databaseRoutes from './routes/Database.js';
 import empleadoRoutes from './routes/Empleados.js';
 import lenteRoutes from './routes/Lentes.js';
 import ventaRoutes from './routes/Ventas.js';
+import preciosRoutes from './routes/Precios.js';
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/database', databaseRoutes);
 app.use('/api/empleados', empleadoRoutes);
 app.use('/api/lentes', lenteRoutes);
 app.use('/api/ventas', ventaRoutes);
+app.use('/api/precios', preciosRoutes);
 
 // Manejo de errores
 app.use((err, req, res, next) => {
