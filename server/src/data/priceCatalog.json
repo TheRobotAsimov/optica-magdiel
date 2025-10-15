@@ -1,0 +1,127 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2025-10-14",
+  "priceCatalog": {
+    "CR-39": {
+      "Monofocal": {
+        "AR": {
+          "base": 1500,
+          "procesado": 200,
+          "subtipo": {
+            "Policarbonato": 500,
+            "Haid index": 300
+          }
+        },
+        "Photo AR": {
+          "base": 2100,
+          "procesado": 300,
+          "subtipo": {
+            "Policarbonato": 900,
+            "Haid index": 300
+          }
+        }
+      },
+      "Bifocal": {
+        "AR": {
+          "base": 2000,
+          "procesado": 500,
+          "blend": 300,
+          "subtipo": {
+            "Policarbonato": 500,
+            "Haid index": 300
+          }
+        },
+        "Photo AR": {
+          "base": 2500,
+          "procesado": 700,
+          "blend": 300,
+          "subtipo": {
+            "Policarbonato": 900,
+            "Haid index": 300
+          }
+        }
+      },
+      "Progresivo": {
+        "AR": {
+          "base": 2600,
+          "procesado": 600,
+          "subtipo": {
+            "Policarbonato": 700,
+            "Haid index": 300
+          }
+        },
+        "Photo AR": {
+          "base": 3500,
+          "procesado": 900,
+          "subtipo": {
+            "Policarbonato": 1300,
+            "Haid index": 300
+          }
+        }
+      }
+    },
+    "BLUERAY": {
+      "Monofocal": {
+        "AR": {
+          "base": 1900,
+          "procesado": 500,
+          "subtipo": {
+            "Policarbonato": 700,
+            "Haid index": 300
+          }
+        },
+        "Photo AR": {
+          "base": 2600,
+          "procesado": 600,
+          "subtipo": {
+            "Policarbonato": 900,
+            "Haid index": 300
+          }
+        }
+      },
+      "Bifocal": {
+        "AR": {
+          "base": 2500,
+          "procesado": 600,
+          "blend": 300,
+          "subtipo": {
+            "Policarbonato": 700,
+            "Haid index": 300
+          }
+        },
+        "Photo AR": {
+          "base": 3100,
+          "procesado": 700,
+          "blend": 300,
+          "subtipo": {
+            "Policarbonato": 1000,
+            "Haid index": 300
+          }
+        }
+      },
+      "Progresivo": {
+        "AR": {
+          "base": 3000,
+          "procesado": 700,
+          "subtipo": {
+            "Policarbonato": 900,
+            "Haid index": 300
+          }
+        },
+        "Photo AR": {
+          "base": 4300,
+          "procesado": 1000,
+          "subtipo": {
+            "Policarbonato": 1300,
+            "Haid index": 500
+          }
+        }
+      }
+    }
+  },
+  "additives": {
+    "kit": 100,
+    "tinte": 300,
+    "desvanecido": 0
+  }
+}

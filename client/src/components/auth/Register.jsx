@@ -34,8 +34,8 @@ export const Register = () => {
       return;
     }
 
-    // Remover confirmar_contrasena del objeto a enviar
-    const { confirmar_contrasena, ...dataToSend } = formData;
+    const dataToSend = { ...formData };
+    delete dataToSend.confirmar_contrasena;
 
     const result = await register(dataToSend);
     

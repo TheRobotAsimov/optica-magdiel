@@ -37,14 +37,15 @@ const UnifiedForm = () => {
     uso_de_lente: '',
     examen_seguimiento: '',
     armazon: '',
-    material: 'CR-39',
-    tratamiento: 'Monofocal',
+    material: '',
+    tratamiento: '',
     tinte_color: '',
     tono: '',
-    desvanecido: '',
-    tipo_de_lente: 'AR',
+    desvanecido: 'No',
+    tipo_de_lente: '',
     blend: 'No',
-    extra: '',
+    subtipo: '',
+    procesado: 'No',
     od_esf: '',
     od_cil: '',
     od_eje: '',
@@ -55,7 +56,6 @@ const UnifiedForm = () => {
     oi_eje: '',
     oi_add: '',
     oi_av: '',
-    kit: 'Sin kit',
     fecha_entrega: '',
   });
   const [asesores, setAsesores] = useState([]);
@@ -64,38 +64,6 @@ const UnifiedForm = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // ====== Price matrix based on your criteria ======
-  // Keys match the select values: material: "CR-39" or "BLUERAY"
-  const priceMatrix = {
-    'CR-39': {
-      'Monofocal': {
-        AR: { base: 1500, extras: { Procesado: 200, Policarbonato: 500, 'Haid index': 300 }, blend: 0 },
-        PH: { base: 2100, extras: { Procesado: 300, Policarbonato: 900, 'Haid index': 300 }, blend: 0 },
-      },
-      'Bifocal FT': {
-        AR: { base: 2000, extras: { Procesado: 500, Policarbonato: 500, 'Haid index': 300 }, blend: 300 },
-        PH: { base: 2500, extras: { Procesado: 700, Policarbonato: 900, 'Haid index': 300 }, blend: 300 },
-      },
-      'Progresivo': {
-        AR: { base: 2600, extras: { Procesado: 600, Policarbonato: 700, 'Haid index': 300 }, blend: 0 },
-        PH: { base: 3500, extras: { Procesado: 900, Policarbonato: 1300, 'Haid index': 300 }, blend: 0 },
-      },
-    },
-    'BLUERAY': { // uso mayúsculas porque en tu select usas "BLUERAY"
-      'Monofocal': {
-        AR: { base: 1900, extras: { Procesado: 500, Policarbonato: 700, 'Haid index': 300 }, blend: 0 },
-        PH: { base: 2600, extras: { Procesado: 600, Policarbonato: 900, 'Haid index': 300 }, blend: 0 },
-      },
-      'Bifocal FT': {
-        AR: { base: 2500, extras: { Procesado: 600, Policarbonato: 700, 'Haid index': 300 }, blend: 300 },
-        PH: { base: 3100, extras: { Procesado: 700, Policarbonato: 1000, 'Haid index': 300 }, blend: 300 },
-      },
-      'Progresivo': {
-        AR: { base: 3000, extras: { Procesado: 700, Policarbonato: 900, 'Haid index': 300 }, blend: 0 },
-        PH: { base: 4300, extras: { Procesado: 1000, Policarbonato: 1300, 'Haid index': 500 }, blend: 0 }, // Haid index = 500 en tu tabla para este caso
-      },
-    },
-  };
   // ==================================================
 
   useEffect(() => {
@@ -117,62 +85,47 @@ const UnifiedForm = () => {
     fetchData();
   }, []);
 
-  const [suggestedTotal, setSuggestedTotal] = useState(null);
-
-
-  // Recalculate total whenever relevant lens fields change
-  useEffect(() => {
-    const calculateTotal = () => {
-      const matKey = formData.material; // "CR-39" or "BLUERAY"
-      const tratKey = formData.tratamiento; // "Monofocal", "Bifocal FT", "Progresivo"
-      // handle "Photo AR" as AR
-      const tipoKey = formData.tipo_de_lente === 'Photo AR' ? 'AR' : formData.tipo_de_lente; // "AR" or "PH"
-
-      if (!matKey || !tratKey || !tipoKey) {
-        setFormData(prev => ({ ...prev, total: '' }));
-        return;
-      }
-
-      const mat = priceMatrix[matKey];
-      if (!mat) {
-        setFormData(prev => ({ ...prev, total: '' }));
-        return;
-      }
-      const trat = mat[tratKey];
-      if (!trat) {
-        setFormData(prev => ({ ...prev, total: '' }));
-        return;
-      }
-      const tipo = trat[tipoKey];
-      if (!tipo) {
-        setFormData(prev => ({ ...prev, total: '' }));
-        return;
-      }
-
-      let totalCalc = Number(tipo.base || 0);
-
-      // Extra (Procesado | Policarbonato | Haid index) -> UI has single select "extra"
-      if (formData.extra && tipo.extras) {
-        const extraValue = tipo.extras[formData.extra] || 0;
-        totalCalc += Number(extraValue);
-      }
-
-      // Blend add (aplica en Bifocal FT según tu tabla)
-      if (tratKey === 'Bifocal FT' && formData.blend === 'Si') {
-        totalCalc += Number(tipo.blend || 0);
-      }
-
-      // Guardamos la sugerencia, no escribimos en formData.total
-      setSuggestedTotal(totalCalc);
-    };
-
-    calculateTotal();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.material, formData.tratamiento, formData.tipo_de_lente, formData.extra, formData.blend]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: value };
+
+      if (name === 'material') {
+        newFormData.tratamiento = '';
+        newFormData.tipo_de_lente = '';
+        newFormData.subtipo = '';
+      }
+
+      if (name === 'tratamiento') {
+        newFormData.tipo_de_lente = '';
+        newFormData.subtipo = '';
+      }
+
+      if (name === 'tipo_de_lente') {
+        newFormData.subtipo = '';
+        if (value !== 'Bifocal') {
+          newFormData.blend = 'No';
+        }
+      }
+
+      const esfCilFields = ['od_esf', 'od_cil', 'oi_esf', 'oi_cil'];
+      if (esfCilFields.includes(name)) {
+        const values = {
+          ...prev,
+          [name]: value,
+        };
+
+        const shouldBeProcesado = 
+          Math.abs(parseFloat(values.od_esf)) >= 5 ||
+          Math.abs(parseFloat(values.od_cil)) >= 5 ||
+          Math.abs(parseFloat(values.oi_esf)) >= 5 ||
+          Math.abs(parseFloat(values.oi_cil)) >= 5;
+
+        newFormData.procesado = shouldBeProcesado ? 'Si' : 'No';
+      }
+
+      return newFormData;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -193,7 +146,7 @@ const UnifiedForm = () => {
         map_url: ''
       });
 
-      const finalTotal = formData.total ? parseFloat(formData.total) : (suggestedTotal || 0);
+      const finalTotal = formData.total;
 
       // 1. Create Venta
       await ventaService.createVenta({
@@ -222,12 +175,12 @@ const UnifiedForm = () => {
         material: formData.material,
         tratamiento: formData.tratamiento,
         tipo_de_lente: formData.tipo_de_lente,
-        kit: formData.kit,
         tinte_color: formData.tinte_color,
         tono: formData.tono === '' ? null : formData.tono,
         desvanecido: formData.desvanecido,
         blend: formData.blend,
-        extra: formData.extra,
+        subtipo: formData.subtipo,
+        procesado: formData.procesado,
         fecha_entrega: formData.fecha_entrega,
         examen_seguimiento: formData.examen_seguimiento,
         estatus: 'Pendiente',
@@ -404,15 +357,25 @@ const UnifiedForm = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Material *</label>
                     <select name="material" value={formData.material} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                      <option value="">Seleccione un material</option>
                       <option value="CR-39">CR-39</option>
                       <option value="BLUERAY">BLUERAY</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Tratamiento *</label>
-                    <select name="tratamiento" value={formData.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <select name="tratamiento" value={formData.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={!formData.material}>
+                      <option value="">Seleccione un tratamiento</option>
+                      <option value="AR">AR</option>
+                      <option value="Photo AR">Photo AR</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Lente *</label>
+                    <select name="tipo_de_lente" value={formData.tipo_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={!formData.tratamiento}>
+                      <option value="">Seleccione un tipo de lente</option>
                       <option value="Monofocal">Monofocal</option>
-                      <option value="Bifocal FT">Bifocal FT</option>
+                      <option value="Bifocal">Bifocal</option>
                       <option value="Progresivo">Progresivo</option>
                     </select>
                   </div>
@@ -431,37 +394,31 @@ const UnifiedForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Desvanecido</label>
-                    <input type="text" name="desvanecido" value={formData.desvanecido} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Lente *</label>
-                    <select name="tipo_de_lente" value={formData.tipo_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                      <option value="AR">AR</option>
-                      <option value="Photo AR">Photo AR</option>
-                      <option value="PH">PH</option>
+                    <select name="desvanecido" value={formData.desvanecido} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="No">No</option>
+                        <option value="Si">Si</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Blend</label>
-                    <select name="blend" value={formData.blend} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <select name="blend" value={formData.blend} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={formData.tipo_de_lente !== 'Bifocal'}>
                       <option value="No">No</option>
                       <option value="Si">Si</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Extra</label>
-                    <select name="extra" value={formData.extra} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                      <option value=""></option>
-                      <option value="Procesado">Procesado</option>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Subtipo</label>
+                    <select name="subtipo" value={formData.subtipo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={!formData.tipo_de_lente}>
+                      <option value="">Ninguno</option>
                       <option value="Policarbonato">Policarbonato</option>
                       <option value="Haid index">Haid index</option>
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Kit de limpieza *</label>
-                    <select name="kit" value={formData.kit} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                      <option value="Sin kit">Sin kit</option>
-                      <option value="Completo">Completo</option>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Procesado</label>
+                    <select name="procesado" value={formData.procesado} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled>
+                        <option value="No">No</option>
+                        <option value="Si">Si</option>
                     </select>
                   </div>
                 </div>
@@ -535,7 +492,6 @@ const UnifiedForm = () => {
                       name="total"
                       value={formData.total}
                       onChange={handleChange}
-                      placeholder={suggestedTotal !== null ? String(suggestedTotal) : ''}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     />
                   </div>
