@@ -62,6 +62,23 @@ class Client {
     const [result] = await pool.execute('DELETE FROM cliente WHERE idcliente = ?', [id]);
     return result.affectedRows;
   }
+
+  static async search(nombre, paterno) {
+    let query = 'SELECT * FROM cliente WHERE 1=1';
+    const params = [];
+
+    if (nombre) {
+      query += ' AND nombre LIKE ?';
+      params.push(`%${nombre}%`);
+    }
+    if (paterno) {
+      query += ' AND paterno LIKE ?';
+      params.push(`%${paterno}%`);
+    }
+
+    const [rows] = await pool.execute(query, params);
+    return rows;
+  }
 }
 
 export default Client;

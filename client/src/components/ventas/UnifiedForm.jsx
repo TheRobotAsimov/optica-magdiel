@@ -7,6 +7,7 @@ import empleadoService from '../../service/empleadoService';
 import precioService from '../../service/precioService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, ShoppingCart } from 'lucide-react';
+import { useDebounce } from 'use-debounce';
 
 const UnifiedForm = () => {
   const [formData, setFormData] = useState({
@@ -66,10 +67,36 @@ const UnifiedForm = () => {
   const [additives, setAdditives] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [isClientSelected, setIsClientSelected] = useState(false);
   const navigate = useNavigate();
+
+  const [debouncedNombre] = useDebounce(formData.nombre, 300);
+  const [debouncedPaterno] = useDebounce(formData.paterno, 300);
 
   // ==================================================
 
+  useEffect(() => {
+    const searchClients = async () => {
+      if (debouncedNombre || debouncedPaterno) {
+        try {
+          const results = await clientService.searchClients(debouncedNombre, debouncedPaterno);
+          setSearchResults(results);
+          setShowSuggestions(true);
+        } catch (err) {
+          console.error("Error searching clients:", err);
+          setSearchResults([]);
+          setShowSuggestions(false);
+        }
+      } else {
+        setSearchResults([]);
+        setShowSuggestions(false);
+      }
+    };
+    searchClients();
+  }, [debouncedNombre, debouncedPaterno]);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -133,6 +160,11 @@ const UnifiedForm = () => {
     setFormData((prev) => {
       const newFormData = { ...prev, [name]: value };
 
+      if (name === 'nombre' || name === 'paterno') {
+        setSelectedClient(null);
+        setIsClientSelected(false);
+      }
+
       if (name === 'material') {
         newFormData.tratamiento = '';
         newFormData.tipo_de_lente = '';
@@ -171,23 +203,48 @@ const UnifiedForm = () => {
     });
   };
 
+  const handleSelectClient = (client) => {
+    setFormData((prev) => ({
+      ...prev,
+      nombre: client.nombre,
+      paterno: client.paterno,
+      materno: client.materno || '',
+      domicilio1: client.domicilio1 || '',
+      domicilio2: client.domicilio2 || '',
+      telefono1: client.telefono1 || '',
+      telefono2: client.telefono2 || '',
+      edad: client.edad || '',
+      sexo: client.sexo || '',
+    }));
+    setSelectedClient(client);
+    setIsClientSelected(true);
+    setShowSuggestions(false);
+    setSearchResults([]);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      // 2. Create Cliente
-      const newClient = await clientService.createClient({
-        nombre: formData.nombre,
-        paterno: formData.paterno,
-        materno: formData.materno,
-        domicilio1: formData.domicilio1,
-        domicilio2: formData.domicilio2,
-        telefono1: formData.telefono1,
-        telefono2: formData.telefono2,
-        edad: formData.edad,
-        sexo: formData.sexo,
-        map_url: ''
-      });
+      let clientId;
+      if (isClientSelected && selectedClient) {
+        clientId = selectedClient.idcliente;
+      } else {
+        // 2. Create Cliente
+        const newClient = await clientService.createClient({
+          nombre: formData.nombre,
+          paterno: formData.paterno,
+          materno: formData.materno,
+          domicilio1: formData.domicilio1,
+          domicilio2: formData.domicilio2,
+          telefono1: formData.telefono1,
+          telefono2: formData.telefono2,
+          edad: formData.edad,
+          sexo: formData.sexo,
+          map_url: ''
+        });
+        clientId = newClient.id;
+      }
 
       const finalTotal = formData.total;
 
@@ -195,7 +252,7 @@ const UnifiedForm = () => {
       await ventaService.createVenta({
         folio: formData.folio,
         idasesor: parseInt(formData.idasesor),
-        idcliente: newClient.id,
+        idcliente: clientId,
         fecha: formData.fecha,
         tipo: formData.tipo,
         enganche: parseFloat(formData.enganche) || 0,
@@ -326,25 +383,34 @@ const UnifiedForm = () => {
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Cliente</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                    <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
+                    {showSuggestions && searchResults.length > 0 && (
+                      <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-auto shadow-lg">
+                        {searchResults.map((client) => (
+                          <li key={client.idcliente} onClick={() => handleSelectClient(client)} className="px-3 py-2 cursor-pointer hover:bg-gray-100">
+                            {client.nombre} {client.paterno} {client.materno}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Paterno *</label>
-                    <input type="text" name="paterno" value={formData.paterno} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="text" name="paterno" value={formData.paterno} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Materno</label>
-                    <input type="text" name="materno" value={formData.materno} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="text" name="materno" value={formData.materno} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Edad</label>
-                    <input type="number" name="edad" value={formData.edad} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="number" name="edad" value={formData.edad} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Sexo</label>
-                    <select name="sexo" value={formData.sexo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <select name="sexo" value={formData.sexo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected}>
                       <option value="">Seleccionar</option>
                       <option value="M">Masculino</option>
                       <option value="F">Femenino</option>
@@ -352,19 +418,19 @@ const UnifiedForm = () => {
                   </div>
                   <div className="md:col-span-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 1 *</label>
-                    <textarea name="domicilio1" value={formData.domicilio1} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
+                    <textarea name="domicilio1" value={formData.domicilio1} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected}></textarea>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 2</label>
-                    <input type="text" name="domicilio2" value={formData.domicilio2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="text" name="domicilio2" value={formData.domicilio2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono 1 *</label>
-                    <input type="tel" name="telefono1" value={formData.telefono1} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="tel" name="telefono1" value={formData.telefono1} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono 2</label>
-                    <input type="tel" name="telefono2" value={formData.telefono2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="tel" name="telefono2" value={formData.telefono2} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
                   </div>
                 </div>
               </div>

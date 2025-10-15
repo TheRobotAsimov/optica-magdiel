@@ -28,6 +28,13 @@ const clientService = {
     const response = await axios.delete(API_URL + `/${id}`);
     return response.data;
   },
+
+  searchClients: async (nombre, paterno) => {
+    const response = await axios.get(API_URL + `/search`, {
+      params: { nombre, paterno },
+    });
+    return response.data;
+  },
 };
 
 export default clientService;
