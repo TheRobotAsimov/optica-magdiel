@@ -58,10 +58,12 @@ const UnifiedForm = () => {
     oi_add: '',
     oi_av: '',
     fecha_entrega: '',
+    kit: 'Sin kit',
   });
   const [asesores, setAsesores] = useState([]);
   const [optometristas, setOptometristas] = useState([]);
   const [priceCatalog, setPriceCatalog] = useState(null);
+  const [additives, setAdditives] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -74,12 +76,13 @@ const UnifiedForm = () => {
       try {
         const [asesoresData, optometristasData, catalogData] = await Promise.all([
           empleadoService.getAllEmpleados(),
-          empleadoService.getAllEmpleados(), // Assuming optometristas are also employees
+          empleadoService.getAllEmpleados(), // Optometristas are also employees
           precioService.getPriceCatalog(),
         ]);
         setAsesores(asesoresData);
         setOptometristas(optometristasData);
         setPriceCatalog(catalogData.priceCatalog);
+        setAdditives(catalogData.additives);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -112,9 +115,18 @@ const UnifiedForm = () => {
         }
       }
 
+      if (additives) {
+        if (formData.kit === 'Completo') {
+          newTotal += additives.kit;
+        }
+        if (formData.tinte_color) {
+          newTotal += additives.tinte;
+        }
+      }
+
       setFormData((prev) => ({ ...prev, total: newTotal }));
     }
-  }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, priceCatalog]);
+  }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, formData.kit, formData.tinte_color, priceCatalog, additives]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -225,6 +237,7 @@ const UnifiedForm = () => {
         oi_eje: formData.oi_eje ? parseInt(formData.oi_eje, 10) : null,
         oi_add: formData.oi_add ? parseFloat(formData.oi_add) : null,
         oi_av: formData.oi_av,
+        kit: formData.kit,
       });
 
       navigate('/ventas');
@@ -386,64 +399,78 @@ const UnifiedForm = () => {
                     <input type="text" name="armazon" value={formData.armazon} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Material *</label>
-                    <select name="material" value={formData.material} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                      <option value="">Seleccione un material</option>
-                      <option value="CR-39">CR-39</option>
-                      <option value="BLUERAY">BLUERAY</option>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kit</label>
+                    <select name="kit" value={formData.kit} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="Sin kit">Sin kit</option>
+                        <option value="Completo">Completo</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tratamiento *</label>
-                    <select name="tratamiento" value={formData.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={!formData.material}>
-                      <option value="">Seleccione un tratamiento</option>
-                      <option value="AR">AR</option>
-                      <option value="Photo AR">Photo AR</option>
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:col-span-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Material *</label>
+                      <select name="material" value={formData.material} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="">Seleccione</option>
+                        <option value="CR-39">CR-39</option>
+                        <option value="BLUERAY">BLUERAY</option>
+                      </select>
+                    </div>
+                    {formData.material && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Tratamiento *</label>
+                        <select name="tratamiento" value={formData.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                          <option value="">Seleccione un tratamiento</option>
+                          <option value="AR">AR</option>
+                          <option value="Photo AR">Photo AR</option>
+                        </select>
+                      </div>
+                    )}
+                    {formData.tratamiento && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Lente *</label>
+                        <select name="tipo_de_lente" value={formData.tipo_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                          <option value="">Seleccione un tipo de lente</option>
+                          <option value="Monofocal">Monofocal</option>
+                          <option value="Bifocal">Bifocal</option>
+                          <option value="Progresivo">Progresivo</option>
+                        </select>
+                      </div>
+                    )}
+                    {formData.tipo_de_lente && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Subtipo</label>
+                        <select name="subtipo" value={formData.subtipo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                          <option value="">Ninguno</option>
+                          <option value="Policarbonato">Policarbonato</option>
+                          <option value="Haid index">Haid index</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Lente *</label>
-                    <select name="tipo_de_lente" value={formData.tipo_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={!formData.tratamiento}>
-                      <option value="">Seleccione un tipo de lente</option>
-                      <option value="Monofocal">Monofocal</option>
-                      <option value="Bifocal">Bifocal</option>
-                      <option value="Progresivo">Progresivo</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tinte Color</label>
-                    <input type="text" name="tinte_color" value={formData.tinte_color} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tono</label>
-                    <select name="tono" value={formData.tono} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                      <option value="">No</option>
-                      <option value="Claro">Claro</option>
-                      <option value="Intermedio">Intermedio</option>
-                      <option value="Oscuro">Oscuro</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Desvanecido</label>
-                    <select name="desvanecido" value={formData.desvanecido} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                        <option value="No">No</option>
-                        <option value="Si">Si</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Blend</label>
-                    <select name="blend" value={formData.blend} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={formData.tipo_de_lente !== 'Bifocal'}>
-                      <option value="No">No</option>
-                      <option value="Si">Si</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Subtipo</label>
-                    <select name="subtipo" value={formData.subtipo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={!formData.tipo_de_lente}>
-                      <option value="">Ninguno</option>
-                      <option value="Policarbonato">Policarbonato</option>
-                      <option value="Haid index">Haid index</option>
-                    </select>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:col-span-3">
+                    <div>                                                                                   
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Tinte Color</label>
+                      <input type="text" name="tinte_color" value={formData.tinte_color} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    </div>
+                    {formData.tinte_color && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Tono</label>
+                          <select name="tono" value={formData.tono} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                            <option value="">No</option>
+                            <option value="Claro">Claro</option>
+                            <option value="Intermedio">Intermedio</option>
+                            <option value="Oscuro">Oscuro</option>
+                          </select>
+                        </div>
+                      )}
+                      {formData.tono && (
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Desvanecido</label>
+                          <select name="desvanecido" value={formData.desvanecido} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                              <option value="No">No</option>
+                              <option value="Si">Si</option>
+                          </select>
+                        </div>
+                      )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Procesado</label>
@@ -452,6 +479,15 @@ const UnifiedForm = () => {
                         <option value="Si">Si</option>
                     </select>
                   </div>
+                  {formData.tipo_de_lente === 'Bifocal' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Blend</label>
+                      <select name="blend" value={formData.blend} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                        <option value="No">No</option>
+                        <option value="Si">Si</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 

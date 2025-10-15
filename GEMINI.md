@@ -31,18 +31,18 @@ The project is divided into two main parts:
 
 To run the frontend, navigate to the `client` directory and use the following commands:
 
-*   **Install dependencies:** `npm install`
-*   **Run in development mode:** `npm run dev`
-*   **Build for production:** `npm run build`
-*   **Lint the code:** `npm run lint`
+*   **Install dependencies:** `pnpm install`
+*   **Run in development mode:** `pnpm run dev`
+*   **Build for production:** `pnpm run build`
+*   **Lint the code:** `pnpm run lint`
 
 ## Backend
 
 To run the backend, navigate to the `server` directory and use the following commands:
 
-*   **Install dependencies:** `npm install`
-*   **Run the server:** `npm start`
-*   **Run in development mode with auto-restarting:** `npm run dev`
+*   **Install dependencies:** `pnpm install`
+*   **Run the server:** `pnpm start`
+*   **Run in development mode with auto-restarting:** `pnpm run dev`
 
 **Note:** The backend requires a `.env` file with the following variables for database connection and JWT:
 

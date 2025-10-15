@@ -31,23 +31,24 @@ class Lente {
       od_cil,
       od_eje,
       od_add,
-            id_av,
-            oi_esf,
-            oi_cil,
-            oi_eje,
-            oi_add,
-            oi_av,
-            subtipo,
-            blend,
-            procesado
-          } = data;
-      
-              const [result] = await pool.execute(
-                `INSERT INTO lente (idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) `,
-                [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado]
-              );    return result.insertId;
-        }
+      od_av,
+      oi_esf,
+      oi_cil,
+      oi_eje,
+      oi_add,
+      oi_av,
+      subtipo,
+      blend,
+      procesado,
+      kit
+    } = data;
+
+        const [result] = await pool.execute(
+          `INSERT INTO lente (idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, kit)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) `,
+          [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, kit]
+        );    return result.insertId;
+  }
 
   static async update(id, data) {
     const {
@@ -77,7 +78,8 @@ class Lente {
       oi_av,
       subtipo,
       blend,
-      procesado
+      procesado,
+      kit
     } = data;
 
     await pool.execute(
@@ -108,9 +110,10 @@ class Lente {
         oi_av = ?,
         subtipo = ?,
         blend = ?,
-        procesado = ?
+        procesado = ?,
+        kit = ?
        WHERE idlente = ?`,
-      [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, id]
+      [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, kit, id]
     );
   }
 

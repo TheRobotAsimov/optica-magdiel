@@ -32,7 +32,8 @@ const LenteForm = () => {
     oi_cil: '',
     oi_eje: '',
     oi_add: '',
-    oi_av: ''
+    oi_av: '',
+    kit: 'Sin kit'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -239,6 +240,13 @@ const LenteForm = () => {
                         <option value="Pendiente">Pendiente</option>
                         <option value="Entregado">Entregado</option>
                         <option value="No entregado">No entregado</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Kit</label>
+                    <select name="kit" value={lente.kit} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="Sin kit">Sin kit</option>
+                        <option value="Completo">Completo</option>
                     </select>
                   </div>
                 </div>
