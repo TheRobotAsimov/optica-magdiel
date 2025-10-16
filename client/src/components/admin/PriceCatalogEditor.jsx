@@ -14,7 +14,7 @@ const PriceTable = ({ title, data, onChange }) => {
     <div className="bg-white shadow rounded-lg p-6 mb-8">
       <h2 className="text-xl font-bold text-gray-800 mb-4">{title}</h2>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm text-left text-gray-500">
+        <table className="w-full text-sm text-left text-black">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50">
             <tr>
               {headers.map((header) => (
@@ -125,11 +125,20 @@ const PriceCatalogEditor = () => {
   const handlePriceChange = (material, tipo, tratamiento, field, value, subField = null) => {
     setCatalog((prev) => {
       const newCatalog = { ...prev };
+      newCatalog.priceCatalog = { ...prev.priceCatalog };
+      newCatalog.priceCatalog[material] = { ...prev.priceCatalog[material] };
+      newCatalog.priceCatalog[material][tipo] = { ...prev.priceCatalog[material][tipo] };
+      newCatalog.priceCatalog[material][tipo][tratamiento] = { ...prev.priceCatalog[material][tipo][tratamiento] };
+
       if (subField) {
-        newCatalog.priceCatalog[material][tipo][tratamiento][field][subField] = parseFloat(value);
+        newCatalog.priceCatalog[material][tipo][tratamiento][field] = {
+          ...prev.priceCatalog[material][tipo][tratamiento][field],
+          [subField]: parseFloat(value),
+        };
       } else {
         newCatalog.priceCatalog[material][tipo][tratamiento][field] = parseFloat(value);
       }
+
       return newCatalog;
     });
   };
@@ -154,8 +163,32 @@ const PriceCatalogEditor = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <NavComponent />
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-xl text-gray-600">Cargando...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <NavComponent />
+        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="text-red-800">Error: {error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!catalog) return null;
 
   return (

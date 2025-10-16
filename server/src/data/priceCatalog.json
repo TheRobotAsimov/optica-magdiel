@@ -55,7 +55,7 @@
           "procesado": 900,
           "subtipo": {
             "Policarbonato": 1300,
-            "Haid index": 300
+            "Haid index": 500
           }
         }
       }
@@ -102,9 +102,9 @@
       "Progresivo": {
         "AR": {
           "base": 3000,
-          "procesado": 700,
+          "procesado": 708,
           "subtipo": {
-            "Policarbonato": 900,
+            "Policarbonato": 9000,
             "Haid index": 300
           }
         },

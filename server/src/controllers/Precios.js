@@ -16,6 +16,7 @@ export const getPriceCatalog = async (req, res) => {
 export const updatePriceCatalog = async (req, res) => {
   try {
     const updatedCatalog = req.body;
+    console.log('req.body', req.body)
     await fs.writeFile(dataPath, JSON.stringify(updatedCatalog, null, 2), 'utf-8');
     res.status(200).json({ message: 'Catálogo de precios actualizado exitosamente' });
   } catch (error) {
