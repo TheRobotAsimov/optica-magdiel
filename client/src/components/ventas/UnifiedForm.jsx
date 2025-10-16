@@ -73,8 +73,8 @@ const UnifiedForm = () => {
   const [isClientSelected, setIsClientSelected] = useState(false);
   const navigate = useNavigate();
 
-  const [debouncedNombre] = useDebounce(formData.nombre, 300);
-  const [debouncedPaterno] = useDebounce(formData.paterno, 300);
+  const [debouncedNombre] = useDebounce(formData.nombre, 1000);
+  const [debouncedPaterno] = useDebounce(formData.paterno, 500);
 
   // ==================================================
 
@@ -220,6 +220,23 @@ const UnifiedForm = () => {
     setIsClientSelected(true);
     setShowSuggestions(false);
     setSearchResults([]);
+  };
+
+  const handleClearClient = () => {
+    setFormData((prev) => ({
+      ...prev,
+      nombre: '',
+      paterno: '',
+      materno: '',
+      domicilio1: '',
+      domicilio2: '',
+      telefono1: '',
+      telefono2: '',
+      edad: '',
+      sexo: '',
+    }));
+    setSelectedClient(null);
+    setIsClientSelected(false);
   };
 
   const handleSubmit = async (e) => {
@@ -385,7 +402,9 @@ const UnifiedForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                    <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
+                      <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected} />
+                      
+                    
                     {showSuggestions && searchResults.length > 0 && (
                       <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg mt-1 max-h-60 overflow-auto shadow-lg">
                         {searchResults.map((client) => (
@@ -416,6 +435,9 @@ const UnifiedForm = () => {
                       <option value="F">Femenino</option>
                     </select>
                   </div>
+                  {isClientSelected && (
+                        <button type="button" onClick={handleClearClient} className="px-3 py-2 bg-red-500 text-white rounded-lg">Limpiar</button>
+                      )}
                   <div className="md:col-span-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 1 *</label>
                     <textarea name="domicilio1" value={formData.domicilio1} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected}></textarea>
@@ -484,7 +506,7 @@ const UnifiedForm = () => {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Tratamiento *</label>
                         <select name="tratamiento" value={formData.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                          <option value="">Seleccione un tratamiento</option>
+                          <option value="">Seleccione</option>
                           <option value="AR">AR</option>
                           <option value="Photo AR">Photo AR</option>
                         </select>
@@ -494,7 +516,7 @@ const UnifiedForm = () => {
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Lente *</label>
                         <select name="tipo_de_lente" value={formData.tipo_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                          <option value="">Seleccione un tipo de lente</option>
+                          <option value="">Seleccione</option>
                           <option value="Monofocal">Monofocal</option>
                           <option value="Bifocal">Bifocal</option>
                           <option value="Progresivo">Progresivo</option>
