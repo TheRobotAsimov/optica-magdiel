@@ -18,6 +18,7 @@ import LenteForm from './components/lentes/LenteForm';
 import VentaList from './components/ventas/VentaList';
 import VentaForm from './components/ventas/VentaForm';
 import UnifiedForm from './components/ventas/UnifiedForm';
+import PriceCatalogEditor from './components/admin/PriceCatalogEditor';
 
 const App = () => {
   return (
@@ -169,6 +170,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <DatabaseAdmin />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/prices" 
+            element={
+              <ProtectedRoute>
+                <PriceCatalogEditor />
               </ProtectedRoute>
             } 
           />

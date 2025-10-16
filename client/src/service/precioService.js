@@ -12,6 +12,17 @@ const getPriceCatalog = async () => {
   }
 };
 
+const updatePriceCatalog = async (data) => {
+  try {
+    const response = await axios.put(`${API_URL}/precios`, data);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating price catalog:', error);
+    throw error;
+  }
+};
+
 export default {
   getPriceCatalog,
+  updatePriceCatalog,
 };

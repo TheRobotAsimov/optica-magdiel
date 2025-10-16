@@ -34,7 +34,7 @@
         "Photo AR": {
           "base": 2500,
           "procesado": 700,
-          "blend": 300,
+          "blend": 500,
           "subtipo": {
             "Policarbonato": 900,
             "Haid index": 300
@@ -75,7 +75,7 @@
           "procesado": 600,
           "subtipo": {
             "Policarbonato": 900,
-            "Haid index": 300
+            "Haid index": 500
           }
         }
       },
@@ -121,7 +121,6 @@
   },
   "additives": {
     "kit": 100,
-    "tinte": 300,
-    "desvanecido": 0
+    "tinte": 300
   }
 }

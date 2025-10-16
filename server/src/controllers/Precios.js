@@ -12,3 +12,13 @@ export const getPriceCatalog = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener el catálogo de precios', error });
   }
 };
+
+export const updatePriceCatalog = async (req, res) => {
+  try {
+    const updatedCatalog = req.body;
+    await fs.writeFile(dataPath, JSON.stringify(updatedCatalog, null, 2), 'utf-8');
+    res.status(200).json({ message: 'Catálogo de precios actualizado exitosamente' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al actualizar el catálogo de precios', error });
+  }
+};
