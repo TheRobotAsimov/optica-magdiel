@@ -14,6 +14,7 @@ dist-ssr
 .env
 
 hashpass.js
+priceCatalog.json
 
 # Editor directories and files
 .vscode/*

@@ -4,9 +4,9 @@ import NavComponent from '../common/NavBar';
 import Swal from 'sweetalert2';
 import { Save } from 'lucide-react';
 
-const PriceTable = ({ title, data, onChange }) => {
+const PriceTable = ({ title, data, originalData, onChange }) => {
   const isBifocal = title.includes('Bifocal');
-  const headers = ['Tratamiento', 'Base', 'Procesado', 'Policarbonato', 'Haid index'];
+  const headers = ['Tratamiento', 'Precio Base', 'Procesado', 'Policarbonato', 'Haid index'];
   if (isBifocal) {
     headers.push('Blend');
   }
@@ -24,53 +24,74 @@ const PriceTable = ({ title, data, onChange }) => {
             </tr>
           </thead>
           <tbody>
-            {Object.entries(data).map(([tratamiento, values]) => (
-              <tr key={tratamiento} className="bg-white border-b hover:bg-gray-50">
-                <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{tratamiento}</td>
-                <td className="px-6 py-4">
-                  <input
-                    type="number"
-                    value={values.base}
-                    onChange={(e) => onChange(tratamiento, 'base', e.target.value)}
-                    className="w-24 px-2 py-1 border border-gray-300 rounded-lg"
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <input
-                    type="number"
-                    value={values.procesado}
-                    onChange={(e) => onChange(tratamiento, 'procesado', e.target.value)}
-                    className="w-24 px-2 py-1 border border-gray-300 rounded-lg"
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <input
-                    type="number"
-                    value={values.subtipo.Policarbonato}
-                    onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Policarbonato')}
-                    className="w-24 px-2 py-1 border border-gray-300 rounded-lg"
-                  />
-                </td>
-                <td className="px-6 py-4">
-                  <input
-                    type="number"
-                    value={values.subtipo['Haid index']}
-                    onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Haid index')}
-                    className="w-24 px-2 py-1 border border-gray-300 rounded-lg"
-                  />
-                </td>
-                {isBifocal && (
+            {Object.entries(data).map(([tratamiento, values]) => {
+              const originalValues = originalData[tratamiento];
+              const isBaseChanged = values.base !== originalValues.base;
+              const isProcesadoChanged = values.procesado !== originalValues.procesado;
+              const isPoliChanged = values.subtipo.Policarbonato !== originalValues.subtipo.Policarbonato;
+              const isHaidChanged = values.subtipo['Haid index'] !== originalValues.subtipo['Haid index'];
+              const isBlendChanged = isBifocal && values.blend !== originalValues.blend;
+
+              return (
+                <tr key={tratamiento} className="bg-white border-b hover:bg-gray-50">
+                  <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{tratamiento}</td>
                   <td className="px-6 py-4">
                     <input
                       type="number"
-                      value={values.blend}
-                      onChange={(e) => onChange(tratamiento, 'blend', e.target.value)}
-                      className="w-24 px-2 py-1 border border-gray-300 rounded-lg"
+                      value={values.base}
+                      onChange={(e) => onChange(tratamiento, 'base', e.target.value)}
+                      className={`w-24 px-2 py-1 border rounded-lg ${isBaseChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
                     />
                   </td>
-                )}
-              </tr>
-            ))}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <span className="px-2 py-1 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+                      <input
+                        type="number"
+                        value={values.procesado}
+                        onChange={(e) => onChange(tratamiento, 'procesado', e.target.value)}
+                        className={`w-18 px-2 py-1 border rounded-r-lg ${isProcesadoChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+                      />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <span className="px-2 py-1 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+                      <input
+                        type="number"
+                        value={values.subtipo.Policarbonato}
+                        onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Policarbonato')}
+                        className={`w-18 px-2 py-1 border rounded-r-lg ${isPoliChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+                      />
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <span className="px-2 py-1 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+                      <input
+                        type="number"
+                        value={values.subtipo['Haid index']}
+                        onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Haid index')}
+                        className={`w-15 px-2 py-1 border rounded-r-lg ${isHaidChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+                      />
+                    </div>
+                  </td>
+                  {isBifocal && (
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <span className="px-2 py-1 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+                        <input
+                          type="number"
+                          value={values.blend}
+                          onChange={(e) => onChange(tratamiento, 'blend', e.target.value)}
+                          className={`w-15 px-2 py-1 border rounded-r-lg ${isBlendChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+                        />
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -78,34 +99,46 @@ const PriceTable = ({ title, data, onChange }) => {
   );
 };
 
-const AdditivesEditor = ({ data, onChange }) => (
-  <div className="bg-white shadow rounded-lg p-6">
-    <h2 className="text-xl font-bold text-gray-800 mb-4">Extras</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Kit</label>
-        <input
-          type="number"
-          value={data.kit}
-          onChange={(e) => onChange('kit', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Tinte</label>
-        <input
-          type="number"
-          value={data.tinte}
-          onChange={(e) => onChange('tinte', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-        />
+const AdditivesEditor = ({ data, originalData, onChange }) => {
+  const isKitChanged = data.kit !== originalData.kit;
+  const isTinteChanged = data.tinte !== originalData.tinte;
+
+  return (
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-xl font-bold text-gray-800 mb-4">Extras</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Kit</label>
+          <div className="flex items-center">
+            <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+            <input
+              type="number"
+              value={data.kit}
+              onChange={(e) => onChange('kit', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-r-lg ${isKitChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Tinte</label>
+          <div className="flex items-center">
+            <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+            <input
+              type="number"
+              value={data.tinte}
+              onChange={(e) => onChange('tinte', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-r-lg ${isTinteChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+            />
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 const PriceCatalogEditor = () => {
   const [catalog, setCatalog] = useState(null);
+  const [originalCatalog, setOriginalCatalog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -114,6 +147,7 @@ const PriceCatalogEditor = () => {
       try {
         const data = await precioService.getPriceCatalog();
         setCatalog(data);
+        setOriginalCatalog(JSON.parse(JSON.stringify(data)));
       } catch (err) {
         setError(err.message);
       } finally {
@@ -156,6 +190,7 @@ const PriceCatalogEditor = () => {
     setLoading(true);
     try {
       await precioService.updatePriceCatalog(catalog);
+      setOriginalCatalog(JSON.parse(JSON.stringify(catalog)));
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -198,7 +233,7 @@ const PriceCatalogEditor = () => {
     );
   }
 
-  if (!catalog) return null;
+  if (!catalog || !originalCatalog) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -206,7 +241,7 @@ const PriceCatalogEditor = () => {
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-blue-700">Catálogo de Precios</h1>
+            <h1 className="text-3xl font-bold text-blue-700">CATÁLOGO DE PRECIOS</h1>
             { //<p className="text-gray-500">Version: {catalog.version} | Last Updated: {catalog.lastUpdated}</p> 
             }
           </div>
@@ -229,6 +264,7 @@ const PriceCatalogEditor = () => {
                     key={`${material}-${tipo}`}
                     title={`${material} - ${tipo}`}
                     data={tratamientos}
+                    originalData={originalCatalog.priceCatalog[material][tipo]}
                     onChange={(tratamiento, field, value, subField) =>
                       handlePriceChange(material, tipo, tratamiento, field, value, subField)
                     }
@@ -239,7 +275,11 @@ const PriceCatalogEditor = () => {
           </div>
 
           <aside className="lg:col-span-1">
-            <AdditivesEditor data={catalog.additives} onChange={handleAdditiveChange} />
+            <AdditivesEditor 
+              data={catalog.additives} 
+              originalData={originalCatalog.additives} 
+              onChange={handleAdditiveChange} 
+            />
           </aside>
         </div>
       </div>
