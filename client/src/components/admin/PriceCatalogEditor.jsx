@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import precioService from '../../service/precioService';
 import NavComponent from '../common/NavBar';
+import Swal from 'sweetalert2';
 import { Save } from 'lucide-react';
 
 const PriceTable = ({ title, data, onChange }) => {
@@ -79,7 +80,7 @@ const PriceTable = ({ title, data, onChange }) => {
 
 const AdditivesEditor = ({ data, onChange }) => (
   <div className="bg-white shadow rounded-lg p-6">
-    <h2 className="text-xl font-bold text-gray-800 mb-4">Additives</h2>
+    <h2 className="text-xl font-bold text-gray-800 mb-4">Extras</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Kit</label>
@@ -155,7 +156,15 @@ const PriceCatalogEditor = () => {
     setLoading(true);
     try {
       await precioService.updatePriceCatalog(catalog);
-      alert('Price catalog updated successfully!');
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Catálogo actualizado correctamente',
+        showConfirmButton: false,
+        timer: 1800,
+      });
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -197,8 +206,9 @@ const PriceCatalogEditor = () => {
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-blue-700">Price Catalog Editor</h1>
-            <p className="text-gray-500">Version: {catalog.version} | Last Updated: {catalog.lastUpdated}</p>
+            <h1 className="text-3xl font-bold text-blue-700">Catálogo de Precios</h1>
+            { //<p className="text-gray-500">Version: {catalog.version} | Last Updated: {catalog.lastUpdated}</p> 
+            }
           </div>
           <button
             onClick={handleSaveChanges}
@@ -206,26 +216,32 @@ const PriceCatalogEditor = () => {
             className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
           >
             <Save className="h-4 w-4" />
-            <span>{loading ? 'Saving...' : 'Save Changes'}</span>
+            <span>{loading ? 'Saving...' : 'Guardar Cambios'}</span>
           </button>
         </div>
 
-        {Object.entries(catalog.priceCatalog).map(([material, tipos]) => (
-          <div key={material}>
-            {Object.entries(tipos).map(([tipo, tratamientos]) => (
-              <PriceTable
-                key={`${material}-${tipo}`}
-                title={`${material} - ${tipo}`}
-                data={tratamientos}
-                onChange={(tratamiento, field, value, subField) =>
-                  handlePriceChange(material, tipo, tratamiento, field, value, subField)
-                }
-              />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-3">
+            {Object.entries(catalog.priceCatalog).map(([material, tipos]) => (
+              <div key={material}>
+                {Object.entries(tipos).map(([tipo, tratamientos]) => (
+                  <PriceTable
+                    key={`${material}-${tipo}`}
+                    title={`${material} - ${tipo}`}
+                    data={tratamientos}
+                    onChange={(tratamiento, field, value, subField) =>
+                      handlePriceChange(material, tipo, tratamiento, field, value, subField)
+                    }
+                  />
+                ))}
+              </div>
             ))}
           </div>
-        ))}
 
-        <AdditivesEditor data={catalog.additives} onChange={handleAdditiveChange} />
+          <aside className="lg:col-span-1">
+            <AdditivesEditor data={catalog.additives} onChange={handleAdditiveChange} />
+          </aside>
+        </div>
       </div>
     </div>
   );
