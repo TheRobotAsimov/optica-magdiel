@@ -196,13 +196,16 @@ const UnifiedForm = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [asesoresData, optometristasData, catalogData] = await Promise.all([
+        const [empleadosData, catalogData] = await Promise.all([
           empleadoService.getAllEmpleados(),
-          empleadoService.getAllEmpleados(), // Optometristas are also employees
           precioService.getPriceCatalog(),
         ]);
-        setAsesores(asesoresData);
-        setOptometristas(optometristasData);
+
+        const asesoresList = empleadosData.filter(emp => emp.puesto === 'Asesor');
+        const optometristasList = empleadosData.filter(emp => emp.puesto === 'Optometrista');
+
+        setAsesores(asesoresList);
+        setOptometristas(optometristasList);
         setPriceCatalog(catalogData.priceCatalog);
         setAdditives(catalogData.additives);
       } catch (err) {
@@ -359,7 +362,7 @@ const UnifiedForm = () => {
       if (isClientSelected && selectedClient) {
         clientId = selectedClient.idcliente;
       } else {
-        // 2. Create Cliente
+        // 1. Create Cliente
         const newClient = await clientService.createClient({
           nombre: formData.nombre,
           paterno: formData.paterno,
@@ -377,7 +380,7 @@ const UnifiedForm = () => {
 
       const finalTotal = formData.total;
 
-      // 1. Create Venta
+      // 2. Create Venta
       await ventaService.createVenta({
         folio: formData.folio,
         idasesor: parseInt(formData.idasesor),
@@ -408,7 +411,7 @@ const UnifiedForm = () => {
         tono: formData.tono === '' ? null : formData.tono,
         desvanecido: formData.desvanecido,
         blend: formData.blend,
-        subtipo: formData.subtipo,
+        subtipo: formData.subtipo === '' ? null : formData.subtipo,
         procesado: formData.procesado,
         fecha_entrega: formData.fecha_entrega,
         examen_seguimiento: formData.examen_seguimiento,
