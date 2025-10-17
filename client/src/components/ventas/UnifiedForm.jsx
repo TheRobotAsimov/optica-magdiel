@@ -61,6 +61,23 @@ const UnifiedForm = () => {
     fecha_entrega: '',
     kit: 'Sin kit',
   });
+  const [graduacion, setGraduacion] = useState({
+    od_esf_sign: '+',
+    od_esf_val: '',
+    od_cil_val: '',
+    od_eje_val: '',
+    od_add_val: '',
+    od_av_1: '',
+    od_av_2: '',
+    oi_esf_sign: '+',
+    oi_esf_val: '',
+    oi_cil_val: '',
+    oi_eje_val: '',
+    oi_add_val: '',
+    oi_av_1: '',
+    oi_av_2: '',
+  });
+  const [examenSeguimientoOption, setExamenSeguimientoOption] = useState('');
   const [asesores, setAsesores] = useState([]);
   const [optometristas, setOptometristas] = useState([]);
   const [priceCatalog, setPriceCatalog] = useState(null);
@@ -73,14 +90,92 @@ const UnifiedForm = () => {
   const [isClientSelected, setIsClientSelected] = useState(false);
   const navigate = useNavigate();
 
+  const symptomsList = [
+    'ARDOR', 'LAGRIMEO', 'IRRITACION', 'DOLOR', 'COMEZON', 'MOL. SOL.',
+    'MOL. AIRE', 'ARENOZO', 'HIPERTENSION', 'DIABETES', 'GLAUCOMA', 'CATARATAS',
+    'USO DISP. ELEC.', 'QUIRURGICOS', 'INFECCION', 'FOSFENOS', 'MIODESOPIAS', 'FOTOSENSIBLES'
+  ];
+
+  const initialSymptomsState = symptomsList.reduce((acc, symptom) => {
+    acc[symptom] = false;
+    return acc;
+  }, {});
+
+  const [symptomsState, setSymptomsState] = useState(initialSymptomsState);
+
+  const handleSymptomChange = (e) => {
+    const { name, checked } = e.target;
+    setSymptomsState(prev => ({ ...prev, [name]: checked }));
+  };
+
   const [debouncedNombre] = useDebounce(formData.nombre, 1000);
   const [debouncedPaterno] = useDebounce(formData.paterno, 500);
+
+  const handleGraduacionChange = (e) => {
+    const { name, value } = e.target;
+
+    setGraduacion(prev => {
+      const newGrad = { ...prev, [name]: value };
+
+      // Mirroring logic from OD to OI
+      if (name.startsWith('od_')) {
+        const oi_name = name.replace('od_', 'oi_');
+        newGrad[oi_name] = value;
+      }
+
+      return newGrad;
+    });
+  };
 
   // ==================================================
 
   useEffect(() => {
+    const {
+      od_esf_sign, od_esf_val, od_cil_val, od_eje_val, od_add_val, od_av_1, od_av_2,
+      oi_esf_sign, oi_esf_val, oi_cil_val, oi_eje_val, oi_add_val, oi_av_1, oi_av_2
+    } = graduacion;
+
+    const newOdEsf = od_esf_val ? `${od_esf_sign}${od_esf_val}` : '';
+    const newOdCil = od_cil_val ? `-${od_cil_val}` : '';
+    const newOiEsf = oi_esf_val ? `${oi_esf_sign}${oi_esf_val}` : '';
+    const newOiCil = oi_cil_val ? `-${oi_cil_val}` : '';
+
+    const shouldBeProcesado =
+      Math.abs(parseFloat(newOdEsf)) >= 5 ||
+      Math.abs(parseFloat(newOdCil)) >= 5 ||
+      Math.abs(parseFloat(newOiEsf)) >= 5 ||
+      Math.abs(parseFloat(newOiCil)) >= 5;
+
+    setFormData(prev => ({
+      ...prev,
+      od_esf: newOdEsf,
+      od_cil: newOdCil,
+      od_eje: od_eje_val,
+      od_add: od_add_val ? `+${od_add_val}` : '',
+      od_av: (od_av_1 || od_av_2) ? `${od_av_1}/${od_av_2}` : '',
+      oi_esf: newOiEsf,
+      oi_cil: newOiCil,
+      oi_eje: oi_eje_val,
+      oi_add: oi_add_val ? `+${oi_add_val}` : '',
+      oi_av: (oi_av_1 || oi_av_2) ? `${oi_av_1}/${oi_av_2}` : '',
+      procesado: shouldBeProcesado ? 'Si' : 'No',
+    }));
+  }, [graduacion]);
+
+  useEffect(() => {
+    const selectedSymptoms = Object.keys(symptomsState)
+      .filter(symptom => symptomsState[symptom])
+      .join(', ');
+
+    setFormData(prev => ({
+      ...prev,
+      sintomas: selectedSymptoms
+    }));
+  }, [symptomsState]);
+
+  useEffect(() => {
     const searchClients = async () => {
-      if (debouncedNombre || debouncedPaterno) {
+      if ((debouncedNombre || debouncedPaterno) && !isClientSelected) {
         try {
           const results = await clientService.searchClients(debouncedNombre, debouncedPaterno);
           setSearchResults(results);
@@ -96,7 +191,7 @@ const UnifiedForm = () => {
       }
     };
     searchClients();
-  }, [debouncedNombre, debouncedPaterno]);
+  }, [debouncedNombre, debouncedPaterno, isClientSelected]);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -157,50 +252,67 @@ const UnifiedForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => {
-      const newFormData = { ...prev, [name]: value };
 
-      if (name === 'nombre' || name === 'paterno') {
-        setSelectedClient(null);
-        setIsClientSelected(false);
-      }
+    if (name === 'examenSeguimientoOption') {
+      setExamenSeguimientoOption(value);
+      if (value) {
+        const baseDate = new Date(formData.fecha); // Use the sale date as base
+        let newDate = new Date(baseDate);
 
-      if (name === 'material') {
-        newFormData.tratamiento = '';
-        newFormData.tipo_de_lente = '';
-        newFormData.subtipo = '';
-      }
-
-      if (name === 'tratamiento') {
-        newFormData.tipo_de_lente = '';
-        newFormData.subtipo = '';
-      }
-
-      if (name === 'tipo_de_lente') {
-        newFormData.subtipo = '';
-        if (value !== 'Bifocal') {
-          newFormData.blend = 'No';
+        if (value === '6 months') {
+          newDate.setMonth(newDate.getMonth() + 6);
+        } else if (value === '1 year') {
+          newDate.setFullYear(newDate.getFullYear() + 1);
+        } else if (value === '2 years') {
+          newDate.setFullYear(newDate.getFullYear() + 2);
         }
-      }
 
-      const esfCilFields = ['od_esf', 'od_cil', 'oi_esf', 'oi_cil'];
-      if (esfCilFields.includes(name)) {
-        const values = {
+        // Format newDate to YYYY-MM-DD
+        const year = newDate.getFullYear();
+        const month = String(newDate.getMonth() + 1).padStart(2, '0');
+        const day = String(newDate.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+
+        setFormData((prev) => ({
           ...prev,
-          [name]: value,
-        };
-
-        const shouldBeProcesado = 
-          Math.abs(parseFloat(values.od_esf)) >= 5 ||
-          Math.abs(parseFloat(values.od_cil)) >= 5 ||
-          Math.abs(parseFloat(values.oi_esf)) >= 5 ||
-          Math.abs(parseFloat(values.oi_cil)) >= 5;
-
-        newFormData.procesado = shouldBeProcesado ? 'Si' : 'No';
+          examen_seguimiento: formattedDate,
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          examen_seguimiento: '',
+        }));
       }
+    } else {
+      setFormData((prev) => {
+        const newFormData = { ...prev, [name]: value };
 
-      return newFormData;
-    });
+        if (name === 'nombre' || name === 'paterno') {
+          setSelectedClient(null);
+          setIsClientSelected(false);
+        }
+
+        if (name === 'material') {
+          newFormData.tratamiento = '';
+          newFormData.tipo_de_lente = '';
+          newFormData.subtipo = '';
+        }
+
+        if (name === 'tratamiento') {
+          newFormData.tipo_de_lente = '';
+          newFormData.subtipo = '';
+        }
+
+        if (name === 'tipo_de_lente') {
+          newFormData.subtipo = '';
+          if (value !== 'Bifocal') {
+            newFormData.blend = 'No';
+          }
+        }
+
+        return newFormData;
+      });
+    }
   };
 
   const handleSelectClient = (client) => {
@@ -385,7 +497,7 @@ const UnifiedForm = () => {
                     <select name="idasesor" value={formData.idasesor} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
                       <option value="">Seleccionar Asesor</option>
                       {asesores.map(asesor => (
-                        <option key={asesor.idempleado} value={asesor.idempleado}>{asesor.nombre}</option>
+                        <option key={asesor.idempleado} value={asesor.idempleado}>{asesor.nombre} {asesor.paterno}</option>
                       ))}
                     </select>
                   </div>
@@ -398,7 +510,12 @@ const UnifiedForm = () => {
 
               {/* Cliente Fields */}
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Cliente</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900">Información del Cliente</h3>
+                  {isClientSelected && (
+                    <button type="button" onClick={handleClearClient} className="px-2 py-1 bg-red-500 text-white rounded-3xl text-sm">Limpiar</button>
+                  )}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="relative">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
@@ -435,9 +552,7 @@ const UnifiedForm = () => {
                       <option value="F">Femenino</option>
                     </select>
                   </div>
-                  {isClientSelected && (
-                        <button type="button" onClick={handleClearClient} className="px-3 py-2 bg-red-500 text-white rounded-lg">Limpiar</button>
-                      )}
+                  {/* Limpiar button moved to header */}
                   <div className="md:col-span-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 1 *</label>
                     <textarea name="domicilio1" value={formData.domicilio1} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={isClientSelected}></textarea>
@@ -461,26 +576,44 @@ const UnifiedForm = () => {
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Lente</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div>
+                  <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Síntomas</label>
-                    <input type="text" name="sintomas" value={formData.sintomas} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Optometrista *</label>
-                    <select name="idoptometrista" value={formData.idoptometrista} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
-                      <option value="">Seleccionar Optometrista</option>
-                      {optometristas.map(optometrista => (
-                        <option key={optometrista.idempleado} value={optometrista.idempleado}>{optometrista.nombre}</option>
+                    <div className="grid grid-cols-3 gap-x-4 gap-y-2 p-2 border border-gray-200 rounded-lg">
+                      {symptomsList.map(symptom => (
+                        <label key={symptom} className="flex items-center space-x-2 text-xs font-medium text-gray-600">
+                          <input
+                            type="checkbox"
+                            name={symptom}
+                            checked={symptomsState[symptom]}
+                            onChange={handleSymptomChange}
+                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span>{symptom}</span>
+                        </label>
                       ))}
-                    </select>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Uso de Lente *</label>
                     <input type="text" name="uso_de_lente" value={formData.uso_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Optometrista *</label>
+                    <select name="idoptometrista" value={formData.idoptometrista} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                      <option value="">Seleccionar Optometrista</option>
+                      {optometristas.map(optometrista => (
+                        <option key={optometrista.idempleado} value={optometrista.idempleado}>{optometrista.nombre} {optometrista.paterno}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Examen de Seguimiento</label>
-                    <input type="date" name="examen_seguimiento" value={formData.examen_seguimiento} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <select name="examenSeguimientoOption" value={examenSeguimientoOption} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                      <option value="">Seleccionar</option>
+                      <option value="6 months">6 meses</option>
+                      <option value="1 year">1 año</option>
+                      <option value="2 years">2 años</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Armazón *</label>
@@ -586,45 +719,87 @@ const UnifiedForm = () => {
                   <div className="md:col-span-5 font-bold">Ojo Derecho (OD)</div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">ESF</label>
-                    <input type="number" step="0.01" name="od_esf" value={formData.od_esf} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <select name="od_esf_sign" value={graduacion.od_esf_sign} onChange={handleGraduacionChange} className="px-2 py-2 border border-gray-300 rounded-l-lg bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="+">+</option>
+                        <option value="-">-</option>
+                      </select>
+                      <input type="number" step="0.25" name="od_esf_val" value={graduacion.od_esf_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">CIL</label>
-                    <input type="number" step="0.01" name="od_cil" value={formData.od_cil} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">-</span>
+                      <input type="number" step="0.25" name="od_cil_val" value={graduacion.od_cil_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">EJE</label>
-                    <input type="number" name="od_eje" value={formData.od_eje} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <input type="number" name="od_eje_val" value={graduacion.od_eje_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <span className="px-3 py-2 border-r border-t border-b border-gray-300 rounded-r-lg bg-gray-100">°</span>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">ADD</label>
-                    <input type="number" step="0.01" name="od_add" value={formData.od_add} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                  </div>
+                  {(formData.tipo_de_lente === 'Bifocal' || formData.tipo_de_lente === 'Progresivo') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ADD</label>
+                      <div className="flex items-center">
+                        <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+                        <input type="number" step="0.25" name="od_add_val" value={graduacion.od_add_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">AV</label>
-                    <input type="text" name="od_av" value={formData.od_av} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <input type="text" name="od_av_1" value={graduacion.od_av_1} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <span className="px-2 py-2 border-t border-b border-gray-300 bg-gray-100">/</span>
+                      <input type="text" name="od_av_2" value={graduacion.od_av_2} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-r-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
                   </div>
 
                   <div className="md:col-span-5 font-bold">Ojo Izquierdo (OI)</div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">ESF</label>
-                    <input type="number" step="0.01" name="oi_esf" value={formData.oi_esf} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <select name="oi_esf_sign" value={graduacion.oi_esf_sign} onChange={handleGraduacionChange} className="px-2 py-2 border border-gray-300 rounded-l-lg bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="+">+</option>
+                        <option value="-">-</option>
+                      </select>
+                      <input type="number" step="0.25" name="oi_esf_val" value={graduacion.oi_esf_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">CIL</label>
-                    <input type="number" step="0.01" name="oi_cil" value={formData.oi_cil} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">-</span>
+                      <input type="number" step="0.25" name="oi_cil_val" value={graduacion.oi_cil_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">EJE</label>
-                    <input type="number" name="oi_eje" value={formData.oi_eje} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <input type="number" name="oi_eje_val" value={graduacion.oi_eje_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <span className="px-3 py-2 border-r border-t border-b border-gray-300 rounded-r-lg bg-gray-100">°</span>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">ADD</label>
-                    <input type="number" step="0.01" name="oi_add" value={formData.oi_add} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
-                  </div>
+                  {(formData.tipo_de_lente === 'Bifocal' || formData.tipo_de_lente === 'Progresivo') && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">ADD</label>
+                      <div className="flex items-center">
+                        <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
+                        <input type="number" step="0.25" name="oi_add_val" value={graduacion.oi_add_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">AV</label>
-                    <input type="text" name="oi_av" value={formData.oi_av} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <div className="flex items-center">
+                      <input type="text" name="oi_av_1" value={graduacion.oi_av_1} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <span className="px-2 py-2 border-t border-b border-gray-300 bg-gray-100">/</span>
+                      <input type="text" name="oi_av_2" value={graduacion.oi_av_2} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-r-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
                   </div>
                 </div>
               </div>
