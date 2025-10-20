@@ -23,6 +23,10 @@ import RutaList from './components/rutas/RutaList';
 import RutaForm from './components/rutas/RutaForm';
 import PagoList from './components/pagos/PagoList';
 import PagoForm from './components/pagos/PagoForm';
+import EntregaList from './components/entregas/EntregaList';
+import EntregaForm from './components/entregas/EntregaForm';
+import GastoRutaList from './components/gastoRutas/GastoRutaList';
+import GastoRutaForm from './components/gastoRutas/GastoRutaForm';
 
 const App = () => {
   return (
@@ -226,10 +230,58 @@ const App = () => {
             } 
           />
           <Route 
-            path="/pagos/:id/edit" 
+            path="/pagos/:id/edit"
             element={
               <ProtectedRoute>
                 <PagoForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/entregas" 
+            element={
+              <ProtectedRoute>
+                <EntregaList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/entregas/new" 
+            element={
+              <ProtectedRoute>
+                <EntregaForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path="/entregas/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EntregaForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/gasto-rutas" 
+            element={
+              <ProtectedRoute>
+                <GastoRutaList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/gasto-rutas/new" 
+            element={
+              <ProtectedRoute>
+                <GastoRutaForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/gasto-rutas/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <GastoRutaForm />
               </ProtectedRoute>
             } 
           />

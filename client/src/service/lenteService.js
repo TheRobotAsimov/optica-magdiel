@@ -27,10 +27,12 @@ const deleteLente = async (id) => {
     return response.data;
 };
 
-export default {
+const lenteService = {
     getAllLentes,
     getLenteById,
     createLente,
     updateLente,
     deleteLente
 };
+
+export default lenteService;
