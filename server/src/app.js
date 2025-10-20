@@ -9,6 +9,8 @@ import empleadoRoutes from './routes/Empleados.js';
 import lenteRoutes from './routes/Lentes.js';
 import ventaRoutes from './routes/Ventas.js';
 import preciosRoutes from './routes/Precios.js';
+import rutasRoutes from './routes/Rutas.js';
+import pagoRoutes from './routes/Pagos.js';
 
 const app = express();
 
@@ -32,6 +34,8 @@ app.use('/api/empleados', empleadoRoutes);
 app.use('/api/lentes', lenteRoutes);
 app.use('/api/ventas', ventaRoutes);
 app.use('/api/precios', preciosRoutes);
+app.use('/api/rutas', rutasRoutes);
+app.use('/api/pagos', pagoRoutes);
 
 // Manejo de errores
 app.use((err, req, res, next) => {

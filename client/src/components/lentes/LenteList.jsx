@@ -47,7 +47,7 @@ const LenteList = () => {
             'El lente ha sido eliminado.',
             'success'
           )
-        } catch (error) {
+        } catch {
             Swal.fire(
                 '¡Error!',
                 'No se pudo eliminar el lente.',
@@ -91,7 +91,7 @@ const LenteList = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <div className="px-4 py-6 sm:px-0">
           <div className="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
         

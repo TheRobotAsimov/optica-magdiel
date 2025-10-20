@@ -697,7 +697,7 @@ const UnifiedForm = () => {
                       )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Procesado (Después de 5 de Optría)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Procesado</label>
                     <select name="procesado" value={formData.procesado} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled>
                         <option value="No">No</option>
                         <option value="Si">Si</option>

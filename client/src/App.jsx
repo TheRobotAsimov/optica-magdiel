@@ -19,6 +19,10 @@ import VentaList from './components/ventas/VentaList';
 import VentaForm from './components/ventas/VentaForm';
 import UnifiedForm from './components/ventas/UnifiedForm';
 import PriceCatalogEditor from './components/admin/PriceCatalogEditor';
+import RutaList from './components/rutas/RutaList';
+import RutaForm from './components/rutas/RutaForm';
+import PagoList from './components/pagos/PagoList';
+import PagoForm from './components/pagos/PagoForm';
 
 const App = () => {
   return (
@@ -178,6 +182,54 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <PriceCatalogEditor />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/rutas" 
+            element={
+              <ProtectedRoute>
+                <RutaList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/rutas/new" 
+            element={
+              <ProtectedRoute>
+                <RutaForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route
+            path="/rutas/:id/edit"
+            element={
+              <ProtectedRoute>
+                <RutaForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pagos" 
+            element={
+              <ProtectedRoute>
+                <PagoList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pagos/new" 
+            element={
+              <ProtectedRoute>
+                <PagoForm />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/pagos/:id/edit" 
+            element={
+              <ProtectedRoute>
+                <PagoForm />
               </ProtectedRoute>
             } 
           />
