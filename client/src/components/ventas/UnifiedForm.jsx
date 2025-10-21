@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 import ventaService from '../../service/ventaService';
 import clientService from '../../service/clientService';
 import lenteService from '../../service/lenteService';
@@ -89,6 +90,16 @@ const UnifiedForm = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [isClientSelected, setIsClientSelected] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user && user.rol === 'Asesor') {
+      setFormData(prev => ({
+        ...prev,
+        idasesor: user.idempleado,
+      }));
+    }
+  }, [user]);
 
   const symptomsList = [
     'ARDOR', 'LAGRIMEO', 'IRRITACION', 'DOLOR', 'COMEZON', 'MOL. SOL.',
@@ -489,7 +500,7 @@ const UnifiedForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Asesor *</label>
-                    <select name="idasesor" value={formData.idasesor} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <select name="idasesor" value={formData.idasesor} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" disabled={user?.rol === 'Asesor'}>
                       <option value="">Seleccionar Asesor</option>
                       {asesores.map(asesor => (
                         <option key={asesor.idempleado} value={asesor.idempleado}>{asesor.nombre} {asesor.paterno}</option>
