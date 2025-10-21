@@ -50,8 +50,10 @@ export const login = async (req, res) => {
             { expiresIn: process.env.JWT_EXPIRE }
         );
 
+        const userFull = await User.findById(user.id);
+
         // Remover contraseña de la respuesta
-        const { contrasena: _, ...userWithoutPassword } = user;
+        const { contrasena: _, ...userWithoutPassword } = userFull;
 
         res.cookie('token', token, {
             httpOnly: true,

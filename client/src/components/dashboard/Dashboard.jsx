@@ -17,6 +17,10 @@ export const Dashboard = () => {
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
+                  <p class="text-sm font-medium text-gray-500">Nombre Completo</p>
+                  <p class="mt-1 text-sm text-gray-900">{user?.nombre} {user?.paterno} {user?.materno}</p>
+                </div>
+                <div>
                   <p class="text-sm font-medium text-gray-500">Correo Electrónico</p>
                   <p class="mt-1 text-sm text-gray-900">{user?.correo}</p>
                 </div>

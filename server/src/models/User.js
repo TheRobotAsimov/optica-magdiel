@@ -34,10 +34,22 @@ class User {
     }
 
     static async findById(id) {
-        const [rows] = await pool.execute(
-            'SELECT id, correo, rol FROM usuario WHERE id = ?',
-            [id]
-        );
+        const [rows] = await pool.execute(`
+            SELECT 
+            u.id,
+            u.correo,
+            u.rol,
+            e.idempleado,
+            e.nombre,
+            e.paterno,
+            e.materno,
+            e.puesto,
+            e.estado
+            FROM usuario u
+            LEFT JOIN empleado e ON e.idusuario = u.id
+            WHERE u.id = ?
+        `, [id]);
+
         return rows[0];
     }
 

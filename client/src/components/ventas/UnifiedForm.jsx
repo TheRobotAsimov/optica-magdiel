@@ -474,14 +474,6 @@ const UnifiedForm = () => {
                 <ShoppingCart className="h-8 w-8 text-blue-600" />
                 <h1 className="text-2xl font-bold text-blue-700">NUEVA VENTA</h1>
               </div>
-              <button
-                type="button"
-                onClick={() => navigate('/ventas')}
-                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Volver</span>
-              </button>
             </div>
           </div>
 
@@ -846,8 +838,7 @@ const UnifiedForm = () => {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
-                <button type="button" onClick={() => navigate('/ventas')} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Cancelar</button>
-                <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
+                  <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
                   <Save className="h-4 w-4" />
                   <span>{loading ? 'Guardando...' : 'Crear Venta'}</span>
                 </button>
