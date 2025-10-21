@@ -6,12 +6,11 @@ import {
   updateVenta,
   deleteVenta
 } from '../controllers/Ventas.js';
-import { authenticateToken, isAdmin } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
 router.use(authenticateToken);
-router.use(isAdmin);
 
 router.post('/', createVenta);
 router.get('/', getVentas);

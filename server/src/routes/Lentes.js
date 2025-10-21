@@ -6,8 +6,10 @@ import {
     updateLente, 
     deleteLente 
 } from '../controllers/Lentes.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
+router.use(authenticateToken);
 
 router.get('/', getAllLentes);
 router.get('/:id', getLenteById);
