@@ -6,7 +6,7 @@ import {
     updateLente, 
     deleteLente 
 } from '../controllers/Lentes.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 router.use(authenticateToken);
@@ -14,7 +14,7 @@ router.use(authenticateToken);
 router.get('/', getAllLentes);
 router.get('/:id', getLenteById);
 router.post('/', createLente);
-router.put('/:id', updateLente);
-router.delete('/:id', deleteLente);
+router.put('/:id', isAdmin, updateLente);
+router.delete('/:id', isAdmin, deleteLente);
 
 export default router;

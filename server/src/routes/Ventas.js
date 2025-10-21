@@ -6,7 +6,7 @@ import {
   updateVenta,
   deleteVenta
 } from '../controllers/Ventas.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { authenticateToken, isAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -15,7 +15,7 @@ router.use(authenticateToken);
 router.post('/', createVenta);
 router.get('/', getVentas);
 router.get('/:folio', getVentaByFolio);
-router.put('/:folio', updateVenta);
-router.delete('/:folio', deleteVenta);
+router.put('/:folio', isAdmin, updateVenta);
+router.delete('/:folio', isAdmin, deleteVenta);
 
 export default router;
