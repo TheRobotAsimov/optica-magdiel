@@ -6,6 +6,11 @@ class Lente {
     return rows;
   }
 
+  static async getPending() {
+    const [rows] = await pool.execute('SELECT * FROM lente WHERE estatus IN ("Pendiente", "No entregado")');
+    return rows;
+  }
+
   static async getById(id) {
     const [rows] = await pool.execute('SELECT * FROM lente WHERE idlente = ?', [id]);
     return rows[0];

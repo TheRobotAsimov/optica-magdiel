@@ -24,7 +24,14 @@ class Venta {
   }
 
   static async getAll() {
-    const [rows] = await pool.execute('SELECT * FROM venta');
+    const [rows] = await pool.execute(`
+      SELECT
+        v.*,
+        c.nombre as cliente_nombre,
+        c.paterno as cliente_paterno
+      FROM venta v
+      JOIN cliente c ON v.idcliente = c.idcliente
+    `);
     return rows;
   }
 

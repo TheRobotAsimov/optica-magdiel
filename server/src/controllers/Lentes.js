@@ -54,3 +54,12 @@ export const deleteLente = async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar el lente', error });
   }
 };
+
+export const getPendingLentes = async (req, res) => {
+  try {
+    const lentes = await Lente.getPending();
+    res.status(200).json(lentes);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener los lentes pendientes', error });
+  }
+};

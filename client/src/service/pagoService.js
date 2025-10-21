@@ -7,6 +7,11 @@ const getAllPagos = async () => {
   return res.data;
 };
 
+const getPendingPagos = async () => {
+  const res = await axios.get(API_URL + '/pending');
+  return res.data;
+};
+
 const getPagoById = async (id) => {
   const res = await axios.get(`${API_URL}/${id}`);
   return res.data;
@@ -29,6 +34,7 @@ const deletePago = async (id) => {
 
 const pagoService = {
   getAllPagos,
+  getPendingPagos,
   getPagoById,
   createPago,
   updatePago,

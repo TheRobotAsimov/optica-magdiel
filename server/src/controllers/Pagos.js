@@ -9,6 +9,15 @@ export const getPagos = async (req, res) => {
   }
 };
 
+export const getPendingPagos = async (req, res) => {
+  try {
+    const pagos = await Pago.getPending();
+    res.json(pagos);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getPago = async (req, res) => {
   try {
     const pago = await Pago.findById(req.params.id);

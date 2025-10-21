@@ -25,6 +25,7 @@ import PagoList from './components/pagos/PagoList';
 import PagoForm from './components/pagos/PagoForm';
 import EntregaList from './components/entregas/EntregaList';
 import EntregaForm from './components/entregas/EntregaForm';
+import CompleteEntregaForm from './components/entregas/CompleteEntregaForm';
 import GastoRutaList from './components/gastoRutas/GastoRutaList';
 import GastoRutaForm from './components/gastoRutas/GastoRutaForm';
 
@@ -245,13 +246,21 @@ const App = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/entregas/new" 
+          <Route
+            path="/entregas/new"
             element={
               <ProtectedRoute>
                 <EntregaForm />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/entregas/complete"
+            element={
+              <ProtectedRoute>
+                <CompleteEntregaForm />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/entregas/:id/edit"

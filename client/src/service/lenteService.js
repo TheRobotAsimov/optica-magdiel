@@ -7,6 +7,11 @@ const getAllLentes = async () => {
     return response.data;
 };
 
+const getPendingLentes = async () => {
+    const response = await axios.get(API_URL + '/pending');
+    return response.data;
+};
+
 const getLenteById = async (id) => {
     const response = await axios.get(`${API_URL}/${id}`);
     return response.data;
@@ -29,6 +34,7 @@ const deleteLente = async (id) => {
 
 const lenteService = {
     getAllLentes,
+    getPendingLentes,
     getLenteById,
     createLente,
     updateLente,
