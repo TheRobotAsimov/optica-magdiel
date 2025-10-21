@@ -4,8 +4,10 @@ import NavComponent from '../common/NavBar';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../context/AuthContext';
 
 const VentaList = () => {
+  const { user } = useAuth();
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +17,12 @@ const VentaList = () => {
   useEffect(() => {
     const fetchVentas = async () => {
       try {
-        const data = await ventaService.getAllVentas();
+        let data;
+        if (user.rol === 'Asesor') {
+          data = await ventaService.getVentasByAsesor(user.idempleado);
+        } else {
+          data = await ventaService.getAllVentas();
+        }
         setVentas(data);
       } catch (err) {
         setError(err.message);
@@ -25,7 +32,7 @@ const VentaList = () => {
     };
 
     fetchVentas();
-  }, []);
+  }, [user]);
 
   const handleDelete = async (folio) => {
     Swal.fire({

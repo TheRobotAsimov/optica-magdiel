@@ -20,6 +20,15 @@ export const getVentas = async (req, res) => {
   }
 };
 
+export const getVentasByAsesor = async (req, res) => {
+  try {
+    const ventas = await Venta.getByAsesor(req.params.idasesor);
+    res.json(ventas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getVentaByFolio = async (req, res) => {
   try {
     const venta = await Venta.findById(req.params.folio);

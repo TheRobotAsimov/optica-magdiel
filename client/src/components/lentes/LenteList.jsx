@@ -4,8 +4,10 @@ import NavComponent from '../common/NavBar';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../context/AuthContext';
 
 const LenteList = () => {
+  const { user } = useAuth();
   const [lentes, setLentes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +30,16 @@ const LenteList = () => {
   }, []);
 
   const handleDelete = async (lenteId) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      Swal.fire({
+        title: 'No permitido',
+        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
     Swal.fire({
       title: '¿Estás seguro?',
       text: "¡No podrás revertir esto!",
@@ -59,6 +71,16 @@ const LenteList = () => {
   };
 
   const handleEdit = (lenteId) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      Swal.fire({
+        title: 'No permitido',
+        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
     navigate(`/lentes/${lenteId}/edit`);
   };
 

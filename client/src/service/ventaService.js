@@ -9,6 +9,11 @@ const ventaService = {
     return response.data;
   },
 
+  getVentasByAsesor: async (idasesor) => {
+    const response = await axios.get(API_URL + `/asesor/${idasesor}`);
+    return response.data;
+  },
+
   getVentaByFolio: async (folio) => {
     const response = await axios.get(API_URL + `/${folio}`);
     return response.data;

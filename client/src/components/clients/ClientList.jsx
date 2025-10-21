@@ -4,8 +4,10 @@ import NavComponent from '../common/NavBar';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../context/AuthContext';
 
 const ClientList = () => {
+  const { user } = useAuth();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -28,6 +30,16 @@ const ClientList = () => {
   }, []);
 
   const handleDelete = async (clientId) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      Swal.fire({
+        title: 'No permitido',
+        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
     Swal.fire({
       title: 'Are you sure?',
       text: "You won't be able to revert this!",
@@ -58,6 +70,16 @@ const ClientList = () => {
   };
 
   const handleEdit = (clientId) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      Swal.fire({
+        title: 'No permitido',
+        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
     navigate(`/clients/${clientId}/edit`);
   };
 

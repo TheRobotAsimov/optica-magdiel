@@ -4,8 +4,10 @@ import pagoService from '../../service/pagoService';
 import NavComponent from '../common/NavBar';
 import { Search, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../context/AuthContext';
 
 const PagoList = () => {
+  const { user } = useAuth();
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +29,16 @@ const PagoList = () => {
   }, []);
 
   const handleDelete = async (id) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      Swal.fire({
+        title: 'No permitido',
+        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
     const result = await Swal.fire({
       title: '¿Estás seguro?',
       text: "¡No podrás revertir esto!",
@@ -148,7 +160,19 @@ const PagoList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pago.cantidad}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pago.estatus}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onClick={() => navigate(`/pagos/${pago.idpago}/edit`)} className="text-indigo-600 hover:text-indigo-900 mr-4"><Edit size={18} /></button>
+                        <button onClick={() => {
+                          if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+                            Swal.fire({
+                              title: 'No permitido',
+                              text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+                              icon: 'warning',
+                              confirmButtonColor: '#3085d6',
+                              confirmButtonText: 'Entendido'
+                            });
+                          } else {
+                            navigate(`/pagos/${pago.idpago}/edit`);
+                          }
+                        }} className="text-indigo-600 hover:text-indigo-900 mr-4"><Edit size={18} /></button>
                         <button onClick={() => handleDelete(pago.idpago)} className="text-red-600 hover:text-red-900"><Trash2 size={18} /></button>
                       </td>
                     </tr>

@@ -4,8 +4,10 @@ import entregaService from '../../service/entregaService';
 import NavComponent from '../common/NavBar';
 import { Search, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../context/AuthContext';
 
 const EntregaList = () => {
+  const { user } = useAuth();
   const [entregas, setEntregas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +29,16 @@ const EntregaList = () => {
   }, []);
 
   const handleDelete = async (id) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      Swal.fire({
+        title: 'No permitido',
+        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+        icon: 'warning',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
     const result = await Swal.fire({
       title: '¿Estás seguro?',
       text: "¡No podrás revertir esto!",
@@ -146,7 +158,19 @@ const EntregaList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entrega.estatus}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entrega.hora}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button onClick={() => navigate(`/entregas/${entrega.identrega}/edit`)} className="text-indigo-600 hover:text-indigo-900 mr-4"><Edit size={18} /></button>
+                        <button onClick={() => {
+                          if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+                            Swal.fire({
+                              title: 'No permitido',
+                              text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
+                              icon: 'warning',
+                              confirmButtonColor: '#3085d6',
+                              confirmButtonText: 'Entendido'
+                            });
+                          } else {
+                            navigate(`/entregas/${entrega.identrega}/edit`);
+                          }
+                        }} className="text-indigo-600 hover:text-indigo-900 mr-4"><Edit size={18} /></button>
                         <button onClick={() => handleDelete(entrega.identrega)} className="text-red-600 hover:text-red-900"><Trash2 size={18} /></button>
                       </td>
                     </tr>

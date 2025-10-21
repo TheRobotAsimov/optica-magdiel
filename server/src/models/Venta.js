@@ -28,6 +28,11 @@ class Venta {
     return rows;
   }
 
+  static async getByAsesor(idasesor) {
+    const [rows] = await pool.execute('SELECT * FROM venta WHERE idasesor = ?', [idasesor]);
+    return rows;
+  }
+
   static async findById(folio) {
     const [rows] = await pool.execute('SELECT * FROM venta WHERE folio = ?', [folio]);
     return rows[0];
