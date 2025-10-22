@@ -1,33 +1,42 @@
 import Client from '../models/Client.js';
 
+// Controlador para la gestión de clientes
+
+// Metodo para obtener todos los clientes
 export const getAllClients = async (req, res) => {
   try {
+    // Llamar al modelo para obtener todos los clientes
     const clients = await Client.getAll();
+    // Enviar la lista de clientes como respuesta JSON
     res.json(clients);
   } catch (err) {
+    // Manejo de errores
     res.status(500).json({ error: err.message });
   }
 };
 
+// Metodo para obtener un cliente por ID
 export const getClientById = async (req, res) => {
   try {
+    // Consultar el cliente que coincide con el ID solicitado
     const client = await Client.getById(req.params.id);
+    // Si no se encuentra el cliente, enviar un error 404
     if (!client) {
       return res.status(404).json({ message: 'Client not found' });
     }
+    // Enviar el cliente encontrado como respuesta JSON
     res.json(client);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// Metodo para crear un nuevo cliente
 export const createClient = async (req, res) => {
   try {
     const insertId = await Client.create(req.body);
     res.status(201).json({ message: 'Client created successfully', id: insertId });
   } catch (err) {
-    //console.log(req.body)
-    //console.log(err.message)
     res.status(500).json({ error: err.message });
   }
 };

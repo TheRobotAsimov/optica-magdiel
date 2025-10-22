@@ -1,3 +1,4 @@
+// Importaciones necesarias para el componente
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
@@ -10,7 +11,9 @@ import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 
+// Componente principal para el formulario unificado de ventas
 const UnifiedForm = () => {
+  // Estado para almacenar todos los datos del formulario
   const [formData, setFormData] = useState({
     // Venta fields
     folio: '',
@@ -62,6 +65,7 @@ const UnifiedForm = () => {
     fecha_entrega: '',
     kit: 'Sin kit',
   });
+// Estado para manejar la graduacion optica separadamente
   const [graduacion, setGraduacion] = useState({
     od_esf_sign: '+',
     od_esf_val: '',
@@ -78,6 +82,7 @@ const UnifiedForm = () => {
     oi_av_1: '',
     oi_av_2: '',
   });
+// Estados adicionales para opciones y datos dinamicos
   const [examenSeguimientoOption, setExamenSeguimientoOption] = useState('');
   const [asesores, setAsesores] = useState([]);
   const [optometristas, setOptometristas] = useState([]);
@@ -92,6 +97,7 @@ const UnifiedForm = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+// Efecto para pre-llenar el asesor si el usuario logueado es asesor
   useEffect(() => {
     if (user && user.rol === 'Asesor') {
       setFormData(prev => ({
@@ -101,12 +107,14 @@ const UnifiedForm = () => {
     }
   }, [user]);
 
+// Lista de sintomas disponibles para seleccion
   const symptomsList = [
     'ARDOR', 'LAGRIMEO', 'IRRITACION', 'DOLOR', 'COMEZON', 'MOL. SOL.',
     'MOL. AIRE', 'ARENOZO', 'HIPERTENSION', 'DIABETES', 'GLAUCOMA', 'CATARATAS',
     'USO DISP. ELEC.', 'QUIRURGICOS', 'INFECCION', 'FOSFENOS', 'MIODESOPIAS', 'FOTOSENSIBLES'
   ];
 
+  // Estado inicial para los sintomas, todos desmarcados
   const initialSymptomsState = symptomsList.reduce((acc, symptom) => {
     acc[symptom] = false;
     return acc;
@@ -114,14 +122,17 @@ const UnifiedForm = () => {
 
   const [symptomsState, setSymptomsState] = useState(initialSymptomsState);
 
+  // Funcion para manejar cambios en los sintomas
   const handleSymptomChange = (e) => {
     const { name, checked } = e.target;
     setSymptomsState(prev => ({ ...prev, [name]: checked }));
   };
 
+// Valores debounced para busqueda de clientes
   const [debouncedNombre] = useDebounce(formData.nombre, 1000);
   const [debouncedPaterno] = useDebounce(formData.paterno, 500);
 
+// Funcion para manejar cambios en la graduacion optica
   const handleGraduacionChange = (e) => {
     const { name, value } = e.target;
 
@@ -138,8 +149,7 @@ const UnifiedForm = () => {
     });
   };
 
-  // ==================================================
-
+// Efecto para sincronizar la graduacion con formData y determinar si es procesado
   useEffect(() => {
     const {
       od_esf_sign, od_esf_val, od_cil_val, od_eje_val, od_add_val, od_av_1, od_av_2,
@@ -173,6 +183,7 @@ const UnifiedForm = () => {
     }));
   }, [graduacion]);
 
+// Efecto para actualizar los sintomas seleccionados en formData
   useEffect(() => {
     const selectedSymptoms = Object.keys(symptomsState)
       .filter(symptom => symptomsState[symptom])
@@ -184,25 +195,33 @@ const UnifiedForm = () => {
     }));
   }, [symptomsState]);
 
+// Funcion para buscar clientes basado en nombre y apellido paterno
   useEffect(() => {
     const searchClients = async () => {
+      // Solo buscar si hay algun criterio y no se ha seleccionado un cliente
       if ((debouncedNombre || debouncedPaterno) && !isClientSelected) {
         try {
+          // Realizar la busqueda de clientes
           const results = await clientService.searchClients(debouncedNombre, debouncedPaterno);
+          // Actualizar los resultados y mostrar sugerencias
           setSearchResults(results);
           setShowSuggestions(true);
         } catch (err) {
+          // Manejar errores en la busqueda
           console.error("Error searching clients:", err);
           setSearchResults([]);
           setShowSuggestions(false);
         }
       } else {
+        // Limpiar resultados si no hay criterios o ya se selecciono un cliente
         setSearchResults([]);
         setShowSuggestions(false);
       }
     };
     searchClients();
   }, [debouncedNombre, debouncedPaterno, isClientSelected]);
+
+// Efecto para cargar datos iniciales: empleados y catalogo de precios
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -228,7 +247,9 @@ const UnifiedForm = () => {
     fetchData();
   }, []);
 
+// Efecto para calcular el total basado en las selecciones del lente
   useEffect(() => {
+    // Si todos los datos necesarios estan disponibles, calcular el total
     if (priceCatalog && formData.material && formData.tipo_de_lente && formData.tratamiento) {
       let newTotal = 0;
       const material = priceCatalog[formData.material];
@@ -264,15 +285,18 @@ const UnifiedForm = () => {
     }
   }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, formData.kit, formData.tinte_color, priceCatalog, additives]);
 
+// Funcion principal para manejar cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
 
+    // Si el campo es examen de seguimiento, calcular la fecha automaticamente
     if (name === 'examenSeguimientoOption') {
       setExamenSeguimientoOption(value);
       if (value) {
-        const baseDate = new Date(formData.fecha); // Use the sale date as base
+        const baseDate = new Date(formData.fecha); // Usar la fecha de la venta como base
         let newDate = new Date(baseDate);
 
+        // Calcular la nueva fecha basada en la opcion seleccionada
         if (value === '6 months') {
           newDate.setMonth(newDate.getMonth() + 6);
         } else if (value === '1 year') {
@@ -281,7 +305,7 @@ const UnifiedForm = () => {
           newDate.setFullYear(newDate.getFullYear() + 2);
         }
 
-        // Format newDate to YYYY-MM-DD
+        // Formatear la fecha a YYYY-MM-DD
         const year = newDate.getFullYear();
         const month = String(newDate.getMonth() + 1).padStart(2, '0');
         const day = String(newDate.getDate()).padStart(2, '0');
@@ -329,6 +353,7 @@ const UnifiedForm = () => {
     }
   };
 
+// Funcion para seleccionar un cliente de las sugerencias
   const handleSelectClient = (client) => {
     setFormData((prev) => ({
       ...prev,
@@ -348,6 +373,7 @@ const UnifiedForm = () => {
     setSearchResults([]);
   };
 
+// Funcion para limpiar la seleccion de cliente
   const handleClearClient = () => {
     setFormData((prev) => ({
       ...prev,
@@ -365,6 +391,7 @@ const UnifiedForm = () => {
     setIsClientSelected(false);
   };
 
+// Funcion para manejar el envio del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -373,7 +400,7 @@ const UnifiedForm = () => {
       if (isClientSelected && selectedClient) {
         clientId = selectedClient.idcliente;
       } else {
-        // 1. Create Cliente
+        // 1. Crea Cliente
         const newClient = await clientService.createClient({
           nombre: formData.nombre,
           paterno: formData.paterno,
@@ -391,7 +418,7 @@ const UnifiedForm = () => {
 
       const finalTotal = formData.total;
 
-      // 2. Create Venta
+      // 2. Crea Venta
       await ventaService.createVenta({
         folio: formData.folio,
         idasesor: parseInt(formData.idasesor),
@@ -408,10 +435,10 @@ const UnifiedForm = () => {
       });
 
 
-      // 3. Create Lente
+      // 3. Crea Lente
       await lenteService.createLente({
         idoptometrista: parseInt(formData.idoptometrista, 10),
-        folio: formData.folio, // Use the folio from the form
+        folio: formData.folio, // Usa el folio del formulario
         sintomas: formData.sintomas,
         uso_de_lente: formData.uso_de_lente,
         armazon: formData.armazon,
@@ -448,7 +475,9 @@ const UnifiedForm = () => {
     }
   };
 
+// Renderizado condicional para estado de carga
   if (loading) {
+  // Renderizado principal del componente
     return (
       <div className="min-h-screen bg-gray-50">
         <NavComponent />
@@ -461,6 +490,7 @@ const UnifiedForm = () => {
     );
   }
 
+// Renderizado condicional para estado de error
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -489,8 +519,9 @@ const UnifiedForm = () => {
           </div>
 
           <div className="px-6 py-6">
+// Inicio del formulario
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Venta Fields */}              
+              {/* Seccion de informacion de la venta */}
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información de la Venta</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -514,7 +545,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-              {/* Cliente Fields */}
+// Seccion de informacion del cliente
               <div className="bg-gray-50 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Información del Cliente</h3>
@@ -578,7 +609,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-              {/* Lente Fields */}
+// Seccion de informacion del lente
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Lente</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -718,7 +749,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-              {/* Graduacion Fields */}
+// Seccion de graduacion optica
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Graduación</h3>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -810,7 +841,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-              {/* Venta Fields (continued) */}
+// Seccion de detalles finales de la venta
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Detalles Finales de la Venta</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -847,7 +878,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
+// Botones de accion
               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
                   <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
                   <Save className="h-4 w-4" />
