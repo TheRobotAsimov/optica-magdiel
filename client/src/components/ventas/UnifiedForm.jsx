@@ -13,7 +13,10 @@ import { useDebounce } from 'use-debounce';
 
 // Componente principal para el formulario unificado de ventas
 const UnifiedForm = () => {
+
   // Estado para almacenar todos los datos del formulario
+  // Se especifican los valores que se muestran por default 
+  // Incluye campos para venta, cliente y lente
   const [formData, setFormData] = useState({
     // Venta fields
     folio: '',
@@ -293,7 +296,7 @@ const UnifiedForm = () => {
     if (name === 'examenSeguimientoOption') {
       setExamenSeguimientoOption(value);
       if (value) {
-        const baseDate = new Date(formData.fecha); // Usar la fecha de la venta como base
+        const baseDate = new Date(formData.fecha); // Usar la fecha |e la venta como base
         let newDate = new Date(baseDate);
 
         // Calcular la nueva fecha basada en la opcion seleccionada
@@ -454,6 +457,7 @@ const UnifiedForm = () => {
         fecha_entrega: formData.fecha_entrega,
         examen_seguimiento: formData.examen_seguimiento,
         estatus: 'Pendiente',
+        // Si el campo esta vacio, enviar null al backend, sino parsear el valor
         od_esf: formData.od_esf ? parseFloat(formData.od_esf) : null,
         od_cil: formData.od_cil ? parseFloat(formData.od_cil) : null,
         od_eje: formData.od_eje ? parseInt(formData.od_eje, 10) : null,
