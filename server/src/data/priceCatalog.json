@@ -17,14 +17,14 @@
           "procesado": 300,
           "subtipo": {
             "Policarbonato": 900,
-            "Haid index": 300
+            "Haid index": 400
           }
         }
       },
       "Bifocal": {
         "AR": {
           "base": 2000,
-          "procesado": 500,
+          "procesado": 200,
           "blend": 300,
           "subtipo": {
             "Policarbonato": 500,
@@ -33,18 +33,18 @@
         },
         "Photo AR": {
           "base": 2500,
-          "procesado": 700,
-          "blend": 500,
+          "procesado": 300,
+          "blend": 299,
           "subtipo": {
             "Policarbonato": 900,
-            "Haid index": 300
+            "Haid index": 400
           }
         }
       },
       "Progresivo": {
         "AR": {
           "base": 2600,
-          "procesado": 600,
+          "procesado": 300,
           "subtipo": {
             "Policarbonato": 700,
             "Haid index": 300
@@ -52,10 +52,10 @@
         },
         "Photo AR": {
           "base": 3500,
-          "procesado": 900,
+          "procesado": 600,
           "subtipo": {
             "Policarbonato": 1300,
-            "Haid index": 500
+            "Haid index": 399
           }
         }
       }
@@ -64,7 +64,7 @@
       "Monofocal": {
         "AR": {
           "base": 1900,
-          "procesado": 500,
+          "procesado": 200,
           "subtipo": {
             "Policarbonato": 700,
             "Haid index": 300
@@ -72,17 +72,17 @@
         },
         "Photo AR": {
           "base": 2600,
-          "procesado": 600,
+          "procesado": 300,
           "subtipo": {
             "Policarbonato": 900,
-            "Haid index": 500
+            "Haid index": 399
           }
         }
       },
       "Bifocal": {
         "AR": {
           "base": 2500,
-          "procesado": 600,
+          "procesado": 200,
           "blend": 300,
           "subtipo": {
             "Policarbonato": 700,
@@ -91,26 +91,26 @@
         },
         "Photo AR": {
           "base": 3100,
-          "procesado": 700,
+          "procesado": 303,
           "blend": 300,
           "subtipo": {
             "Policarbonato": 1000,
-            "Haid index": 300
+            "Haid index": 500
           }
         }
       },
       "Progresivo": {
         "AR": {
           "base": 3000,
-          "procesado": 700,
+          "procesado": 300,
           "subtipo": {
             "Policarbonato": 900,
             "Haid index": 300
           }
         },
         "Photo AR": {
-          "base": 4300,
-          "procesado": 1000,
+          "base": 4430,
+          "procesado": 600,
           "subtipo": {
             "Policarbonato": 1300,
             "Haid index": 500
