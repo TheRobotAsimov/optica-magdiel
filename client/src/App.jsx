@@ -21,6 +21,7 @@ import UnifiedForm from './components/ventas/UnifiedForm';
 import PriceCatalogEditor from './components/admin/PriceCatalogEditor';
 import RutaList from './components/rutas/RutaList';
 import RutaForm from './components/rutas/RutaForm';
+import RutaAsesor from './components/rutas/RutaAsesor';
 import PagoList from './components/pagos/PagoList';
 import PagoForm from './components/pagos/PagoForm';
 import EntregaList from './components/entregas/EntregaList';
@@ -212,7 +213,15 @@ const App = () => {
               <ProtectedRoute>
                 <RutaForm />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/ruta-asesor"
+            element={
+              <ProtectedRoute>
+                <RutaAsesor />
+              </ProtectedRoute>
+            }
           />
           <Route 
             path="/pagos" 

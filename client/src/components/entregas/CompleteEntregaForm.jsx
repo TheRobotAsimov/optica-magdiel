@@ -50,6 +50,13 @@ const CompleteEntregaForm = () => {
         setLentes(lentesData);
         setPagos(pagosData);
         setVentas(ventasData);
+
+        // Pre-select route if coming from ruta-asesor
+        const urlParams = new URLSearchParams(window.location.search);
+        const rutaId = urlParams.get('ruta');
+        if (rutaId) {
+          setFormData(prev => ({ ...prev, idruta: rutaId }));
+        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -126,10 +133,42 @@ const CompleteEntregaForm = () => {
 
       // Update lente status if selected
       if (formData.idlente) {
-        await lenteService.updateLente(formData.idlente, {
+        const lenteUpdateData = {
           ...selectedLente,
           estatus: formData.estatus,
-        });
+        };
+
+        // Ensure date fields are in YYYY-MM-DD format only
+        if (lenteUpdateData.fecha_entrega) {
+          lenteUpdateData.fecha_entrega = lenteUpdateData.fecha_entrega.split('T')[0];
+        }
+        if (lenteUpdateData.examen_seguimiento) {
+          lenteUpdateData.examen_seguimiento = lenteUpdateData.examen_seguimiento.split('T')[0];
+        }
+
+        // Remove timestamp fields that are handled by database
+        delete lenteUpdateData.created_at;
+        delete lenteUpdateData.updated_at;
+
+        await lenteService.updateLente(formData.idlente, lenteUpdateData);
+
+        // Update route counters if delivery is successful
+        if (formData.estatus === 'Entregado' && formData.idruta) {
+          const currentRoute = rutas.find(r => r.idruta == formData.idruta);
+          if (currentRoute) {
+            const routeUpdateData = {
+              ...currentRoute,
+              lentes_entregados: (currentRoute.lentes_entregados || 0) + 1,
+            };
+
+            // Ensure date field is in YYYY-MM-DD format only
+            if (routeUpdateData.fecha) {
+              routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
+            }
+
+            await rutaService.updateRuta(formData.idruta, routeUpdateData);
+          }
+        }
       }
 
       // Update pago status if selected
@@ -142,9 +181,34 @@ const CompleteEntregaForm = () => {
           estatus: formData.estatus === 'Entregado' ? 'Pagado' : 'Pendiente',
         };
         await pagoService.updatePago(pagoId, pagoToUpdate);
+
+        // Update route counters if payment delivery is successful
+        if (formData.estatus === 'Entregado' && formData.idruta) {
+          const currentRoute = rutas.find(r => r.idruta == formData.idruta);
+          if (currentRoute) {
+            const routeUpdateData = {
+              ...currentRoute,
+              tarjetas_entregadas: (currentRoute.tarjetas_entregadas || 0) + 1,
+            };
+
+            // Ensure date field is in YYYY-MM-DD format only
+            if (routeUpdateData.fecha) {
+              routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
+            }
+
+            await rutaService.updateRuta(formData.idruta, routeUpdateData);
+          }
+        }
       }
 
-      navigate('/entregas');
+      // Navigate back to ruta asesor if coming from there, otherwise to entregas
+      const urlParams = new URLSearchParams(window.location.search);
+      const rutaId = urlParams.get('ruta');
+      if (rutaId) {
+        navigate('/ruta-asesor');
+      } else {
+        navigate('/entregas');
+      }
     } catch (err) {
       setError(err.message);
     } finally {

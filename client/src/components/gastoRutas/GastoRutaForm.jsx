@@ -27,6 +27,13 @@ const GastoRutaForm = () => {
         if (id) {
           const gastoRutaData = await gastoRutaService.getGastoRutaById(id);
           setFormData(gastoRutaData);
+        } else {
+          // Pre-select route if coming from ruta-asesor
+          const urlParams = new URLSearchParams(window.location.search);
+          const rutaId = urlParams.get('idruta');
+          if (rutaId) {
+            setFormData(prev => ({ ...prev, idruta: rutaId }));
+          }
         }
       } catch (err) {
         setError(err.message);
@@ -56,7 +63,15 @@ const GastoRutaForm = () => {
       } else {
         await gastoRutaService.createGastoRuta(dataToSubmit);
       }
-      navigate('/gasto-rutas');
+
+      // Navigate back to ruta asesor if coming from there, otherwise to gasto-rutas
+      const urlParams = new URLSearchParams(window.location.search);
+      const rutaId = urlParams.get('idruta');
+      if (rutaId) {
+        navigate('/ruta-asesor');
+      } else {
+        navigate('/gasto-rutas');
+      }
     } catch (err) {
       setError(err.message);
     } finally {

@@ -140,6 +140,7 @@ const RutaList = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lentes Entregados</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Inicio</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora Fin</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estatus</th>
                     <th scope="col" className="relative px-6 py-3">
                       <span className="sr-only">Acciones</span>
                     </th>
@@ -153,6 +154,7 @@ const RutaList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ruta.lentes_entregados}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ruta.hora_inicio}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ruta.hora_fin}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ruta.estatus}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onClick={() => {
                           if (user.rol === 'Asesor' || user.rol === 'Optometrista') {

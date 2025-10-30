@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { useAuth } from '../../context/AuthContext';
 import rutaService from '../../service/rutaService';
 import empleadoService from '../../service/empleadoService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft } from 'lucide-react';
 
 const RutaForm = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     idasesor: '',
     lentes_entregados: '',
@@ -17,6 +19,7 @@ const RutaForm = () => {
     tarjetas_recibidas: '',
     hora_inicio: '',
     hora_fin: '',
+    estatus: 'Activa',
   });
   const [asesores, setAsesores] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -28,8 +31,9 @@ const RutaForm = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const asesoresData = await empleadoService.getAllEmpleados();
-        setAsesores(asesoresData);
+        const empleadosData = await empleadoService.getAllEmpleados();
+        const asesoresList = user.rol === 'Matriz' ? empleadosData.filter(emp => emp.puesto === 'Asesor') : empleadosData;
+        setAsesores(asesoresList);
 
         if (id) {
           const rutaData = await rutaService.getRutaById(id);
@@ -37,6 +41,11 @@ const RutaForm = () => {
             ...rutaData,
             fecha: new Date(rutaData.fecha).toISOString().slice(0, 10),
           });
+        } else if (user.rol === 'Asesor') {
+          setFormData(prev => ({
+            ...prev,
+            idasesor: user.idempleado,
+          }));
         }
       } catch (err) {
         setError(err.message);
@@ -45,7 +54,7 @@ const RutaForm = () => {
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,7 +119,7 @@ const RutaForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Asesor *</label>
-                  <select name="idasesor" value={formData.idasesor} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <select name="idasesor" value={formData.idasesor} onChange={handleChange} required disabled={user?.rol === 'Asesor'} className="w-full px-3 py-2 border border-gray-300 rounded-lg">
                     <option value="">Seleccionar Asesor</option>
                     {asesores.map(asesor => (
                       <option key={asesor.idempleado} value={asesor.idempleado}>{asesor.nombre} {asesor.paterno}</option>
@@ -128,6 +137,13 @@ const RutaForm = () => {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Hora Fin *</label>
                   <input type="time" name="hora_fin" value={formData.hora_fin} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Estatus *</label>
+                  <select name="estatus" value={formData.estatus} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                    <option value="Activa">Activa</option>
+                    <option value="Finalizada">Finalizada</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Lentes Recibidos</label>

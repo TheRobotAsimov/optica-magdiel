@@ -25,6 +25,8 @@ export const createRuta = async (req, res) => {
     const newRuta = await Ruta.create(req.body);
     res.status(201).json(newRuta);
   } catch (error) {
+    console.log(req.body);
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -34,6 +36,8 @@ export const updateRuta = async (req, res) => {
     const updatedRuta = await Ruta.update(req.params.id, req.body);
     res.json(updatedRuta);
   } catch (error) {
+    console.log(req.body);
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };

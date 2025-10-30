@@ -23,10 +23,11 @@ const Ruta = {
       tarjetas_recibidas,
       hora_inicio,
       hora_fin,
+      estatus,
     } = ruta;
     const [result] = await db.query(
-      'INSERT INTO ruta (idasesor, lentes_entregados, tarjetas_entregadas, lentes_no_entregados, tarjetas_no_entregadas, fecha, lentes_recibidos, tarjetas_recibidas, hora_inicio, hora_fin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [idasesor, lentes_entregados, tarjetas_entregadas, lentes_no_entregados, tarjetas_no_entregadas, fecha, lentes_recibidos, tarjetas_recibidas, hora_inicio, hora_fin]
+      'INSERT INTO ruta (idasesor, lentes_entregados, tarjetas_entregadas, lentes_no_entregados, tarjetas_no_entregadas, fecha, lentes_recibidos, tarjetas_recibidas, hora_inicio, hora_fin, estatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [idasesor, lentes_entregados, tarjetas_entregadas, lentes_no_entregados, tarjetas_no_entregadas, fecha, lentes_recibidos, tarjetas_recibidas, hora_inicio, hora_fin, estatus]
     );
     return { id: result.insertId, ...ruta };
   },
@@ -43,10 +44,11 @@ const Ruta = {
       tarjetas_recibidas,
       hora_inicio,
       hora_fin,
+      estatus,
     } = ruta;
     await db.query(
-      'UPDATE ruta SET idasesor = ?, lentes_entregados = ?, tarjetas_entregadas = ?, lentes_no_entregados = ?, tarjetas_no_entregadas = ?, fecha = ?, lentes_recibidos = ?, tarjetas_recibidas = ?, hora_inicio = ?, hora_fin = ? WHERE idruta = ?',
-      [idasesor, lentes_entregados, tarjetas_entregadas, lentes_no_entregados, tarjetas_no_entregadas, fecha, lentes_recibidos, tarjetas_recibidas, hora_inicio, hora_fin, id]
+      'UPDATE ruta SET idasesor = ?, lentes_entregados = ?, tarjetas_entregadas = ?, lentes_no_entregados = ?, tarjetas_no_entregadas = ?, fecha = ?, lentes_recibidos = ?, tarjetas_recibidas = ?, hora_inicio = ?, hora_fin = ?, estatus = ? WHERE idruta = ?',
+      [idasesor, lentes_entregados, tarjetas_entregadas, lentes_no_entregados, tarjetas_no_entregadas, fecha, lentes_recibidos, tarjetas_recibidas, hora_inicio, hora_fin, estatus, id]
     );
     return { id, ...ruta };
   },

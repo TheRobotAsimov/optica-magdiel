@@ -471,7 +471,14 @@ const UnifiedForm = () => {
         kit: formData.kit,
       });
 
-      navigate('/ventas');
+      // Navigate back to ruta asesor if coming from there, otherwise to ventas
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromRuta = urlParams.get('fromRuta');
+      if (fromRuta) {
+        navigate('/ruta-asesor');
+      } else {
+        navigate('/ventas');
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -523,7 +530,7 @@ const UnifiedForm = () => {
           </div>
 
           <div className="px-6 py-6">
-// Inicio del formulario
+{/* Inicio del formulario */}
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Seccion de informacion de la venta */}
               <div className="bg-gray-50 rounded-lg p-6">
@@ -549,7 +556,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-// Seccion de informacion del cliente
+{/* Seccion de informacion del cliente*/}
               <div className="bg-gray-50 rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-medium text-gray-900">Información del Cliente</h3>
@@ -613,7 +620,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-// Seccion de informacion del lente
+{/*// Seccion de informacion del lente*/}
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Lente</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -753,7 +760,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-// Seccion de graduacion optica
+{/*// Seccion de graduacion optica*/}
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Graduación</h3>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
@@ -845,7 +852,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-// Seccion de detalles finales de la venta
+{/*// Seccion de detalles finales de la venta*/}
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Detalles Finales de la Venta</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -882,7 +889,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-// Botones de accion
+{/*// Botones de accion*/}
               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
                   <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
                   <Save className="h-4 w-4" />
