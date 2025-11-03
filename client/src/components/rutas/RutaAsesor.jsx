@@ -31,10 +31,36 @@ const RutaAsesor = () => {
     }
   }, [user, navigate]);
 
-  // Load active route on mount
-  useEffect(() => {
+  
+
+  // Load active route on mount and when navigating back
+ useEffect(() => {
     const loadActiveRoute = async () => {
       if (!user || user.puesto !== 'Asesor') return;
+
+      //if (currentWindow === 2 && currentRouteId) return;
+
+      const savedRouteId = localStorage.getItem('activeRouteId');
+      const savedWindow = localStorage.getItem('currentWindow');
+
+      if (savedRouteId && savedWindow === '2') {
+        try {
+          const rutas = await rutaService.getAllRutas();
+          const restoredRoute = rutas.find(r => r.idruta === parseInt(savedRouteId));
+
+          if (restoredRoute && restoredRoute.estatus === 'Activa') {
+            setCurrentRouteId(restoredRoute.idruta);
+            setRouteData(restoredRoute);
+            setCurrentWindow(2);
+            return;
+          } else {
+            localStorage.removeItem('activeRouteId');
+            localStorage.removeItem('currentWindow');
+          }
+        } catch (err) {
+          console.error('Error restoring saved route:', err);
+        }
+      }
 
       try {
         const rutas = await rutaService.getAllRutas();
@@ -48,6 +74,8 @@ const RutaAsesor = () => {
           setCurrentRouteId(activeRoute.idruta);
           setRouteData(activeRoute);
           setCurrentWindow(2);
+        } else {
+          setCurrentWindow(1);
         }
       } catch (err) {
         console.error('Error loading active route:', err);
@@ -56,6 +84,45 @@ const RutaAsesor = () => {
 
     loadActiveRoute();
   }, [user]);
+
+  
+
+  // Reload route data when component becomes visible (e.g., after navigation)
+  useEffect(() => {
+    if (currentRouteId && user && user.puesto === 'Asesor') {
+      const refreshRouteData = async () => {
+        try {
+          const rutas = await rutaService.getAllRutas();
+          const currentRoute = rutas.find(r => r.idruta === currentRouteId);
+          if (currentRoute) {
+            setRouteData(currentRoute);
+          }
+        } catch (err) {
+          console.error('Error refreshing route data:', err);
+        }
+      };
+
+      // Refresh immediately and set up interval for continuous updates
+      refreshRouteData();
+      const interval = setInterval(refreshRouteData, 2000); // Refresh every 2 seconds
+
+      return () => clearInterval(interval); // Cleanup on unmount
+    }
+  }, [currentRouteId, user]);
+
+  useEffect(() => {
+    if (currentRouteId && currentWindow === 2) {
+      localStorage.setItem('activeRouteId', currentRouteId);
+      localStorage.setItem('currentWindow', '2');
+    } else if (currentWindow === 1) {
+      // Si localStorage.getItem('currentWindow') es 2, no hacer nada
+      const savedWindow = localStorage.getItem('currentWindow');
+      if (savedWindow === '2') return;
+      localStorage.removeItem('activeRouteId');
+      localStorage.removeItem('currentWindow');
+    }
+  }, [currentWindow, currentRouteId]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -236,6 +303,10 @@ const RutaAsesor = () => {
       setCurrentWindow(1);
       setFormData({ lentes_recibidos: '', tarjetas_recibidas: '' });
       setUndeliveredForm({ lentes_no_entregados: '', tarjetas_no_entregadas: '', motivo: '' });
+
+      localStorage.removeItem('activeRouteId');
+      localStorage.removeItem('currentWindow');
+
 
       Swal.fire({
         title: 'Ruta finalizada',

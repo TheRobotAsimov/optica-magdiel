@@ -13,7 +13,7 @@ export const getRuta = async (req, res) => {
   try {
     const ruta = await Ruta.findById(req.params.id);
     if (!ruta) return res.status(404).json({ message: 'Ruta not found' });
-    console.log(ruta);
+    //console.log(ruta);
     res.json(ruta);
   } catch (error) {
     res.status(500).json({ message: error.message });
