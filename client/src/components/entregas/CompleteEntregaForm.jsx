@@ -54,8 +54,15 @@ const CompleteEntregaForm = () => {
         // Pre-select route if coming from ruta-asesor
         const urlParams = new URLSearchParams(window.location.search);
         const rutaId = urlParams.get('ruta');
+        const undeliveredType = urlParams.get('undelivered');
+
         if (rutaId) {
           setFormData(prev => ({ ...prev, idruta: rutaId }));
+        }
+
+        // If coming from undelivered registration, set status to "No entregado" and disable it
+        if (undeliveredType) {
+          setFormData(prev => ({ ...prev, estatus: 'No entregado' }));
         }
       } catch (err) {
         setError(err.message);
@@ -169,6 +176,31 @@ const CompleteEntregaForm = () => {
             await rutaService.updateRuta(formData.idruta, routeUpdateData);
           }
         }
+
+        // Update route counters for undelivered items
+        if (formData.estatus === 'No entregado' && formData.idruta) {
+          const currentRoute = rutas.find(r => r.idruta == formData.idruta);
+          if (currentRoute) {
+            const routeUpdateData = {
+              ...currentRoute,
+            };
+
+            // Increment the appropriate counter based on what was not delivered
+            if (formData.idlente) {
+              routeUpdateData.lentes_no_entregados = (currentRoute.lentes_no_entregados || 0) + 1;
+            }
+            if (pagoId) {
+              routeUpdateData.tarjetas_no_entregadas = (currentRoute.tarjetas_no_entregadas || 0) + 1;
+            }
+
+            // Ensure date field is in YYYY-MM-DD format only
+            if (routeUpdateData.fecha) {
+              routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
+            }
+
+            await rutaService.updateRuta(formData.idruta, routeUpdateData);
+          }
+        }
       }
 
       // Update pago status if selected
@@ -204,7 +236,12 @@ const CompleteEntregaForm = () => {
       // Navigate back to ruta asesor if coming from there, otherwise to entregas
       const urlParams = new URLSearchParams(window.location.search);
       const rutaId = urlParams.get('ruta');
-      if (rutaId) {
+      const undeliveredType = urlParams.get('undelivered');
+
+      if (rutaId && undeliveredType) {
+        // If registering undelivered items, navigate back to window 3
+        navigate('/ruta-asesor?window=3');
+      } else if (rutaId) {
         navigate('/ruta-asesor');
       } else {
         navigate('/entregas');
@@ -269,7 +306,14 @@ const CompleteEntregaForm = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Estatus *</label>
-                  <select name="estatus" value={formData.estatus} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <select
+                    name="estatus"
+                    value={formData.estatus}
+                    onChange={handleChange}
+                    required
+                    disabled={new URLSearchParams(window.location.search).get('undelivered') !== null}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
                     <option value="No entregado">No entregado</option>
                     <option value="Entregado">Entregado</option>
                   </select>

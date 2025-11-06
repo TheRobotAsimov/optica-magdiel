@@ -14,11 +14,6 @@ const RutaAsesor = () => {
     lentes_recibidos: '',
     tarjetas_recibidas: '',
   });
-  const [undeliveredForm, setUndeliveredForm] = useState({
-    lentes_no_entregados: '',
-    tarjetas_no_entregadas: '',
-    motivo: '',
-  });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -34,11 +29,13 @@ const RutaAsesor = () => {
   
 
   // Load active route on mount and when navigating back
- useEffect(() => {
+  useEffect(() => {
     const loadActiveRoute = async () => {
       if (!user || user.puesto !== 'Asesor') return;
 
-      //if (currentWindow === 2 && currentRouteId) return;
+      // Check URL parameters for window navigation
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetWindow = urlParams.get('window');
 
       const savedRouteId = localStorage.getItem('activeRouteId');
       const savedWindow = localStorage.getItem('currentWindow');
@@ -51,7 +48,7 @@ const RutaAsesor = () => {
           if (restoredRoute && restoredRoute.estatus === 'Activa') {
             setCurrentRouteId(restoredRoute.idruta);
             setRouteData(restoredRoute);
-            setCurrentWindow(2);
+            setCurrentWindow(targetWindow === '3' ? 3 : 2);
             return;
           } else {
             localStorage.removeItem('activeRouteId');
@@ -73,7 +70,7 @@ const RutaAsesor = () => {
         if (activeRoute) {
           setCurrentRouteId(activeRoute.idruta);
           setRouteData(activeRoute);
-          setCurrentWindow(2);
+          setCurrentWindow(targetWindow === '3' ? 3 : 2);
         } else {
           setCurrentWindow(1);
         }
@@ -129,10 +126,6 @@ const RutaAsesor = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleUndeliveredChange = (e) => {
-    const { name, value } = e.target;
-    setUndeliveredForm(prev => ({ ...prev, [name]: value }));
-  };
 
   const startRoute = async (e) => {
     e.preventDefault();
@@ -207,64 +200,12 @@ const RutaAsesor = () => {
     setCurrentWindow(3);
   };
 
-  const registerUndelivered = async (e) => {
-    e.preventDefault();
+  const registerUndeliveredLente = () => {
+    navigate(`/entregas/complete?ruta=${currentRouteId}&undelivered=lente`);
+  };
 
-    const remainingLentes = routeData.lentes_recibidos - routeData.lentes_entregados;
-    const remainingTarjetas = routeData.tarjetas_recibidas - routeData.tarjetas_entregadas;
-
-    if (parseInt(undeliveredForm.lentes_no_entregados) > remainingLentes ||
-        parseInt(undeliveredForm.tarjetas_no_entregadas) > remainingTarjetas) {
-      Swal.fire({
-        title: 'Error',
-        text: 'Las cantidades no entregadas no pueden exceder las restantes.',
-        icon: 'error',
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Entendido'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Update route with undelivered items
-      const routeUpdateData = {
-        ...routeData,
-        lentes_no_entregados: parseInt(undeliveredForm.lentes_no_entregados) || null,
-        tarjetas_no_entregadas: parseInt(undeliveredForm.tarjetas_no_entregadas) || null,
-      };
-
-      // Ensure date field is in YYYY-MM-DD format only
-      if (routeUpdateData.fecha) {
-        routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
-      }
-
-      const updatedRoute = await rutaService.updateRuta(currentRouteId, routeUpdateData);
-      setRouteData(updatedRoute);
-
-      // Create entrega records for undelivered items
-      // This would need to be implemented - for now, just update the route
-      // In a real implementation, you'd create entrega records with estatus 'No entregado'
-
-      Swal.fire({
-        title: 'Registrado',
-        text: 'Los artículos no entregados han sido registrados.',
-        icon: 'success',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Continuar'
-      });
-    } catch (err) {
-      console.error(err.message);
-      Swal.fire({
-        title: 'Error',
-        text: 'Error al registrar artículos no entregados.',
-        icon: 'error',
-        confirmButtonColor: '#d33',
-        confirmButtonText: 'Entendido'
-      });
-    } finally {
-      setLoading(false);
-    }
+  const registerUndeliveredPago = () => {
+    navigate(`/entregas/complete?ruta=${currentRouteId}&undelivered=pago`);
   };
 
   const finalizeRoute = async () => {
@@ -302,7 +243,6 @@ const RutaAsesor = () => {
       setRouteData(null);
       setCurrentWindow(1);
       setFormData({ lentes_recibidos: '', tarjetas_recibidas: '' });
-      setUndeliveredForm({ lentes_no_entregados: '', tarjetas_no_entregadas: '', motivo: '' });
 
       localStorage.removeItem('activeRouteId');
       localStorage.removeItem('currentWindow');
@@ -495,57 +435,23 @@ const RutaAsesor = () => {
                   return (remainingLentes > 0 || remainingTarjetas > 0) ? (
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
                       <h3 className="text-lg font-medium text-yellow-800 mb-4">Registrar Artículos No Entregados</h3>
-                      <form onSubmit={registerUndelivered} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Lentes No Entregados
-                            </label>
-                            <input
-                              type="number"
-                              name="lentes_no_entregados"
-                              value={undeliveredForm.lentes_no_entregados}
-                              onChange={handleUndeliveredChange}
-                              min="0"
-                              max={remainingLentes}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Tarjetas No Entregadas
-                            </label>
-                            <input
-                              type="number"
-                              name="tarjetas_no_entregadas"
-                              value={undeliveredForm.tarjetas_no_entregadas}
-                              onChange={handleUndeliveredChange}
-                              min="0"
-                              max={remainingTarjetas}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                              Motivo
-                            </label>
-                            <input
-                              type="text"
-                              name="motivo"
-                              value={undeliveredForm.motivo}
-                              onChange={handleUndeliveredChange}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                            />
-                          </div>
-                        </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <button
-                          type="submit"
-                          disabled={loading}
-                          className="flex items-center space-x-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400 text-white rounded-lg font-medium transition-colors"
+                          onClick={registerUndeliveredLente}
+                          className="flex items-center justify-center space-x-2 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
                         >
-                          <span>{loading ? 'Registrando...' : 'Registrar No Entregados'}</span>
+                          <Package className="h-5 w-5" />
+                          <span>Registrar Lente No Entregado</span>
                         </button>
-                      </form>
+
+                        <button
+                          onClick={registerUndeliveredPago}
+                          className="flex items-center justify-center space-x-2 px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+                        >
+                          <DollarSign className="h-5 w-5" />
+                          <span>Registrar Pago No Entregado</span>
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div className="flex justify-end pt-6 border-t border-gray-200">
