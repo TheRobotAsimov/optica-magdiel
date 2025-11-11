@@ -49,7 +49,7 @@ return (
             <div className='mx-auto mb-4 flex items-center justify-center'>
               <img src={logo} alt="logo" style={{ height: '100px' }} />
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">Iniciar Sesión</h1>
+            <h1 className="text-2xl font-bold text-slate-900">INICIAR SESIÓN</h1>
           </div>
 
           {/* Error Message */}
