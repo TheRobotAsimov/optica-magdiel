@@ -27,8 +27,8 @@ export const createLente = async (req, res) => {
     const newLenteId = await Lente.create(req.body);
     res.status(201).json({ id: newLenteId, message: 'Lente creado exitosamente' });
   } catch (error) {
-    //console.log(req.body)
-    //console.log(error.message)
+    console.log(req.body)
+    console.log(error.message)
     res.status(500).json({ message: 'Error al crear el lente', error });
   }
 };
