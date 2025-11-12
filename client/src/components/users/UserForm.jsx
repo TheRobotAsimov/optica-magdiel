@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import userService from '../../service/userService';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, User } from 'lucide-react';
+import { validateUserForm, validateUserField } from '../../utils/validations/index.js';
 
 const UserForm = () => {
   const [user, setUser] = useState({
@@ -12,8 +15,17 @@ const UserForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const { id } = useParams();
   const navigate = useNavigate();
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  useEffect(() => {
+    const errors = validateUserForm(user);
+    const hasErrors = Object.values(errors).some((err) => err);
+    setIsFormValid(!hasErrors);
+  }, [user, fieldErrors]);
 
   useEffect(() => {
     if (id) {
@@ -35,10 +47,33 @@ const UserForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prevUser) => ({ ...prevUser, [name]: value }));
+
+    // Validación en tiempo real
+    if (touched[name]) {
+      const error = validateUserField(name, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+
+    const error = validateUserField(name, value);
+    setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validación completa del formulario
+    const errors = validateUserForm(user);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Por favor corrige los errores en el formulario');
+      return;
+    }
+
     setLoading(true);
     try {
       if (id) {
@@ -56,27 +91,13 @@ const UserForm = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-xl text-gray-600">Cargando...</div>
-          </div>
-        </div>
-      </div>
+      <Loading />
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-800">Error: {error}</div>
-          </div>
-        </div>
-      </div>
+      <Error message={error} />
     );
   }
 
@@ -121,10 +142,16 @@ const UserForm = () => {
                       name="correo"
                       value={user.correo}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                        fieldErrors.correo ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                       placeholder="usuario@ejemplo.com"
                     />
+                    {fieldErrors.correo && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.correo}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -135,10 +162,16 @@ const UserForm = () => {
                       name="contrasena"
                       value={user.contrasena}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       required={!id}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                        fieldErrors.contrasena ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                       placeholder={id ? "Dejar vacío para mantener actual" : "Ingrese contraseña"}
                     />
+                    {fieldErrors.contrasena && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.contrasena}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -148,14 +181,20 @@ const UserForm = () => {
                       name="rol"
                       value={user.rol}
                       onChange={handleChange}
+                      onBlur={handleBlur}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                        fieldErrors.rol ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
                     >
                       <option value="Optometrista">Optometrista</option>
                       <option value="Asesor">Asesor</option>
                       <option value="Matriz">Matriz</option>
                       <option value="Administrador">Administrador</option>
                     </select>
+                    {fieldErrors.rol && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.rol}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -171,7 +210,7 @@ const UserForm = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={!isFormValid || loading}
                   className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
                 >
                   <Save className="h-4 w-4" />
