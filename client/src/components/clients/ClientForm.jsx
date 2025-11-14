@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router';
 import clientService from '../../service/clientService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, User } from 'lucide-react';
+import { validateClientForm, validateClientField } from '../../utils/validations/index.js';
 
 const ClientForm = () => {
   const [client, setClient] = useState({
@@ -19,6 +20,9 @@ const ClientForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -39,13 +43,42 @@ const ClientForm = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    const errors = validateClientForm(client);
+    const hasErrors = Object.values(errors).some((err) => err);
+    setIsFormValid(!hasErrors);
+  }, [client, fieldErrors]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setClient((prevClient) => ({ ...prevClient, [name]: value }));
+
+    // Validación en tiempo real
+    if (touched[name]) {
+      const error = validateClientField(name, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+
+    const error = validateClientField(name, value);
+    setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validación completa del formulario
+    const errors = validateClientForm(client);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Por favor corrige los errores en el formulario');
+      return;
+    }
+
     setLoading(true);
     try {
       if (id) {
@@ -120,35 +153,70 @@ const ClientForm = () => {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                    <input type="text" name="nombre" value={client.nombre} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingrese el nombre" />
+                    <input type="text" name="nombre" value={client.nombre} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.nombre ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Ingrese el nombre" />
+                    {fieldErrors.nombre && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.nombre}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Paterno *</label>
-                    <input type="text" name="paterno" value={client.paterno} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Apellido paterno" />
+                    <input type="text" name="paterno" value={client.paterno} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.paterno ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Apellido paterno" />
+                    {fieldErrors.paterno && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.paterno}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Materno</label>
-                    <input type="text" name="materno" value={client.materno} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Apellido materno" />
+                    <input type="text" name="materno" value={client.materno} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.materno ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Apellido materno" />
+                    {fieldErrors.materno && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.materno}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Edad</label>
-                    <input type="number" name="edad" value={client.edad} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Edad *</label>
+                    <input type="number" name="edad" value={client.edad} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.edad ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} />
+                    {fieldErrors.edad && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.edad}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Sexo</label>
-                    <select name="sexo" value={client.sexo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Sexo *</label>
+                    <select name="sexo" value={client.sexo} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.sexo ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}>
                       <option value="">Seleccionar</option>
                       <option value="M">Masculino</option>
                       <option value="F">Femenino</option>
                     </select>
+                    {fieldErrors.sexo && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.sexo}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono 1 *</label>
-                    <input type="tel" name="telefono1" value={client.telefono1} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de teléfono" />
+                    <input type="tel" name="telefono1" value={client.telefono1} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.telefono1 ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Número de teléfono" />
+                    {fieldErrors.telefono1 && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.telefono1}</p>
+                    )}
                   </div>
                   <div class="md:col-span-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 1 *</label>
-                    <textarea name="domicilio1" value={client.domicilio1} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Dirección completa"></textarea>
+                    <textarea name="domicilio1" value={client.domicilio1} onChange={handleChange} onBlur={handleBlur} required rows="3" className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.domicilio1 ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Dirección completa"></textarea>
+                    {fieldErrors.domicilio1 && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.domicilio1}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Domicilio 2</label>
@@ -168,7 +236,7 @@ const ClientForm = () => {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
                 <button type="button" onClick={() => navigate('/clients')} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Cancelar</button>
-                <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
+                <button type="submit" disabled={!isFormValid || loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
                   <Save className="h-4 w-4" />
                   <span>{loading ? 'Guardando...' : (id ? 'Actualizar' : 'Crear Cliente')}</span>
                 </button>

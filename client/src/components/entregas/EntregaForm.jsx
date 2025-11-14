@@ -6,6 +6,7 @@ import lenteService from '../../service/lenteService';
 import pagoService from '../../service/pagoService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft } from 'lucide-react';
+import { validateEntregaForm, validateEntregaField } from '../../utils/validations/index.js';
 
 const EntregaForm = () => {
   const [formData, setFormData] = useState({
@@ -21,6 +22,9 @@ const EntregaForm = () => {
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -53,13 +57,42 @@ const EntregaForm = () => {
     fetchData();
   }, [id]);
 
+  useEffect(() => {
+    const errors = validateEntregaForm(formData);
+    const hasErrors = Object.values(errors).some((err) => err);
+    setIsFormValid(!hasErrors);
+  }, [formData, fieldErrors]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Validación en tiempo real
+    if (touched[name]) {
+      const error = validateEntregaField(name, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+
+    const error = validateEntregaField(name, value);
+    setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validación completa del formulario
+    const errors = validateEntregaForm(formData);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Por favor corrige los errores en el formulario');
+      return;
+    }
+
     setLoading(true);
     try {
       if (id) {
@@ -106,19 +139,29 @@ const EntregaForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Ruta *</label>
-                  <select name="idruta" value={formData.idruta} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <select name="idruta" value={formData.idruta} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.idruta ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`}>
                     <option value="">Seleccionar Ruta</option>
                     {rutas.map(ruta => (
                       <option key={ruta.idruta} value={ruta.idruta}>{`Ruta ${ruta.idruta} - ${new Date(ruta.fecha).toLocaleDateString()}`}</option>
                     ))}
                   </select>
+                  {fieldErrors.idruta && (
+                    <p className="text-red-500 text-sm mt-1">{fieldErrors.idruta}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Estatus *</label>
-                  <select name="estatus" value={formData.estatus} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                  <select name="estatus" value={formData.estatus} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.estatus ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`}>
                     <option value="No entregado">No entregado</option>
                     <option value="Entregado">Entregado</option>
                   </select>
+                  {fieldErrors.estatus && (
+                    <p className="text-red-500 text-sm mt-1">{fieldErrors.estatus}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Lente</label>
@@ -140,15 +183,25 @@ const EntregaForm = () => {
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Motivo *</label>
-                  <textarea name="motivo" value={formData.motivo} onChange={handleChange} required rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
+                  <textarea name="motivo" value={formData.motivo} onChange={handleChange} onBlur={handleBlur} required rows="3" className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.motivo ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`}></textarea>
+                  {fieldErrors.motivo && (
+                    <p className="text-red-500 text-sm mt-1">{fieldErrors.motivo}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Hora *</label>
-                  <input type="time" name="hora" value={formData.hora} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  <input type="time" name="hora" value={formData.hora} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.hora ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} />
+                  {fieldErrors.hora && (
+                    <p className="text-red-500 text-sm mt-1">{fieldErrors.hora}</p>
+                  )}
                 </div>
               </div>
               <div className="flex justify-end pt-6 border-t border-gray-200">
-                <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
+                <button type="submit" disabled={!isFormValid || loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
                   <Save className="h-4 w-4" />
                   <span>{loading ? 'Guardando...' : (id ? 'Actualizar Entrega' : 'Crear Entrega')}</span>
                 </button>

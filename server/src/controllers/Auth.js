@@ -65,6 +65,7 @@ export const login = async (req, res) => {
             user: userWithoutPassword
         });
     } catch (error) {
+        console.log('Error en login:', error);
         console.error('Error en login:', error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }

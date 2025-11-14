@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router';
 import lenteService from '../../service/lenteService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, User } from 'lucide-react';
+import { validateLenteForm, validateLenteField } from '../../utils/validations/index.js';
 
 const LenteForm = () => {
   const [lente, setLente] = useState({
@@ -37,6 +38,9 @@ const LenteForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -63,13 +67,42 @@ const LenteForm = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    const errors = validateLenteForm(lente);
+    const hasErrors = Object.values(errors).some((err) => err);
+    setIsFormValid(!hasErrors);
+  }, [lente, fieldErrors]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLente((prevLente) => ({ ...prevLente, [name]: value }));
+
+    // Validación en tiempo real
+    if (touched[name]) {
+      const error = validateLenteField(name, value, lente);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+
+    const error = validateLenteField(name, value, lente);
+    setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validación completa del formulario
+    const errors = validateLenteForm(lente);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Por favor corrige los errores en el formulario');
+      return;
+    }
+
     setLoading(true);
     try {
       if (id) {
@@ -148,7 +181,7 @@ const LenteForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Folio Venta *</label>
-                    <input type="text" name="folio" value={lente.folio} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input type="text" name="folio" value={lente.folio} onChange={handleChange} onBlur={handleBlur} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Síntomas</label>
@@ -304,7 +337,7 @@ const LenteForm = () => {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
                 <button type="button" onClick={() => navigate('/lentes')} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Cancelar</button>
-                <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
+                <button type="submit" disabled={!isFormValid || loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
                   <Save className="h-4 w-4" />
                   <span>{loading ? 'Guardando...' : (id ? 'Actualizar' : 'Crear Lente')}</span>
                 </button>

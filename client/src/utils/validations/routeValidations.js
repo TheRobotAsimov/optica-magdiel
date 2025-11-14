@@ -11,7 +11,7 @@ export const validateRouteForm = (formData) => {
   const fechaError = validateRequired(formData.fecha, 'Fecha');
   if (fechaError) errors.fecha = fechaError;
   else {
-    const dateError = validateDate(formData.fecha, 'Fecha');
+    const dateError = validateDate(formData.fecha, 'Fecha', { noFuture: true });
     if (dateError) errors.fecha = dateError;
   }
 
@@ -19,13 +19,13 @@ export const validateRouteForm = (formData) => {
   const horaInicioError = validateRequired(formData.hora_inicio, 'Hora de inicio');
   if (horaInicioError) errors.hora_inicio = horaInicioError;
 
-  const horaFinError = validateRequired(formData.hora_fin, 'Hora de fin');
-  if (horaFinError) errors.hora_fin = horaFinError;
-
-  // Validar que hora fin sea posterior a hora inicio
-  if (formData.hora_inicio && formData.hora_fin) {
-    const timeError = validateTimeRange(formData.hora_inicio, formData.hora_fin);
-    if (timeError) errors.hora_fin = timeError;
+  // Hora fin es opcional
+  if (formData.hora_fin) {
+    // Validar que hora fin sea posterior a hora inicio
+    if (formData.hora_inicio) {
+      const timeError = validateTimeRange(formData.hora_inicio, formData.hora_fin);
+      if (timeError) errors.hora_fin = timeError;
+    }
   }
 
   // Estatus
@@ -36,12 +36,26 @@ export const validateRouteForm = (formData) => {
     errors.estatus = 'Estatus inválido';
   }
 
-  // Cantidades (deben ser números positivos o cero)
-  const lentesRecibidosError = validateNumber(formData.lentes_recibidos, 'Lentes recibidos', 0);
-  if (lentesRecibidosError) errors.lentes_recibidos = lentesRecibidosError;
+  // Cantidades (deben ser números enteros positivos o cero)
+  if (!formData.lentes_recibidos && formData.lentes_recibidos !== 0) {
+    errors.lentes_recibidos = 'Lentes recibidos es requerido';
+  } else {
+    const lentesRecibidosError = validateNumber(formData.lentes_recibidos, 'Lentes recibidos', 0);
+    if (lentesRecibidosError) errors.lentes_recibidos = lentesRecibidosError;
+    else if (!Number.isInteger(Number(formData.lentes_recibidos))) {
+      errors.lentes_recibidos = 'Lentes recibidos debe ser un número entero';
+    }
+  }
 
-  const tarjetasRecibidasError = validateNumber(formData.tarjetas_recibidas, 'Tarjetas recibidas', 0);
-  if (tarjetasRecibidasError) errors.tarjetas_recibidas = tarjetasRecibidasError;
+  if (!formData.tarjetas_recibidas && formData.tarjetas_recibidas !== 0) {
+    errors.tarjetas_recibidas = 'Tarjetas recibidas es requerido';
+  } else {
+    const tarjetasRecibidasError = validateNumber(formData.tarjetas_recibidas, 'Tarjetas recibidas', 0);
+    if (tarjetasRecibidasError) errors.tarjetas_recibidas = tarjetasRecibidasError;
+    else if (!Number.isInteger(Number(formData.tarjetas_recibidas))) {
+      errors.tarjetas_recibidas = 'Tarjetas recibidas debe ser un número entero';
+    }
+  }
 
   const lentesEntregadosError = validateNumber(formData.lentes_entregados, 'Lentes entregados', 0);
   if (lentesEntregadosError) errors.lentes_entregados = lentesEntregadosError;
@@ -65,14 +79,12 @@ export const validateRouteField = (name, value, formData = {}) => {
     case 'fecha': {
       const fechaReq = validateRequired(value, 'Fecha');
       if (fechaReq) return fechaReq;
-      return validateDate(value, 'Fecha');
+      return validateDate(value, 'Fecha', { noFuture: true });
     }
     case 'hora_inicio':
       return validateRequired(value, 'Hora de inicio');
     case 'hora_fin': {
-      const finReq = validateRequired(value, 'Hora de fin');
-      if (finReq) return finReq;
-      if (formData.hora_inicio && value) {
+      if (value && formData.hora_inicio) {
         return validateTimeRange(formData.hora_inicio, value);
       }
       return null;
@@ -84,7 +96,13 @@ export const validateRouteField = (name, value, formData = {}) => {
       return null;
     }
     case 'lentes_recibidos':
-    case 'tarjetas_recibidas':
+    case 'tarjetas_recibidas': {
+      if (!value && value !== 0) return `${name.replace(/_/g, ' ')} es requerido`;
+      const numError = validateNumber(value, name.replace(/_/g, ' '), 0);
+      if (numError) return numError;
+      if (!Number.isInteger(Number(value))) return `${name.replace(/_/g, ' ')} debe ser un número entero`;
+      return null;
+    }
     case 'lentes_entregados':
     case 'tarjetas_entregadas':
     case 'lentes_no_entregados':

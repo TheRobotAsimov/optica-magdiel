@@ -5,8 +5,8 @@ export const createVenta = async (req, res) => {
     const newVentaId = await Venta.create(req.body);
     res.status(201).json({ id: newVentaId, message: 'Venta created successfully' });
   } catch (error) {
-    //console.log(req.body)
-    //console.log(error.message)
+    console.log(req.body)
+    console.log(error.message)
     res.status(500).json({ error: error.message });
   }
 };

@@ -211,7 +211,7 @@ const UserForm = () => {
                 <button
                   type="submit"
                   disabled={!isFormValid || loading}
-                  className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors"
+                  className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
                 >
                   <Save className="h-4 w-4" />
                   <span>{loading ? 'Guardando...' : (id ? 'Actualizar' : 'Crear Usuario')}</span>

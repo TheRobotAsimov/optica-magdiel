@@ -46,23 +46,23 @@ export const Dashboard = () => {
           {/* Gestiones Section */}
           <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6 border-b pb-2">
-                Gestiones
+              <h3 className="text-3xl font-bold leading-6 text-blue-500 mb-6 border-b-4 pb-2">
+                GESTIONES
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[
                   ...(user?.rol === 'Matriz' ? [
                     { title: 'Usuarios', icon: Users, path: '/users', color: 'bg-blue-500' },
-                    { title: 'Empleados', icon: Briefcase, path: '/empleados', color: 'bg-indigo-500' },
+                    { title: 'Empleados', icon: Briefcase, path: '/empleados', color: 'bg-blue-500' },
                   ] : []),
-                  { title: 'Clientes', icon: UserCheck, path: '/clients', color: 'bg-green-500' },
-                  { title: 'Ventas', icon: ShoppingCart, path: '/ventas', color: 'bg-purple-500' },
-                  { title: 'Rutas', icon: MapPin, path: '/rutas', color: 'bg-red-500' },
-                  { title: 'Pagos', icon: DollarSign, path: '/pagos', color: 'bg-yellow-500' },
-                  { title: 'Entregas', icon: Package, path: '/entregas', color: 'bg-orange-500' },
-                  { title: 'Gastos de Ruta', icon: Receipt, path: '/gasto-rutas', color: 'bg-pink-500' },
+                  { title: 'Clientes', icon: UserCheck, path: '/clients', color: 'bg-blue-500' },
+                  { title: 'Ventas', icon: ShoppingCart, path: '/ventas', color: 'bg-blue-500' },
+                  { title: 'Rutas', icon: MapPin, path: '/rutas', color: 'bg-blue-500' },
+                  { title: 'Pagos', icon: DollarSign, path: '/pagos', color: 'bg-blue-500' },
+                  { title: 'Entregas', icon: Package, path: '/entregas', color: 'bg-blue-500' },
+                  { title: 'Gastos de Ruta', icon: Receipt, path: '/gasto-rutas', color: 'bg-blue-500' },
                   ...(user?.rol === 'Matriz' ? [
-                    { title: 'Lentes', icon: Glasses, path: '/lentes', color: 'bg-teal-500' },
+                    { title: 'Lentes', icon: Glasses, path: '/lentes', color: 'bg-blue-500' },
                   ] : []),
                 ].map((item) => {
                   const Icon = item.icon;
@@ -87,15 +87,15 @@ export const Dashboard = () => {
           {/* Acciones Rápidas Section */}
           <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
             <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6 border-b pb-2">
-                Acciones Rápidas
+              <h3 className="text-3xl font-bold leading-6 text-emerald-500 mb-6 border-b-4 pb-2">
+                ACCIONES RÁPIDAS
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[
-                  { title: 'Contrato de Venta', icon: FileText, path: '/ventas/new/unified', color: 'bg-cyan-500' },
+                  { title: 'Contrato de Venta', icon: FileText, path: '/ventas/new/unified', color: 'bg-emerald-500' },
                   { title: 'Registrar Entrega', icon: Truck, path: '/entregas/complete', color: 'bg-emerald-500' },
                   ...(user?.puesto === 'Asesor' ? [
-                    { title: 'Ruta Asesor', icon: MapPin, path: '/ruta-asesor', color: 'bg-violet-500' },
+                    { title: 'Ruta Asesor', icon: MapPin, path: '/ruta-asesor', color: 'bg-emerald-500' },
                   ] : []),
                 ].map((item) => {
                   const Icon = item.icon;
@@ -121,13 +121,13 @@ export const Dashboard = () => {
           {user?.rol === 'Matriz' && (
             <div className="bg-white overflow-hidden shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg leading-6 font-medium text-gray-900 mb-6 border-b pb-2">
-                  Administración
+                <h3 className="text-3xl font-bold leading-6 text-slate-500 mb-6 border-b-4 pb-2">
+                  ADMINISTRACIÓN
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[
                     { title: 'Precios', icon: Settings, path: '/admin/prices', color: 'bg-slate-500' },
-                    { title: 'Base de Datos', icon: Database, path: '/admin/database', color: 'bg-gray-500' },
+                    { title: 'Base de Datos', icon: Database, path: '/admin/database', color: 'bg-slate-500' },
                   ].map((item) => {
                     const Icon = item.icon;
                     return (

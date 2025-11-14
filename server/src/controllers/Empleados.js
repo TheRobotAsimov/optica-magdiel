@@ -27,6 +27,8 @@ export const createEmpleado = async (req, res) => {
     const empleadoId = await Empleado.create(req.body);
     res.status(201).json({ id: empleadoId, message: 'Empleado creado exitosamente' });
   } catch (error) {
+    console.log(req.body);
+    console.error(error);
     res.status(500).json({ message: 'Error al crear el empleado', error });
   }
 };

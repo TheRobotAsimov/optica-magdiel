@@ -9,8 +9,8 @@ export const validateEmail = (email) => {
 
 export const validatePhone = (phone) => {
   if (!phone) return 'Teléfono requerido';
-  const cleanPhone = phone.replace(/\D/g, '');
-  if (cleanPhone.length !== 10) return 'Teléfono debe tener 10 dígitos';
+  if (!/^\d{10}$/.test(phone)) return 'Solo se permiten 10 dígitos numéricos';
+  if (phone.length !== 10) return 'Teléfono debe tener 10 dígitos';
   return null;
 };
 
@@ -21,8 +21,11 @@ export const validateRequired = (value, fieldName) => {
   return null;
 };
 
-export const validateTextOnly = (value, fieldName) => {
+export const validateTextOnly = (value, fieldName, minLength = 0) => {
   if (!value) return null; // No requerido por defecto
+  if (value.length < minLength) {
+    return `${fieldName} debe tener al menos ${minLength} caracteres`;
+  }
   const textRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
   if (!textRegex.test(value)) {
     return `${fieldName} solo puede contener letras y espacios`;
@@ -50,6 +53,23 @@ export const validateDate = (date, fieldName, options = {}) => {
 
   if (options.past && dateObj > new Date()) {
     return `${fieldName} debe ser una fecha pasada`;
+  }
+
+  if (options.noFuture && dateObj > new Date()) {
+    return `${fieldName} no puede ser una fecha futura`;
+  }
+
+  if (options.minAge) {
+    const today = new Date();
+    const birthDate = new Date(date);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    if (age < options.minAge) {
+      return `${fieldName} debe ser de al menos ${options.minAge} años`;
+    }
   }
 
   return null;

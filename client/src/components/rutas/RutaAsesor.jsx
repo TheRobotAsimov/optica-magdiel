@@ -57,6 +57,20 @@ const RutaAsesor = () => {
         } catch (err) {
           console.error('Error restoring saved route:', err);
         }
+      } else {
+        try {
+          const rutas = await rutaService.getAllRutas();
+          const restoredRoute = rutas.find(r => r.idasesor === user.idempleado && r.estatus === 'Activa');
+          if (restoredRoute) {
+            setCurrentRouteId(restoredRoute.idruta);
+            setRouteData(restoredRoute);
+            setCurrentWindow(targetWindow === '3' ? 3 : 2);
+            return;
+          }
+        } catch (err) {
+          console.error('Error checking for existing active route:', err);
+
+        }
       }
 
       try {

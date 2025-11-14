@@ -7,20 +7,20 @@ export const validateEmpleadoForm = (formData) => {
   const nombreError = validateRequired(formData.nombre, 'Nombre');
   if (nombreError) errors.nombre = nombreError;
   else {
-    const textError = validateTextOnly(formData.nombre, 'Nombre');
+    const textError = validateTextOnly(formData.nombre, 'Nombre', 3);
     if (textError) errors.nombre = textError;
   }
 
   const paternoError = validateRequired(formData.paterno, 'Apellido paterno');
   if (paternoError) errors.paterno = paternoError;
   else {
-    const textError = validateTextOnly(formData.paterno, 'Apellido paterno');
+    const textError = validateTextOnly(formData.paterno, 'Apellido paterno', 3);
     if (textError) errors.paterno = textError;
   }
 
   // Materno es opcional pero si se proporciona debe ser válido
   if (formData.materno) {
-    const textError = validateTextOnly(formData.materno, 'Apellido materno');
+    const textError = validateTextOnly(formData.materno, 'Apellido materno', 3);
     if (textError) errors.materno = textError;
   }
 
@@ -29,12 +29,16 @@ export const validateEmpleadoForm = (formData) => {
   if (phoneError) errors.telefono = phoneError;
 
   // Fechas
-  if (formData.fecnac) {
-    const birthDateError = validateDate(formData.fecnac, 'Fecha de nacimiento', { past: true });
+  if (!formData.fecnac) {
+    errors.fecnac = 'Fecha de nacimiento es requerida';
+  } else {
+    const birthDateError = validateDate(formData.fecnac, 'Fecha de nacimiento', { past: true, minAge: 18 });
     if (birthDateError) errors.fecnac = birthDateError;
   }
 
-  if (formData.feccon) {
+  if (!formData.feccon) {
+    errors.feccon = 'Fecha de contratación es requerida';
+  } else {
     const contractDateError = validateDate(formData.feccon, 'Fecha de contratación');
     if (contractDateError) errors.feccon = contractDateError;
   }
@@ -63,7 +67,9 @@ export const validateEmpleadoForm = (formData) => {
 
   // Sexo
   const validSexos = ['M', 'F'];
-  if (formData.sexo && !validSexos.includes(formData.sexo)) {
+  if (!formData.sexo) {
+    errors.sexo = 'Sexo es requerido';
+  } else if (!validSexos.includes(formData.sexo)) {
     errors.sexo = 'Sexo inválido';
   }
 
@@ -75,24 +81,24 @@ export const validateEmpleadoField = (name, value) => {
     case 'nombre': {
       const nombreReq = validateRequired(value, 'Nombre');
       if (nombreReq) return nombreReq;
-      return validateTextOnly(value, 'Nombre');
+      return validateTextOnly(value, 'Nombre', 3);
     }
     case 'paterno': {
       const paternoReq = validateRequired(value, 'Apellido paterno');
       if (paternoReq) return paternoReq;
-      return validateTextOnly(value, 'Apellido paterno');
+      return validateTextOnly(value, 'Apellido paterno', 3);
     }
     case 'materno':
-      if (value) return validateTextOnly(value, 'Apellido materno');
+      if (value) return validateTextOnly(value, 'Apellido materno', 3);
       return null;
     case 'telefono':
       return validatePhone(value);
     case 'fecnac':
-      if (value) return validateDate(value, 'Fecha de nacimiento', { past: true });
-      return null;
+      if (!value) return 'Fecha de nacimiento es requerida';
+      return validateDate(value, 'Fecha de nacimiento', { past: true, minAge: 18 });
     case 'feccon':
-      if (value) return validateDate(value, 'Fecha de contratación');
-      return null;
+      if (!value) return 'Fecha de contratación es requerida';
+      return validateDate(value, 'Fecha de contratación');
     case 'sueldo':
       if (value) return validateNumber(value, 'Sueldo', 0);
       return null;
@@ -110,7 +116,8 @@ export const validateEmpleadoField = (name, value) => {
     }
     case 'sexo': {
       const validSexos = ['M', 'F'];
-      if (value && !validSexos.includes(value)) return 'Sexo inválido';
+      if (!value) return 'Sexo es requerido';
+      if (!validSexos.includes(value)) return 'Sexo inválido';
       return null;
     }
     default:

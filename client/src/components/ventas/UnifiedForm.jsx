@@ -10,6 +10,7 @@ import precioService from '../../service/precioService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
+import { validateUnifiedForm, validateUnifiedField } from '../../utils/validations/index.js';
 
 // Componente principal para el formulario unificado de ventas
 const UnifiedForm = () => {
@@ -97,6 +98,9 @@ const UnifiedForm = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [isClientSelected, setIsClientSelected] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -288,73 +292,93 @@ const UnifiedForm = () => {
     }
   }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, formData.kit, formData.tinte_color, priceCatalog, additives]);
 
+  useEffect(() => {
+    const errors = validateUnifiedForm(formData);
+    const hasErrors = Object.values(errors).some((err) => err);
+    setIsFormValid(!hasErrors);
+  }, [formData, fieldErrors]);
+
 // Funcion principal para manejar cambios en los campos del formulario
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+   const handleChange = (e) => {
+     const { name, value } = e.target;
 
-    // Si el campo es examen de seguimiento, calcular la fecha automaticamente
-    if (name === 'examenSeguimientoOption') {
-      setExamenSeguimientoOption(value);
-      if (value) {
-        const baseDate = new Date(formData.fecha); // Usar la fecha |e la venta como base
-        let newDate = new Date(baseDate);
+     // Si el campo es examen de seguimiento, calcular la fecha automaticamente
+     if (name === 'examenSeguimientoOption') {
+       setExamenSeguimientoOption(value);
+       if (value) {
+         const baseDate = new Date(formData.fecha); // Usar la fecha |e la venta como base
+         let newDate = new Date(baseDate);
 
-        // Calcular la nueva fecha basada en la opcion seleccionada
-        if (value === '6 months') {
-          newDate.setMonth(newDate.getMonth() + 6);
-        } else if (value === '1 year') {
-          newDate.setFullYear(newDate.getFullYear() + 1);
-        } else if (value === '2 years') {
-          newDate.setFullYear(newDate.getFullYear() + 2);
-        }
+         // Calcular la nueva fecha basada en la opcion seleccionada
+         if (value === '6 months') {
+           newDate.setMonth(newDate.getMonth() + 6);
+         } else if (value === '1 year') {
+           newDate.setFullYear(newDate.getFullYear() + 1);
+         } else if (value === '2 years') {
+           newDate.setFullYear(newDate.getFullYear() + 2);
+         }
 
-        // Formatear la fecha a YYYY-MM-DD
-        const year = newDate.getFullYear();
-        const month = String(newDate.getMonth() + 1).padStart(2, '0');
-        const day = String(newDate.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${day}`;
+         // Formatear la fecha a YYYY-MM-DD
+         const year = newDate.getFullYear();
+         const month = String(newDate.getMonth() + 1).padStart(2, '0');
+         const day = String(newDate.getDate()).padStart(2, '0');
+         const formattedDate = `${year}-${month}-${day}`;
 
-        setFormData((prev) => ({
-          ...prev,
-          examen_seguimiento: formattedDate,
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          examen_seguimiento: '',
-        }));
-      }
-    } else {
-      setFormData((prev) => {
-        const newFormData = { ...prev, [name]: value };
+         setFormData((prev) => ({
+           ...prev,
+           examen_seguimiento: formattedDate,
+         }));
+       } else {
+         setFormData((prev) => ({
+           ...prev,
+           examen_seguimiento: '',
+         }));
+       }
+     } else {
+       setFormData((prev) => {
+         const newFormData = { ...prev, [name]: value };
 
-        if (name === 'nombre' || name === 'paterno') {
-          setSelectedClient(null);
-          setIsClientSelected(false);
-        }
+         if (name === 'nombre' || name === 'paterno') {
+           setSelectedClient(null);
+           setIsClientSelected(false);
+         }
 
-        if (name === 'material') {
-          newFormData.tratamiento = '';
-          newFormData.tipo_de_lente = '';
-          newFormData.subtipo = '';
-        }
+         if (name === 'material') {
+           newFormData.tratamiento = '';
+           newFormData.tipo_de_lente = '';
+           newFormData.subtipo = '';
+         }
 
-        if (name === 'tratamiento') {
-          newFormData.tipo_de_lente = '';
-          newFormData.subtipo = '';
-        }
+         if (name === 'tratamiento') {
+           newFormData.tipo_de_lente = '';
+           newFormData.subtipo = '';
+         }
 
-        if (name === 'tipo_de_lente') {
-          newFormData.subtipo = '';
-          if (value !== 'Bifocal') {
-            newFormData.blend = 'No';
-          }
-        }
+         if (name === 'tipo_de_lente') {
+           newFormData.subtipo = '';
+           if (value !== 'Bifocal') {
+             newFormData.blend = 'No';
+           }
+         }
 
-        return newFormData;
-      });
-    }
-  };
+         return newFormData;
+       });
+
+       // Validación en tiempo real
+       if (touched[name]) {
+         const error = validateUnifiedField(name, value, formData);
+         setFieldErrors(prev => ({ ...prev, [name]: error }));
+       }
+     }
+   };
+
+   const handleBlur = (e) => {
+     const { name, value } = e.target;
+     setTouched(prev => ({ ...prev, [name]: true }));
+
+     const error = validateUnifiedField(name, value, formData);
+     setFieldErrors(prev => ({ ...prev, [name]: error }));
+   };
 
 // Funcion para seleccionar un cliente de las sugerencias
   const handleSelectClient = (client) => {
@@ -395,96 +419,105 @@ const UnifiedForm = () => {
   };
 
 // Funcion para manejar el envio del formulario
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      let clientId;
-      if (isClientSelected && selectedClient) {
-        clientId = selectedClient.idcliente;
-      } else {
-        // 1. Crea Cliente
-        const newClient = await clientService.createClient({
-          nombre: formData.nombre,
-          paterno: formData.paterno,
-          materno: formData.materno,
-          domicilio1: formData.domicilio1,
-          domicilio2: formData.domicilio2,
-          telefono1: formData.telefono1,
-          telefono2: formData.telefono2,
-          edad: formData.edad,
-          sexo: formData.sexo,
-          map_url: ''
-        });
-        clientId = newClient.id;
-      }
+   const handleSubmit = async (e) => {
+     e.preventDefault();
 
-      const finalTotal = formData.total;
+     // Validación completa del formulario
+     const errors = validateUnifiedForm(formData);
+     if (Object.keys(errors).length > 0) {
+       setFieldErrors(errors);
+       setError('Por favor corrige los errores en el formulario');
+       return;
+     }
 
-      // 2. Crea Venta
-      await ventaService.createVenta({
-        folio: formData.folio,
-        idasesor: parseInt(formData.idasesor),
-        idcliente: clientId,
-        fecha: formData.fecha,
-        tipo: formData.tipo,
-        enganche: parseFloat(formData.enganche) || 0,
-        total: finalTotal,
-        observaciones: formData.observaciones,
-        estatus: formData.estatus,
-        cant_pagos: parseInt(formData.cant_pagos) || 0,
-        imagen_contrato: formData.imagen_contrato,
-        imagen_cobranza: formData.imagen_cobranza,
-      });
+     setLoading(true);
+     try {
+       let clientId;
+       if (isClientSelected && selectedClient) {
+         clientId = selectedClient.idcliente;
+       } else {
+         // 1. Crea Cliente
+         const newClient = await clientService.createClient({
+           nombre: formData.nombre,
+           paterno: formData.paterno,
+           materno: formData.materno,
+           domicilio1: formData.domicilio1,
+           domicilio2: formData.domicilio2,
+           telefono1: formData.telefono1,
+           telefono2: formData.telefono2,
+           edad: formData.edad,
+           sexo: formData.sexo,
+           map_url: ''
+         });
+         clientId = newClient.id;
+       }
+
+       const finalTotal = formData.total;
+
+       // 2. Crea Venta
+       await ventaService.createVenta({
+         folio: formData.folio,
+         idasesor: parseInt(formData.idasesor),
+         idcliente: clientId,
+         fecha: formData.fecha,
+         tipo: formData.tipo,
+         enganche: parseFloat(formData.enganche) || 0,
+         total: finalTotal,
+         observaciones: formData.observaciones,
+         estatus: formData.estatus,
+         cant_pagos: parseInt(formData.cant_pagos) || 0,
+         imagen_contrato: formData.imagen_contrato,
+         imagen_cobranza: formData.imagen_cobranza,
+       });
 
 
-      // 3. Crea Lente
-      await lenteService.createLente({
-        idoptometrista: parseInt(formData.idoptometrista, 10),
-        folio: formData.folio, // Usa el folio del formulario
-        sintomas: formData.sintomas,
-        uso_de_lente: formData.uso_de_lente,
-        armazon: formData.armazon,
-        material: formData.material,
-        tratamiento: formData.tratamiento,
-        tipo_de_lente: formData.tipo_de_lente,
-        tinte_color: formData.tinte_color,
-        tono: formData.tono === '' ? null : formData.tono,
-        desvanecido: formData.desvanecido,
-        blend: formData.blend,
-        subtipo: formData.subtipo === '' ? null : formData.subtipo,
-        procesado: formData.procesado,
-        fecha_entrega: formData.fecha_entrega,
-        examen_seguimiento: formData.examen_seguimiento,
-        estatus: 'Pendiente',
-        // Si el campo esta vacio, enviar null al backend, sino parsear el valor
-        od_esf: formData.od_esf ? parseFloat(formData.od_esf) : null,
-        od_cil: formData.od_cil ? parseFloat(formData.od_cil) : null,
-        od_eje: formData.od_eje ? parseInt(formData.od_eje, 10) : null,
-        od_add: formData.od_add ? parseFloat(formData.od_add) : null,
-        od_av: formData.od_av,
-        oi_esf: formData.oi_esf ? parseFloat(formData.oi_esf) : null,
-        oi_cil: formData.oi_cil ? parseFloat(formData.oi_cil) : null,
-        oi_eje: formData.oi_eje ? parseInt(formData.oi_eje, 10) : null,
-        oi_add: formData.oi_add ? parseFloat(formData.oi_add) : null,
-        oi_av: formData.oi_av,
-        kit: formData.kit,
-      });
+       // 3. Crea Lente
+       await lenteService.createLente({
+         idoptometrista: parseInt(formData.idoptometrista, 10),
+         folio: formData.folio, // Usa el folio del formulario
+         sintomas: formData.sintomas,
+         uso_de_lente: formData.uso_de_lente,
+         armazon: formData.armazon,
+         material: formData.material,
+         tratamiento: formData.tratamiento,
+         tipo_de_lente: formData.tipo_de_lente,
+         tinte_color: formData.tinte_color,
+         tono: formData.tono === '' ? null : formData.tono,
+         desvanecido: formData.desvanecido,
+         blend: formData.blend,
+         subtipo: formData.subtipo === '' ? null : formData.subtipo,
+         procesado: formData.procesado,
+         fecha_entrega: formData.fecha_entrega,
+         examen_seguimiento: formData.examen_seguimiento,
+         estatus: 'Pendiente',
+         // Si el campo esta vacio, enviar null al backend, sino parsear el valor
+         od_esf: formData.od_esf ? parseFloat(formData.od_esf) : null,
+         od_cil: formData.od_cil ? parseFloat(formData.od_cil) : null,
+         od_eje: formData.od_eje ? parseInt(formData.od_eje, 10) : null,
+         od_add: formData.od_add ? parseFloat(formData.od_add) : null,
+         od_av: formData.od_av,
+         oi_esf: formData.oi_esf ? parseFloat(formData.oi_esf) : null,
+         oi_cil: formData.oi_cil ? parseFloat(formData.oi_cil) : null,
+         oi_eje: formData.oi_eje ? parseInt(formData.oi_eje, 10) : null,
+         oi_add: formData.oi_add ? parseFloat(formData.oi_add) : null,
+         oi_av: formData.oi_av,
+         kit: formData.kit,
+       });
 
-      // Navigate back to ruta asesor if coming from there, otherwise to ventas
-      const urlParams = new URLSearchParams(window.location.search);
-      const fromRuta = urlParams.get('fromRuta');
-      if (fromRuta) {
-        navigate('/ruta-asesor');
-      } else {
-        navigate('/ventas');
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+       // Navigate back to ruta asesor if coming from there, otherwise to ventas
+       const urlParams = new URLSearchParams(window.location.search);
+       const fromRuta = urlParams.get('fromRuta');
+       if (fromRuta) {
+         navigate('/ruta-asesor');
+       } else {
+         navigate('/ventas');
+       }
+     } catch (err) {
+       setError(err.message);
+     } finally {
+       setLoading(false);
+     }
+   };
 
 // Renderizado condicional para estado de carga
   if (loading) {
@@ -538,7 +571,7 @@ const UnifiedForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Folio *</label>
-                    <input type="text" name="folio" value={formData.folio} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                    <input type="text" name="folio" value={formData.folio} onChange={handleChange} onBlur={handleBlur} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Asesor *</label>
@@ -890,12 +923,12 @@ const UnifiedForm = () => {
               </div>
 
 {/*// Botones de accion*/}
-              <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
-                  <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
-                  <Save className="h-4 w-4" />
-                  <span>{loading ? 'Guardando...' : 'Crear Venta'}</span>
-                </button>
-              </div>
+               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
+                   <button type="submit" disabled={!isFormValid || loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
+                   <Save className="h-4 w-4" />
+                   <span>{loading ? 'Guardando...' : 'Crear Venta'}</span>
+                 </button>
+               </div>
             </form>
           </div>
         </div>

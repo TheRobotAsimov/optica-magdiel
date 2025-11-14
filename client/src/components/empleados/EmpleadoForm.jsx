@@ -3,6 +3,13 @@ import { useParams, useNavigate } from 'react-router';
 import empleadoService from '../../service/empleadoService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, User } from 'lucide-react';
+import { validateEmpleadoForm, validateEmpleadoField } from '../../utils/validations/index.js';
+import DatePicker from 'react-datepicker';
+import { registerLocale } from 'react-datepicker';
+import es from 'date-fns/locale/es';
+import 'react-datepicker/dist/react-datepicker.css';
+
+registerLocale('es', es);
 
 const EmpleadoForm = () => {
   const [empleado, setEmpleado] = useState({
@@ -20,6 +27,9 @@ const EmpleadoForm = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -46,19 +56,55 @@ const EmpleadoForm = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    const errors = validateEmpleadoForm(empleado);
+    const hasErrors = Object.values(errors).some((err) => err);
+    setIsFormValid(!hasErrors);
+  }, [empleado, fieldErrors]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEmpleado((prevEmpleado) => ({ ...prevEmpleado, [name]: value }));
+
+    // Validación en tiempo real
+    if (touched[name]) {
+      const error = validateEmpleadoField(name, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+
+    const error = validateEmpleadoField(name, value);
+    setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validación completa del formulario
+    const errors = validateEmpleadoForm(empleado);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setError('Por favor corrige los errores en el formulario');
+      return;
+    }
+
     setLoading(true);
     try {
+      const modifiedEmpleado = { ...empleado };
+      if (modifiedEmpleado.idusuario === '') {
+        modifiedEmpleado.idusuario = null;
+      }
+      if (modifiedEmpleado.sueldo === '') {
+        modifiedEmpleado.sueldo = null;
+      }
       if (id) {
-        await empleadoService.updateEmpleado(id, empleado);
+        await empleadoService.updateEmpleado(id, modifiedEmpleado);
       } else {
-        await empleadoService.createEmpleado(empleado);
+        await empleadoService.createEmpleado(modifiedEmpleado);
       }
       navigate('/empleados');
     } catch (err) {
@@ -127,31 +173,85 @@ const EmpleadoForm = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Nombre *</label>
-                    <input type="text" name="nombre" value={empleado.nombre} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ingrese el nombre" />
+                    <input type="text" name="nombre" value={empleado.nombre} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.nombre ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Ingrese el nombre" />
+                    {fieldErrors.nombre && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.nombre}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Paterno *</label>
-                    <input type="text" name="paterno" value={empleado.paterno} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Apellido paterno" />
+                    <input type="text" name="paterno" value={empleado.paterno} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.paterno ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Apellido paterno" />
+                    {fieldErrors.paterno && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.paterno}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Materno</label>
-                    <input type="text" name="materno" value={empleado.materno} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Apellido materno" />
+                    <input type="text" name="materno" value={empleado.materno} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.materno ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Apellido materno" />
+                    {fieldErrors.materno && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.materno}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Nacimiento</label>
-                    <input type="date" name="fecnac" value={empleado.fecnac} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Nacimiento *</label>
+                    <DatePicker
+                      selected={empleado.fecnac ? new Date(empleado.fecnac) : null}
+                      onChange={(date) => {
+                        const value = date ? date.toISOString().split('T')[0] : '';
+                        setEmpleado({ ...empleado, fecnac: value });
+                        if (touched.fecnac) {
+                          const error = validateEmpleadoField('fecnac', value);
+                          setFieldErrors(prev => ({ ...prev, fecnac: error }));
+                        }
+                      }}
+                      onBlur={() => {
+                        setTouched(prev => ({ ...prev, fecnac: true }));
+                        const error = validateEmpleadoField('fecnac', empleado.fecnac);
+                        setFieldErrors(prev => ({ ...prev, fecnac: error }));
+                      }}
+                      dateFormat="dd/MM/yyyy"
+                      placeholderText="Selecciona fecha de nacimiento"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                        fieldErrors.fecnac ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}
+                      maxDate={new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate())}
+                      minDate={new Date(1940, 0, 1)}
+                      locale="es"
+                      showYearDropdown
+                      showMonthDropdown
+                      dropdownMode="select"
+                    />
+                    {fieldErrors.fecnac && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.fecnac}</p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Sexo</label>
-                    <select name="sexo" value={empleado.sexo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Sexo *</label>
+                    <select name="sexo" value={empleado.sexo} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.sexo ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`}>
                       <option value="">Seleccionar</option>
                       <option value="M">Masculino</option>
                       <option value="F">Femenino</option>
                     </select>
+                    {fieldErrors.sexo && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.sexo}</p>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono *</label>
-                    <input type="tel" name="telefono" value={empleado.telefono} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de teléfono" />
+                    <input type="tel" name="telefono" value={empleado.telefono} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                      fieldErrors.telefono ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                    }`} placeholder="Número de teléfono" />
+                    {fieldErrors.telefono && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.telefono}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -160,31 +260,79 @@ const EmpleadoForm = () => {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información Laboral</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Contratación</label>
-                        <input type="date" name="feccon" value={empleado.feccon} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Contratación *</label>
+                        <DatePicker
+                          selected={empleado.feccon ? new Date(empleado.feccon) : null}
+                          onChange={(date) => {
+                            const value = date ? date.toISOString().split('T')[0] : '';
+                            setEmpleado({ ...empleado, feccon: value });
+                            if (touched.feccon) {
+                              const error = validateEmpleadoField('feccon', value);
+                              setFieldErrors(prev => ({ ...prev, feccon: error }));
+                            }
+                          }}
+                          onBlur={() => {
+                            setTouched(prev => ({ ...prev, feccon: true }));
+                            const error = validateEmpleadoField('feccon', empleado.feccon);
+                            setFieldErrors(prev => ({ ...prev, feccon: error }));
+                          }}
+                          dateFormat="dd/MM/yyyy"
+                          placeholderText="Selecciona fecha de contratación"
+                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                            fieldErrors.feccon ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                          }`}
+                          locale="es"
+                          maxDate={new Date(new Date().getFullYear(), 12, 31)}
+                          showYearDropdown
+                          showMonthDropdown
+                          dropdownMode="select"
+                        />
+                        {fieldErrors.feccon && (
+                          <p className="text-red-500 text-sm mt-1">{fieldErrors.feccon}</p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Sueldo</label>
-                        <input type="number" name="sueldo" value={empleado.sueldo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <input type="number" name="sueldo" value={empleado.sueldo} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                          fieldErrors.sueldo ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`} />
+                        {fieldErrors.sueldo && (
+                          <p className="text-red-500 text-sm mt-1">{fieldErrors.sueldo}</p>
+                        )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Puesto</label>
-                        <select name="puesto" value={empleado.puesto} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Puesto *</label>
+                        <select name="puesto" value={empleado.puesto} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                          fieldErrors.puesto ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`}>
                             <option value="Optometrista">Optometrista</option>
                             <option value="Asesor">Asesor</option>
                             <option value="Matriz">Matriz</option>
                         </select>
+                        {fieldErrors.puesto && (
+                          <p className="text-red-500 text-sm mt-1">{fieldErrors.puesto}</p>
+                        )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                        <select name="estado" value={empleado.estado} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Estado *</label>
+                        <select name="estado" value={empleado.estado} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                          fieldErrors.estado ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`}>
                             <option value="Activo">Activo</option>
                             <option value="Inactivo">Inactivo</option>
                         </select>
+                        {fieldErrors.estado && (
+                          <p className="text-red-500 text-sm mt-1">{fieldErrors.estado}</p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">ID Usuario</label>
-                        <input type="number" name="idusuario" value={empleado.idusuario} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        <input type="number" name="idusuario" value={empleado.idusuario} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                          fieldErrors.idusuario ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`} />
+                        {fieldErrors.idusuario && (
+                          <p className="text-red-500 text-sm mt-1">{fieldErrors.idusuario}</p>
+                        )}
                     </div>
                 </div>
               </div>
@@ -192,7 +340,7 @@ const EmpleadoForm = () => {
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-6 border-t border-gray-200">
                 <button type="button" onClick={() => navigate('/empleados')} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Cancelar</button>
-                <button type="submit" disabled={loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
+                <button type="submit" disabled={!isFormValid || loading} className="flex items-center space-x-2 px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors">
                   <Save className="h-4 w-4" />
                   <span>{loading ? 'Guardando...' : (id ? 'Actualizar' : 'Crear Empleado')}</span>
                 </button>
