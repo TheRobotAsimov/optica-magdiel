@@ -5,6 +5,8 @@ import rutaService from '../../service/rutaService';
 import lenteService from '../../service/lenteService';
 import pagoService from '../../service/pagoService';
 import NavComponent from '../common/NavBar';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 import { Save, ArrowLeft } from 'lucide-react';
 import { validateEntregaForm, validateEntregaField } from '../../utils/validations/index.js';
 
@@ -109,11 +111,11 @@ const EntregaForm = () => {
   };
 
   if (loading && !id) {
-    return <div>Cargando...</div>;
+    return <Loading />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <Error message={error} />;
   }
 
   return (

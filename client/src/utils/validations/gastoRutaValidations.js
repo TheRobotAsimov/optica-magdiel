@@ -18,6 +18,11 @@ export const validateGastoRutaForm = (formData) => {
   // Motivo
   const motivoError = validateRequired(formData.motivo, 'Motivo');
   if (motivoError) errors.motivo = motivoError;
+  else {
+    if (formData.motivo.length < 5) {
+      errors.motivo = 'Motivo debe tener al menos 5 caracteres';
+    }
+  }
 
   return errors;
 };
@@ -31,8 +36,12 @@ export const validateGastoRutaField = (name, value) => {
       if (reqError) return reqError;
       return validateNumber(value, 'Cantidad', 0.01);
     }
-    case 'motivo':
-      return validateRequired(value, 'Motivo');
+    case 'motivo': {
+      const reqError = validateRequired(value, 'Motivo');
+      if (reqError) return reqError;
+      if (value.length < 5) return 'Motivo debe tener al menos 5 caracteres';
+      return null;
+    }
     default:
       return null;
   }
