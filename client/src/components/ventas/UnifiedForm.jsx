@@ -22,7 +22,7 @@ const UnifiedForm = () => {
     // Venta fields
     folio: '',
     idasesor: '',
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
     tipo: 'Contado',
     enganche: '',
     total: '',
@@ -653,7 +653,7 @@ const UnifiedForm = () => {
                 </div>
               </div>
 
-{/*// Seccion de informacion del lente*/}
+              {/* Seccion de informacion del lente*/}
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Información del Lente</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

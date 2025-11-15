@@ -12,7 +12,7 @@ const VentaForm = () => {
     folio: '',
     idasesor: '',
     idcliente: '',
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
     tipo: 'Contado',
     enganche: '',
     total: '',
