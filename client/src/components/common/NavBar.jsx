@@ -101,31 +101,29 @@ const NavComponent = () => {
                       <h3 className="text-lg font-medium text-gray-900">Notificaciones</h3>
                     </div>
                     <div className="max-h-96 overflow-y-auto">
-                      {notificaciones.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">
-                          No hay notificaciones
-                        </div>
-                      ) : (
-                        notificaciones.map(notif => (
-                          <div
-                            key={notif.idnotificacion || notif.fecha}
-                            className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notif.leido ? 'bg-blue-50' : ''}`}
-                          >
-                            <p className="text-sm text-gray-800">{notif.mensaje}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              {new Date(notif.fecha).toLocaleString('es-ES')}
-                            </p>
-                            {!notif.leido && (
-                              <button
-                                onClick={() => handleMarkAsRead(notif.idnotificacion)}
-                                className="mt-2 text-xs text-blue-600 hover:text-blue-800"
-                              >
-                                Marcar como leída
-                              </button>
-                            )}
-                          </div>
-                        ))
-                      )}
+                        {notificaciones.filter(notif => !notif.leido).length === 0 ? (
+                            <div className="p-4 text-center text-gray-500">
+                                No hay notificaciones
+                            </div>
+                        ) : (
+                            notificaciones.filter(notif => !notif.leido).map(notif => (
+                                <div
+                                    key={notif.idnotificacion || notif.fecha}
+                                    className="p-4 border-b border-gray-100 hover:bg-gray-50 bg-blue-50"
+                                >
+                                    <p className="text-sm text-gray-800">{notif.mensaje}</p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {new Date(notif.fecha).toLocaleString('es-ES')}
+                                    </p>
+                                    <button
+                                        onClick={() => handleMarkAsRead(notif.idnotificacion)}
+                                        className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+                                    >
+                                        Marcar como leída
+                                    </button>
+                                </div>
+                            ))
+                        )}
                     </div>
                   </div>
                 )}
