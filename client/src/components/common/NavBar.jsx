@@ -235,8 +235,9 @@ const NavComponent = () => {
           </div>
 
           {/* Mobile navigation */}
-          {showMobileMenu && (
-            <div className="md:hidden mobile-menu-container">
+          <div className={`md:hidden mobile-menu-container overflow-hidden transition-all duration-500 ease-in-out ${
+            showMobileMenu ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}>
               <div className="px-2 pt-2 pb-3 space-y-1">
               <details className="group">
                 <summary className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 cursor-pointer">Gestiones</summary>
@@ -260,7 +261,6 @@ const NavComponent = () => {
               {user && user.rol === 'Matriz' && (<Link to="/admin/database" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Base de Datos</Link>)}
             </div>
           </div>
-          )}
 
         </div>
       </div>
