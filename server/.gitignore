@@ -27,3 +27,4 @@ priceCatalog.json
 *.sln
 *.sw?
 *.sql
+*.py
