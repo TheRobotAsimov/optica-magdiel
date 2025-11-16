@@ -45,6 +45,7 @@ export const validateNumber = (value, fieldName, min = 0, max = null) => {
 export const validateDate = (date, fieldName, options = {}) => {
   if (!date) return null;
   const dateObj = new Date(date);
+  //console.log(dateObj.getTime())
   if (isNaN(dateObj.getTime())) return `${fieldName} debe ser una fecha válida`;
 
   if (options.future && dateObj < new Date()) {

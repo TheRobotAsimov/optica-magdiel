@@ -78,10 +78,30 @@ export const validateLenteForm = (formData) => {
   ];
 
   graduacionFields.forEach(field => {
-    if (formData[field]) {
-      const numError = validateNumber(formData[field], field.replace(/_/g, ' '));
-      if (numError) errors[field] = numError;
+    let numError;
+    if (field === 'od_av' || field === 'oi_av') {
+      // AV es requerido
+      if (!formData[field]) {
+        numError = 'AV es requerido';
+      } else if (!/^\d+\/\d+$/.test(formData[field])) {
+        numError = `${field.replace(/_/g, ' ')} debe tener formato numérico/numérico`;
+      }
+    } else if (formData[field]) {
+      if (field === 'od_eje' || field === 'oi_eje') {
+        numError = validateNumber(formData[field], field.replace(/_/g, ' '), 0, 180);
+      } else if (field === 'od_add' || field === 'oi_add') {
+        numError = validateNumber(formData[field], field.replace(/_/g, ' '), 0);
+      } else if (field === 'od_cil' || field === 'oi_cil') {
+        const num = parseFloat(formData[field]);
+        if (isNaN(num) || num >= 0) {
+          numError = `${field.replace(/_/g, ' ')} debe ser un número negativo válido`;
+        }
+      } else {
+        // Para ESF, permite signo opcional
+        //numError = validateNumber(formData[field], field.replace(/_/g, ' '));
+      }
     }
+    if (numError) errors[field] = numError;
   });
 
   // Kit
@@ -114,6 +134,50 @@ export const validateLenteForm = (formData) => {
     if (formData.tono && !validTonos.includes(formData.tono)) {
       errors.tono = 'Tono inválido';
     }
+  }
+
+  // Validar que si se ingresa CIL, se requiera EJE
+  if (formData.od_cil && !formData.od_eje) {
+    errors.od_eje = 'EJE es requerido cuando se ingresa CIL';
+  }
+  if (formData.oi_cil && !formData.oi_eje) {
+    errors.oi_eje = 'EJE es requerido cuando se ingresa CIL';
+  }
+
+  if (!formData.od_cil && formData.od_eje) {
+    errors.od_cil = 'CIL es requerido cuando se ingresa EJE';
+  }
+  if (!formData.oi_cil && formData.oi_eje) {
+    errors.oi_cil = 'CIL es requerido cuando se ingresa EJE';
+  }
+
+
+  // Validar que haya al menos una graduación en OD (excluyendo AV ya que es requerido)
+  const odFields = ['od_esf', 'od_cil', 'od_eje'];
+  const hasOdGraduacion = odFields.some(field => formData[field]);
+  if (!hasOdGraduacion) {
+    errors.od_esf = 'Debe ingresar al menos una graduación para el ojo derecho';
+  }
+
+  // Validar que haya al menos una graduación en OI (excluyendo AV ya que es requerido)
+  const oiFields = ['oi_esf', 'oi_cil', 'oi_eje'];
+  const hasOiGraduacion = oiFields.some(field => formData[field]);
+  if (!hasOiGraduacion) {
+    errors.oi_esf = 'Debe ingresar al menos una graduación para el ojo izquierdo';
+  }
+
+  // Validar que si se pone en OD alguna graduación en OI debe tener también
+  if (formData.od_esf && !formData.oi_esf) {
+    errors.oi_esf = 'Debe ingresar ESF en ojo izquierdo si hay ESF en ojo derecho';
+  }
+  if (formData.od_cil && !formData.oi_cil) {
+    errors.oi_cil = 'Debe ingresar CIL en ojo izquierdo si hay CIL en ojo derecho';
+  }
+  if (formData.od_eje && !formData.oi_eje) {
+    errors.oi_eje = 'Debe ingresar EJE en ojo izquierdo si hay EJE en ojo derecho';
+  }
+  if (formData.od_add && !formData.oi_add) {
+    errors.oi_add = 'Debe ingresar ADD en ojo izquierdo si hay ADD en ojo derecho';
   }
 
   return errors;
@@ -167,17 +231,53 @@ export const validateLenteField = (name, value, formData = {}) => {
       return null;
     }
     case 'od_esf':
-    case 'od_cil':
-    case 'od_eje':
-    case 'od_add':
-    case 'od_av':
     case 'oi_esf':
+      //if (value) return validateNumber(value, name.replace(/_/g, ' '));
+      return null;
+    case 'od_cil':
     case 'oi_cil':
+      if (value) {
+        const num = parseFloat(value);
+        if (isNaN(num) || num >= 0) return `${name.replace(/_/g, ' ')} debe ser un número negativo válido`;
+      }
+      return null;
+    case 'od_eje':
     case 'oi_eje':
+      if (value) return validateNumber(value, name.replace(/_/g, ' '), 0, 180);
+      return null;
+    case 'od_add':
     case 'oi_add':
+      if (value) return validateNumber(value, name.replace(/_/g, ' '), 0);
+      return null;
+    case 'od_av':
     case 'oi_av':
+      if (value && !/^\d+\/\d+$/.test(value)) return `${name.replace(/_/g, ' ')} debe tener formato numérico/numérico`;
+      return null;
+    case 'od_esf_val':
+    case 'oi_esf_val':
       if (value) return validateNumber(value, name.replace(/_/g, ' '));
       return null;
+    case 'od_cil_val':
+    case 'oi_cil_val':
+      if (value) return validateNumber(value, name.replace(/_/g, ' '));
+      return null;
+    case 'od_eje_val':
+    case 'oi_eje_val':
+      if (value) return validateNumber(value, name.replace(/_/g, ' '), 0, 180);
+      return null;
+    case 'od_add_val':
+    case 'oi_add_val':
+      if (value) return validateNumber(value, name.replace(/_/g, ' '), 0);
+      return null;
+    case 'od_av_1':
+    case 'od_av_2':
+    case 'oi_av_1':
+    case 'oi_av_2': {
+      const reqError = validateRequired(value, name.replace(/_/g, ' '));
+      if (reqError) return reqError;
+      if (value) return validateNumber(value, name.replace(/_/g, ' '));
+      return null;
+    }
     case 'kit': {
       const validKits = ['Sin kit', 'Completo'];
       if (value && !validKits.includes(value)) return 'Kit inválido';

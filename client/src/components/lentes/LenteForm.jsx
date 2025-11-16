@@ -55,6 +55,7 @@ const LenteForm = () => {
     oi_av_1: '',
     oi_av_2: '',
   });
+  const [examenSeguimientoOption, setExamenSeguimientoOption] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -183,12 +184,15 @@ const LenteForm = () => {
       oi_av: (oi_av_1 || oi_av_2) ? `${oi_av_1}/${oi_av_2}` : '',
       procesado: shouldBeProcesado ? 'Si' : 'No',
     }));
+
+    
   }, [graduacion]);
 
   useEffect(() => {
     const errors = validateLenteForm(lente);
     const hasErrors = Object.values(errors).some((err) => err);
     setIsFormValid(!hasErrors);
+    //console.log('errors: ', errors);
   }, [lente, fieldErrors]);
 
   // Funcion para manejar cambios en los sintomas
@@ -202,8 +206,10 @@ const LenteForm = () => {
 
     // Si el campo es examen de seguimiento, calcular la fecha automaticamente
     if (name === 'examenSeguimientoOption') {
+      setExamenSeguimientoOption(value);
       if (value) {
-        const baseDate = new Date(lente.fecha_entrega); // Usar la fecha de entrega como base
+        // Usar la fecha de hoy de base
+        const baseDate = new Date();
         let newDate = new Date(baseDate);
 
         // Calcular la nueva fecha basada en la opcion seleccionada
@@ -269,7 +275,14 @@ const LenteForm = () => {
     setTouched(prev => ({ ...prev, [name]: true }));
 
     const error = validateLenteField(name, value, lente);
-    setFieldErrors(prev => ({ ...prev, [name]: error }));
+
+    // Mapear el error al campo combinado
+    let errorField = name;
+    if (name.includes('_val') || name.includes('_sign') || name.includes('_1') || name.includes('_2')) {
+      errorField = name.replace(/_val|_sign|_1|_2/, '');
+    }
+
+    setFieldErrors(prev => ({ ...prev, [errorField]: error }));
   };
 
   const handleSubmit = async (e) => {
@@ -285,10 +298,44 @@ const LenteForm = () => {
 
     setLoading(true);
     try {
+      // Si tono y graduaciones son vacios, asignar NULL
+      const lenteToSubmit = { ...lente };
+      if (!lenteToSubmit.tono) {
+        lenteToSubmit.tono = null;
+      }
+      if (!lenteToSubmit.od_esf) {
+        lenteToSubmit.od_esf = null;
+      }
+      if (!lenteToSubmit.od_cil) {
+        lenteToSubmit.od_cil = null;
+      }
+      if (!lenteToSubmit.od_eje) {
+        lenteToSubmit.od_eje = null;
+      }
+      if (!lenteToSubmit.od_add) {
+        lenteToSubmit.od_add = null;
+      }
+      if (!lenteToSubmit.oi_esf) {
+        lenteToSubmit.oi_esf = null;
+      }
+      if (!lenteToSubmit.oi_cil) {
+        lenteToSubmit.oi_cil = null;
+      }
+      if (!lenteToSubmit.oi_eje) {
+        lenteToSubmit.oi_eje = null;
+      }
+      if (!lenteToSubmit.oi_add) {
+        lenteToSubmit.oi_add = null;
+      }
+      if (!lenteToSubmit.subtipo) {
+        lenteToSubmit.subtipo = null;
+      }
+
+      
       if (id) {
-        await lenteService.updateLente(id, lente);
+        await lenteService.updateLente(id, lenteToSubmit);
       } else {
-        await lenteService.createLente(lente);
+        await lenteService.createLente(lenteToSubmit);
       }
       navigate('/lentes');
     } catch (err) {
@@ -375,29 +422,38 @@ const LenteForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Uso de Lente *</label>
-                    <input type="text" name="uso_de_lente" value={lente.uso_de_lente} onChange={handleChange} onBlur={handleBlur} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input type="text" name="uso_de_lente" value={lente.uso_de_lente} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.uso_de_lente ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} />
+                    {fieldErrors.uso_de_lente && <p className="mt-1 text-sm text-red-600">{fieldErrors.uso_de_lente}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Folio Venta *</label>
-                    <select name="folio" value={lente.folio} onChange={handleChange} onBlur={handleBlur} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select name="folio" value={lente.folio} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.folio ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                       <option value="">Seleccionar Folio Venta</option>
                       {ventas.map(venta => (
                         <option key={venta.folio} value={venta.folio}>Folio: {venta.folio} - {venta.cliente_nombre} {venta.cliente_paterno}</option>
                       ))}
                     </select>
+                    {fieldErrors.folio && <p className="mt-1 text-sm text-red-600">{fieldErrors.folio}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Optometrista *</label>
-                    <select name="idoptometrista" value={lente.idoptometrista} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select name="idoptometrista" value={lente.idoptometrista} onChange={handleChange} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.idoptometrista ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                       <option value="">Seleccionar Optometrista</option>
                       {optometristas.map(optometrista => (
                         <option key={optometrista.idempleado} value={optometrista.idempleado}>{optometrista.nombre} {optometrista.paterno}</option>
                       ))}
                     </select>
+                    {fieldErrors.idoptometrista && <p className="mt-1 text-sm text-red-600">{fieldErrors.idoptometrista}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Examen de Seguimiento</label>
-                    <select name="examenSeguimientoOption" value="" onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select name="examenSeguimientoOption" value={examenSeguimientoOption} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                       <option value="">Seleccionar</option>
                       <option value="6 months">6 meses</option>
                       <option value="1 year">1 año</option>
@@ -406,116 +462,144 @@ const LenteForm = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Armazón *</label>
-                    <input type="text" name="armazon" value={lente.armazon} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input type="text" name="armazon" value={lente.armazon} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.armazon ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} />
+                    {fieldErrors.armazon && <p className="mt-1 text-sm text-red-600">{fieldErrors.armazon}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Kit</label>
-                    <select name="kit" value={lente.kit} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select name="kit" value={lente.kit} onChange={handleChange} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.kit ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                         <option value="Sin kit">Sin kit</option>
                         <option value="Completo">Completo</option>
                     </select>
+                    {fieldErrors.kit && <p className="mt-1 text-sm text-red-600">{fieldErrors.kit}</p>}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 md:col-span-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Material *</label>
-                      <select name="material" value={lente.material} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <select name="material" value={lente.material} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.material ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                         <option value="">Seleccione</option>
                         <option value="CR-39">CR-39</option>
                         <option value="BLUERAY">BLUERAY</option>
                       </select>
+                      {fieldErrors.material && <p className="mt-1 text-sm text-red-600">{fieldErrors.material}</p>}
                     </div>
                     {lente.material && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Tratamiento *</label>
-                        <select name="tratamiento" value={lente.tratamiento} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select name="tratamiento" value={lente.tratamiento} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.tratamiento ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                           <option value="">Seleccione</option>
                           <option value="AR">AR</option>
                           <option value="Photo AR">Photo AR</option>
                         </select>
+                        {fieldErrors.tratamiento && <p className="mt-1 text-sm text-red-600">{fieldErrors.tratamiento}</p>}
                       </div>
                     )}
                     {lente.tratamiento && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Lente *</label>
-                        <select name="tipo_de_lente" value={lente.tipo_de_lente} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select name="tipo_de_lente" value={lente.tipo_de_lente} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.tipo_de_lente ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                           <option value="">Seleccione</option>
                           <option value="Monofocal">Monofocal</option>
                           <option value="Bifocal">Bifocal</option>
                           <option value="Progresivo">Progresivo</option>
                         </select>
+                        {fieldErrors.tipo_de_lente && <p className="mt-1 text-sm text-red-600">{fieldErrors.tipo_de_lente}</p>}
                       </div>
                     )}
                     {lente.tipo_de_lente && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Subtipo</label>
-                        <select name="subtipo" value={lente.subtipo} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select name="subtipo" value={lente.subtipo} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.subtipo ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                           <option value="">Ninguno</option>
                           <option value="Policarbonato">Policarbonato</option>
                           <option value="Haid index">Haid index</option>
                         </select>
+                        {fieldErrors.subtipo && <p className="mt-1 text-sm text-red-600">{fieldErrors.subtipo}</p>}
                       </div>
                     )}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:col-span-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Tinte Color</label>
-                      <input type="text" name="tinte_color" value={lente.tinte_color} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                      <input type="text" name="tinte_color" value={lente.tinte_color} onChange={handleChange} onBlur={handleBlur} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                     </div>
                     {lente.tinte_color && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Tono</label>
-                          <select name="tono" value={lente.tono} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <select name="tono" value={lente.tono} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.tono ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                             <option value="">No</option>
                             <option value="Claro">Claro</option>
                             <option value="Intermedio">Intermedio</option>
                             <option value="Oscuro">Oscuro</option>
                           </select>
+                          {fieldErrors.tono && <p className="mt-1 text-sm text-red-600">{fieldErrors.tono}</p>}
                         </div>
                       )}
                       {lente.tono && (
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Desvanecido</label>
-                          <select name="desvanecido" value={lente.desvanecido} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <select name="desvanecido" value={lente.desvanecido} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.desvanecido ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} >
                               <option value="No">No</option>
                               <option value="Si">Si</option>
                           </select>
+                          {fieldErrors.desvanecido && <p className="mt-1 text-sm text-red-600">{fieldErrors.desvanecido}</p>}
                         </div>
                       )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Procesado</label>
-                    <select name="procesado" value={lente.procesado} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                    <select name="procesado" value={lente.procesado} onChange={handleChange} onBlur={handleBlur} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
                         <option value="No">No</option>
                         <option value="Si">Si</option>
                     </select>
+                    {fieldErrors.procesado && <p className="mt-1 text-sm text-red-600">{fieldErrors.procesado}</p>}
                   </div>
                   {lente.tipo_de_lente === 'Bifocal' && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Blend</label>
-                      <select name="blend" value={lente.blend} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <select name="blend" value={lente.blend} onChange={handleChange} onBlur={handleBlur} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="No">No</option>
                         <option value="Si">Si</option>
                       </select>
+                      {fieldErrors.blend && <p className="mt-1 text-sm text-red-600">{fieldErrors.blend}</p>}
                     </div>
                   )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Entrega *</label>
-                    <input type="date" name="fecha_entrega" value={lente.fecha_entrega} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Examen de Seguimiento</label>
-                    <input type="date" name="examen_seguimiento" value={lente.examen_seguimiento} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input type="date" name="fecha_entrega" value={lente.fecha_entrega} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                    fieldErrors.fecha_entrega ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                  }`} />
+                    {fieldErrors.fecha_entrega && <p className="mt-1 text-sm text-red-600">{fieldErrors.fecha_entrega}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Estatus *</label>
-                    <select name="estatus" value={lente.estatus} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select name="estatus" value={lente.estatus} onChange={handleChange} onBlur={handleBlur} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="Pendiente">Pendiente</option>
                         <option value="Entregado">Entregado</option>
                         <option value="No entregado">No entregado</option>
                     </select>
+                    {fieldErrors.estatus && <p className="mt-1 text-sm text-red-600">{fieldErrors.estatus}</p>}
                   </div>
                 </div>
               </div>
+
+              {/* Seccion de graduacion optica */}
 
               <div className="bg-gray-50 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Graduación</h3>
@@ -524,86 +608,140 @@ const LenteForm = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">ESF</label>
                     <div className="flex items-center">
-                      <select name="od_esf_sign" value={graduacion.od_esf_sign} onChange={handleGraduacionChange} className="px-2 py-2 border border-gray-300 rounded-l-lg bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                      <select name="od_esf_sign" value={graduacion.od_esf_sign} onChange={handleGraduacionChange} onBlur={handleBlur} className={`px-2 py-2 border rounded-l-lg bg-gray-100 focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.od_esf ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}>
                         <option value="+">+</option>
                         <option value="-">-</option>
                       </select>
-                      <input type="number" step="0.25" name="od_esf_val" value={graduacion.od_esf_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <input type="number" step="0.25" name="od_esf_val" value={graduacion.od_esf_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border-t border-b border-r rounded-r-lg focus:outline-none focus:ring-1 transition-colors ${
+                      fieldErrors.od_esf ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
                     </div>
+                    {fieldErrors.od_esf && <p className="mt-1 text-sm text-red-600">{fieldErrors.od_esf}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">CIL</label>
                     <div className="flex items-center">
-                      <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">-</span>
-                      <input type="number" step="0.25" name="od_cil_val" value={graduacion.od_cil_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <span className={`px-3 py-2 border-l border-t border-b rounded-l-lg bg-gray-100 transition-colors ${
+                        fieldErrors.od_cil ? 'border-red-500' : 'border-gray-300'
+                      }`}>-</span>
+                      <input type="number" step="0.25" name="od_cil_val" value={graduacion.od_cil_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border-t border-b border-r rounded-r-lg focus:outline-none focus:ring-1 transition-colors ${
+                      fieldErrors.od_cil ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
                     </div>
+                    {fieldErrors.od_cil && <p className="mt-1 text-sm text-red-600">{fieldErrors.od_cil}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">EJE</label>
                     <div className="flex items-center">
-                      <input type="number" name="od_eje_val" value={graduacion.od_eje_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-                      <span className="px-3 py-2 border-r border-t border-b border-gray-300 rounded-r-lg bg-gray-100">°</span>
+                      <input type="number" name="od_eje_val" value={graduacion.od_eje_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-l-lg focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.od_eje ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
+                      <span className={`px-3 py-2 border-r border-t border-b rounded-r-lg bg-gray-100 transition-colors ${
+                        fieldErrors.od_eje ? 'border-red-500' : 'border-gray-300'
+                      }`}>°</span>
                     </div>
+                    {fieldErrors.od_eje && <p className="mt-1 text-sm text-red-600">{fieldErrors.od_eje}</p>}
                   </div>
                   {(lente.tipo_de_lente === 'Bifocal' || lente.tipo_de_lente === 'Progresivo') && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">ADD</label>
                       <div className="flex items-center">
-                        <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
-                        <input type="number" step="0.25" name="od_add_val" value={graduacion.od_add_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                        <span className={`px-3 py-2 border-l border-t border-b rounded-l-lg bg-gray-100 transition-colors ${
+                          fieldErrors.od_add ? 'border-red-500' : 'border-gray-300'
+                        }`}>+</span>
+                        <input type="number" step="0.25" name="od_add_val" value={graduacion.od_add_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border-t border-b border-r rounded-r-lg focus:outline-none focus:ring-1 transition-colors ${
+                          fieldErrors.od_add ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`} />
                       </div>
+                      {fieldErrors.od_add && <p className="mt-1 text-sm text-red-600">{fieldErrors.od_add}</p>}
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">AV</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">AV *</label>
                     <div className="flex items-center">
-                      <input type="text" name="od_av_1" value={graduacion.od_av_1} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-                      <span className="px-2 py-2 border-t border-b border-gray-300 bg-gray-100">/</span>
-                      <input type="text" name="od_av_2" value={graduacion.od_av_2} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-r-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <input type="text" name="od_av_1" value={graduacion.od_av_1} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-l-lg text-center focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.od_av ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
+                      <span className={`px-2 py-2 border-t border-b bg-gray-100 transition-colors ${
+                        fieldErrors.od_av ? 'border-red-500' : 'border-gray-300'
+                      }`}>/</span>
+                      <input type="text" name="od_av_2" value={graduacion.od_av_2} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-r-lg text-center focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.od_av ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
                     </div>
+                    {fieldErrors.od_av && <p className="mt-1 text-sm text-red-600">{fieldErrors.od_av}</p>}
                   </div>
 
                   <div className="md:col-span-5 font-bold">Ojo Izquierdo (OI)</div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">ESF</label>
                     <div className="flex items-center">
-                      <select name="oi_esf_sign" value={graduacion.oi_esf_sign} onChange={handleGraduacionChange} className="px-2 py-2 border border-gray-300 rounded-l-lg bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                      <select name="oi_esf_sign" value={graduacion.oi_esf_sign} onChange={handleGraduacionChange} onBlur={handleBlur} className={`px-2 py-2 border rounded-l-lg bg-gray-100 focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.oi_esf ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`}>
                         <option value="+">+</option>
                         <option value="-">-</option>
                       </select>
-                      <input type="number" step="0.25" name="oi_esf_val" value={graduacion.oi_esf_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <input type="number" step="0.25" name="oi_esf_val" value={graduacion.oi_esf_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border-t border-b border-r rounded-r-lg focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.oi_esf ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
                     </div>
+                    {fieldErrors.oi_esf && <p className="mt-1 text-sm text-red-600">{fieldErrors.oi_esf}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">CIL</label>
                     <div className="flex items-center">
-                      <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">-</span>
-                      <input type="number" step="0.25" name="oi_cil_val" value={graduacion.oi_cil_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <span className={`px-3 py-2 border-l border-t border-b rounded-l-lg bg-gray-100 transition-colors ${
+                        fieldErrors.oi_cil ? 'border-red-500' : 'border-gray-300'
+                      }`}>-</span>
+                      <input type="number" step="0.25" name="oi_cil_val" value={graduacion.oi_cil_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border-t border-b border-r rounded-r-lg focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.oi_cil ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
                     </div>
+                    {fieldErrors.oi_cil && <p className="mt-1 text-sm text-red-600">{fieldErrors.oi_cil}</p>}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">EJE</label>
                     <div className="flex items-center">
-                      <input type="number" name="oi_eje_val" value={graduacion.oi_eje_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-                      <span className="px-3 py-2 border-r border-t border-b border-gray-300 rounded-r-lg bg-gray-100">°</span>
+                      <input type="number" name="oi_eje_val" value={graduacion.oi_eje_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-l-lg focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.oi_eje ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
+                      <span className={`px-3 py-2 border-r border-t border-b rounded-r-lg bg-gray-100 transition-colors ${
+                        fieldErrors.oi_eje ? 'border-red-500' : 'border-gray-300'
+                      }`}>°</span>
                     </div>
+                    {fieldErrors.oi_eje && <p className="mt-1 text-sm text-red-600">{fieldErrors.oi_eje}</p>}
                   </div>
                   {(lente.tipo_de_lente === 'Bifocal' || lente.tipo_de_lente === 'Progresivo') && (
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">ADD</label>
                       <div className="flex items-center">
-                        <span className="px-3 py-2 border-l border-t border-b border-gray-300 rounded-l-lg bg-gray-100">+</span>
-                        <input type="number" step="0.25" name="oi_add_val" value={graduacion.oi_add_val} onChange={handleGraduacionChange} className="w-full px-3 py-2 border-t border-b border-r border-gray-300 rounded-r-lg focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                        <span className={`px-3 py-2 border-l border-t border-b rounded-l-lg bg-gray-100 transition-colors ${
+                          fieldErrors.oi_add ? 'border-red-500' : 'border-gray-300'
+                        }`}>+</span>
+                        <input type="number" step="0.25" name="oi_add_val" value={graduacion.oi_add_val} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border-t border-b border-r rounded-r-lg focus:outline-none focus:ring-1 transition-colors ${
+                          fieldErrors.oi_add ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                        }`} />
                       </div>
+                      {fieldErrors.oi_add && <p className="mt-1 text-sm text-red-600">{fieldErrors.oi_add}</p>}
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">AV</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">AV *</label>
                     <div className="flex items-center">
-                      <input type="text" name="oi_av_1" value={graduacion.oi_av_1} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
-                      <span className="px-2 py-2 border-t border-b border-gray-300 bg-gray-100">/</span>
-                      <input type="text" name="oi_av_2" value={graduacion.oi_av_2} onChange={handleGraduacionChange} className="w-full px-3 py-2 border border-gray-300 rounded-r-lg text-center focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" />
+                      <input type="text" name="oi_av_1" value={graduacion.oi_av_1} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-l-lg text-center focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.oi_av ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
+                      <span className={`px-2 py-2 border-t border-b bg-gray-100 transition-colors ${
+                        fieldErrors.oi_av ? 'border-red-500' : 'border-gray-300'
+                      }`}>/</span>
+                      <input type="text" name="oi_av_2" value={graduacion.oi_av_2} onChange={handleGraduacionChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-r-lg text-center focus:outline-none focus:ring-1 transition-colors ${
+                        fieldErrors.oi_av ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
+                      }`} />
                     </div>
+                    {fieldErrors.oi_av && <p className="mt-1 text-sm text-red-600">{fieldErrors.oi_av}</p>}
                   </div>
                 </div>
               </div>
