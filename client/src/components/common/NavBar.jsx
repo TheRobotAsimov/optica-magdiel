@@ -1,14 +1,69 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
-import { User } from 'lucide-react';
+import { User, Bell } from 'lucide-react';
 import logo from '../../assets/pez_blanco.webp';
+import notificacionService from '../../service/notificacionService';
+import useSocket from '../../hooks/useSocket';
 
 const NavComponent = () => {
     const { user, logout } = useAuth();
+    const [unreadCount, setUnreadCount] = useState(0);
+    const [showNotifications, setShowNotifications] = useState(false);
+    const [notificaciones, setNotificaciones] = useState([]);
+    const socket = useSocket();
+
+    useEffect(() => {
+        if (user && user.rol === 'Matriz') {
+            fetchUnreadCount();
+            fetchNotificaciones();
+        }
+    }, [user]);
+
+    useEffect(() => {
+        if (socket && user && user.rol === 'Matriz') {
+            socket.on('nueva_notificacion', (data) => {
+                setUnreadCount(prev => prev + 1);
+                setNotificaciones(prev => [data, ...prev]);
+            });
+        }
+    }, [socket, user]);
+
+    const fetchUnreadCount = async () => {
+        try {
+            const response = await notificacionService.getUnreadCount();
+            setUnreadCount(response.count);
+        } catch (error) {
+            console.error('Error fetching unread count:', error);
+        }
+    };
+
+    const fetchNotificaciones = async () => {
+        try {
+            const data = await notificacionService.getAll();
+            setNotificaciones(data);
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    };
+
+    const handleMarkAsRead = async (id) => {
+        try {
+            await notificacionService.markAsRead(id);
+            setNotificaciones(prev =>
+                prev.map(notif =>
+                    notif.idnotificacion === id ? { ...notif, leido: 1 } : notif
+                )
+            );
+            setUnreadCount(prev => Math.max(0, prev - 1));
+        } catch (error) {
+            console.error('Error marking as read:', error);
+        }
+    };
 
     const handleLogout = async () => {
-    await logout();
-  };
+        await logout();
+    };
   
   return (
     <nav className="bg-gradient-to-r from-blue-700 to-blue-600 shadow-lg" style={{ backgroundColor: '#1A37A5' }}>
@@ -26,6 +81,57 @@ const NavComponent = () => {
 
           {/* Usuario y admin en la derecha */}
           <div className="flex items-center space-x-4">
+            {user && user.rol === 'Matriz' && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 text-white hover:text-blue-200 transition-colors"
+                >
+                  <Bell className="h-6 w-6" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                    <div className="p-4 border-b border-gray-200">
+                      <h3 className="text-lg font-medium text-gray-900">Notificaciones</h3>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notificaciones.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          No hay notificaciones
+                        </div>
+                      ) : (
+                        notificaciones.map(notif => (
+                          <div
+                            key={notif.idnotificacion || notif.fecha}
+                            className={`p-4 border-b border-gray-100 hover:bg-gray-50 ${!notif.leido ? 'bg-blue-50' : ''}`}
+                          >
+                            <p className="text-sm text-gray-800">{notif.mensaje}</p>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(notif.fecha).toLocaleString('es-ES')}
+                            </p>
+                            {!notif.leido && (
+                              <button
+                                onClick={() => handleMarkAsRead(notif.idnotificacion)}
+                                className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+                              >
+                                Marcar como leída
+                              </button>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Icono de usuario y admin */}
             <div className="flex items-center space-x-2 bg-blue-800 bg-opacity-50 px-4 py-2 rounded-full">
               <div className="bg-white p-1 rounded-full">

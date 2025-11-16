@@ -87,6 +87,11 @@ class User {
         return rows;
     }
 
+    static async getByRole(rol) {
+        const [rows] = await pool.execute('SELECT id, correo, rol FROM usuario WHERE rol = ?', [rol]);
+        return rows;
+    }
+
     static async update(id, userData) {
         const {
             correo,
