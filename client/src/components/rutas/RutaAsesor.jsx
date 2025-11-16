@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 import rutaService from '../../service/rutaService';
+import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
-import { Save, ArrowLeft, Package, DollarSign, ShoppingCart, CheckCircle } from 'lucide-react';
+import { Save, ArrowLeft, Package, DollarSign, ShoppingCart, CheckCircle, Edit } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const RutaAsesor = () => {
@@ -222,6 +223,33 @@ const RutaAsesor = () => {
     navigate(`/entregas/complete?ruta=${currentRouteId}&undelivered=pago`);
   };
 
+  const handleEditRequest = () => {
+    Swal.fire({
+      title: 'Solicitar edición',
+      input: 'textarea',
+      inputLabel: 'Descripción de la edición solicitada',
+      inputPlaceholder: 'Describe qué cambios necesitas hacer en esta ruta...',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes proporcionar una descripción';
+        }
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Enviar solicitud',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const mensaje = `Ruta Asesor - ID Ruta: ${currentRouteId}, Descripción: ${result.value}`;
+          await notificacionService.create(mensaje);
+          Swal.fire('Solicitud enviada', 'Tu solicitud de edición ha sido enviada al administrador.', 'success');
+        } catch {
+          Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
+        }
+      }
+    });
+  };
+
   const finalizeRoute = async () => {
     const remainingLentes = routeData.lentes_recibidos - routeData.lentes_entregados - (routeData.lentes_no_entregados || 0);
     const remainingTarjetas = routeData.tarjetas_recibidas - routeData.tarjetas_entregadas - (routeData.tarjetas_no_entregadas || 0);
@@ -370,7 +398,7 @@ const RutaAsesor = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <button
                     onClick={registerDelivery}
                     className="flex items-center justify-center space-x-2 px-6 py-4 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
@@ -393,6 +421,14 @@ const RutaAsesor = () => {
                   >
                     <ShoppingCart className="h-5 w-5" />
                     <span>Nuevo Contrato de Venta</span>
+                  </button>
+
+                  <button
+                    onClick={handleEditRequest}
+                    className="flex items-center justify-center space-x-2 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    <Edit className="h-5 w-5" />
+                    <span>Solicitar edición</span>
                   </button>
                 </div>
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
 import { User, Bell } from 'lucide-react';
@@ -12,6 +12,7 @@ const NavComponent = () => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notificaciones, setNotificaciones] = useState([]);
     const socket = useSocket();
+    const notificationRef = useRef(null);
 
     useEffect(() => {
         if (user && user.rol === 'Matriz') {
@@ -28,6 +29,23 @@ const NavComponent = () => {
             });
         }
     }, [socket, user]);
+
+    // Handle clicks outside notification dropdown
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+                setShowNotifications(false);
+            }
+        };
+
+        if (showNotifications) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showNotifications]);
 
     const fetchUnreadCount = async () => {
         try {
@@ -82,7 +100,7 @@ const NavComponent = () => {
           {/* Usuario y admin en la derecha */}
           <div className="flex items-center space-x-4">
             {user && user.rol === 'Matriz' && (
-              <div className="relative">
+              <div className="relative" ref={notificationRef}>
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
                   className="relative p-2 text-white hover:text-blue-200 transition-colors"
@@ -152,7 +170,7 @@ const NavComponent = () => {
       <div className="bg-white border-t border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop navigation */}
-          <div className="hidden md:flex space-x-8 py-2 justify-center">
+          <div className="md:flex space-x-8 py-2 justify-center">
             {/* Gestión dropdown */}
             <div className="relative group">
               <button className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 inline-flex items-center">
@@ -180,35 +198,7 @@ const NavComponent = () => {
             {user && user.rol === 'Matriz' && (<Link to="/admin/database" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">BD</Link>)}
           </div>
 
-          {/* Mobile navigation */}
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              <details className="group">
-                <summary className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 cursor-pointer">Gestión</summary>
-                <div className="pl-4 mt-1 space-y-1">
-                  <Link to="/users" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>
-                  <Link to="/empleados" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Empleados</Link>
-                  <Link to="/clients" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
-                  <Link to="/ventas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Ventas</Link>
-                  <Link to="/rutas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Rutas</Link>
-                  <Link to="/pagos" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Pagos</Link>
-                  <Link to="/entregas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Entregas</Link>
-                  <Link to="/entregas/complete" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Nueva Entrega Completa</Link>
-                  <Link to="/gasto-rutas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Gastos de Ruta</Link>
-                  <Link to="/lentes" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Lentes</Link>
-                </div>
-              </details>
-
-              <Link to="/ventas/new/unified" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Contrato de Venta</Link>
-              {user && user.puesto === 'Asesor' && (<Link to="/ruta-asesor" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Ruta Asesor</Link>)}
-              {user && user.rol === 'Matriz' && (
-                <Link to="/admin/prices" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Precios</Link>
-              )}
-              {user && user.rol === 'Matriz' && (
-                <Link to="/admin/database" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Base de Datos</Link>
-              )}
-            </div>
-          </div>
+          
         </div>
       </div>
     </nav>
