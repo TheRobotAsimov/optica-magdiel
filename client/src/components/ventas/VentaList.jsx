@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import ventaService from '../../service/ventaService';
+import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import { Search, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
@@ -35,6 +36,36 @@ const VentaList = () => {
   }, [user]);
 
   const handleDelete = async (folio) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      // Mostrar modal para solicitar motivo
+      Swal.fire({
+        title: 'Solicitar Eliminación',
+        input: 'textarea',
+        inputLabel: 'Motivo de la solicitud',
+        inputPlaceholder: 'Describe por qué deseas eliminar esta venta...',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debes proporcionar un motivo';
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Solicitud',
+        cancelButtonText: 'Cancelar'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const mensaje = `Solicitud de eliminación - Venta Folio: ${folio}, Motivo: ${result.value}`;
+            await notificacionService.create(mensaje);
+            Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
+          } catch {
+            Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
+          }
+        }
+      });
+      return;
+    }
+
+    // Lógica original para usuarios Matriz
     Swal.fire({
           title: '¿Estás seguro?',
           text: "¡No podrás revertir esto!",
@@ -66,6 +97,34 @@ const VentaList = () => {
   };
 
   const handleEdit = (folio) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      // Mostrar modal para solicitar motivo
+      Swal.fire({
+        title: 'Solicitar Edición',
+        input: 'textarea',
+        inputLabel: 'Motivo de la solicitud',
+        inputPlaceholder: 'Describe por qué deseas editar esta venta...',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debes proporcionar un motivo';
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Solicitud',
+        cancelButtonText: 'Cancelar'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const mensaje = `Solicitud de edición - Venta Folio: ${folio}, Motivo: ${result.value}`;
+            await notificacionService.create(mensaje);
+            Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
+          } catch {
+            Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
+          }
+        }
+      });
+      return;
+    }
     navigate(`/ventas/${folio}/edit`);
   };
 

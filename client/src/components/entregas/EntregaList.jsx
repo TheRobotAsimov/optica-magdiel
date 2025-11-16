@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import entregaService from '../../service/entregaService';
+import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import { Search, PlusCircle, Edit, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
@@ -30,15 +31,35 @@ const EntregaList = () => {
 
   const handleDelete = async (id) => {
     if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      // Mostrar modal para solicitar motivo
       Swal.fire({
-        title: 'No permitido',
-        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Entendido'
+        title: 'Solicitar Eliminación',
+        input: 'textarea',
+        inputLabel: 'Motivo de la solicitud',
+        inputPlaceholder: 'Describe por qué deseas eliminar esta entrega...',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debes proporcionar un motivo';
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Solicitud',
+        cancelButtonText: 'Cancelar'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const mensaje = `Solicitud de eliminación - Entrega ID: ${id}, Motivo: ${result.value}`;
+            await notificacionService.create(mensaje);
+            Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
+          } catch {
+            Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
+          }
+        }
       });
       return;
     }
+
+    // Lógica original para usuarios Matriz
     const result = await Swal.fire({
       title: '¿Estás seguro?',
       text: "¡No podrás revertir esto!",
@@ -160,12 +181,30 @@ const EntregaList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onClick={() => {
                           if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+                            // Mostrar modal para solicitar motivo
                             Swal.fire({
-                              title: 'No permitido',
-                              text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
-                              icon: 'warning',
-                              confirmButtonColor: '#3085d6',
-                              confirmButtonText: 'Entendido'
+                              title: 'Solicitar Edición',
+                              input: 'textarea',
+                              inputLabel: 'Motivo de la solicitud',
+                              inputPlaceholder: 'Describe por qué deseas editar esta entrega...',
+                              inputValidator: (value) => {
+                                if (!value) {
+                                  return 'Debes proporcionar un motivo';
+                                }
+                              },
+                              showCancelButton: true,
+                              confirmButtonText: 'Enviar Solicitud',
+                              cancelButtonText: 'Cancelar'
+                            }).then(async (result) => {
+                              if (result.isConfirmed) {
+                                try {
+                                  const mensaje = `Solicitud de edición - Entrega ID: ${entrega.identrega}, Motivo: ${result.value}`;
+                                  await notificacionService.create(mensaje);
+                                  Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
+                                } catch {
+                                  Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
+                                }
+                              }
                             });
                           } else {
                             navigate(`/entregas/${entrega.identrega}/edit`);
