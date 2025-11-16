@@ -70,6 +70,31 @@ class Venta {
     const [result] = await pool.execute('DELETE FROM venta WHERE folio = ?', [folio]);
     return result.affectedRows;
   }
+
+  static async getVentasAggregatedByAsesorAndDateRange(idasesor, fechaInicio, fechaFin) {
+    const [rows] = await pool.execute(`
+      SELECT
+        fecha,
+        SUM(total) as total_ventas,
+        COUNT(*) as numero_ventas
+      FROM venta
+      WHERE idasesor = ? AND fecha BETWEEN ? AND ?
+      GROUP BY fecha
+      ORDER BY fecha
+    `, [idasesor, fechaInicio, fechaFin]);
+    return rows;
+  }
+
+  static async getTotalVentasByAsesorAndDateRange(idasesor, fechaInicio, fechaFin) {
+    const [rows] = await pool.execute(`
+      SELECT
+        SUM(total) as total_ventas,
+        COUNT(*) as numero_ventas
+      FROM venta
+      WHERE idasesor = ? AND fecha BETWEEN ? AND ?
+    `, [idasesor, fechaInicio, fechaFin]);
+    return rows[0] || { total_ventas: 0, numero_ventas: 0 };
+  }
 }
 
 export default Venta;

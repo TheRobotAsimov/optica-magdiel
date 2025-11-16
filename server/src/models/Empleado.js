@@ -11,6 +11,11 @@ class Empleado {
     return rows[0];
   }
 
+  static async getByPuesto(puesto) {
+    const [rows] = await pool.execute('SELECT * FROM empleado WHERE puesto = ? AND estado = "Activo"', [puesto]);
+    return rows;
+  }
+
   static async create(data) {
     const {
       idusuario,

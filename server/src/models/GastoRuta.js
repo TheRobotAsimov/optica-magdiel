@@ -42,6 +42,30 @@ const GastoRuta = {
     await db.query('DELETE FROM gasto_ruta WHERE idgasto_ruta = ?', [id]);
     return { id };
   },
+
+  getGastosAggregatedByAsesorAndDateRange: async (idasesor, fechaInicio, fechaFin) => {
+    const [rows] = await db.query(`
+      SELECT
+        r.fecha,
+        SUM(g.cantidad) as total_gastos
+      FROM gasto_ruta g
+      JOIN ruta r ON g.idruta = r.idruta
+      WHERE r.idasesor = ? AND r.fecha BETWEEN ? AND ?
+      GROUP BY r.fecha
+      ORDER BY r.fecha
+    `, [idasesor, fechaInicio, fechaFin]);
+    return rows;
+  },
+
+  getTotalGastosByAsesorAndDateRange: async (idasesor, fechaInicio, fechaFin) => {
+    const [rows] = await db.query(`
+      SELECT SUM(g.cantidad) as total_gastos
+      FROM gasto_ruta g
+      JOIN ruta r ON g.idruta = r.idruta
+      WHERE r.idasesor = ? AND r.fecha BETWEEN ? AND ?
+    `, [idasesor, fechaInicio, fechaFin]);
+    return rows[0] || { total_gastos: 0 };
+  },
 };
 
 export default GastoRuta;

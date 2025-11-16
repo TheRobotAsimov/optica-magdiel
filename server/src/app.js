@@ -14,6 +14,7 @@ import pagoRoutes from './routes/Pagos.js';
 import entregaRoutes from './routes/Entregas.js';
 import gastoRutaRoutes from './routes/GastoRutas.js';
 import notificacionesRoutes from './routes/Notificaciones.js';
+import reportesRoutes from './routes/Reportes.js';
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use('/api/pagos', pagoRoutes);
 app.use('/api/entregas', entregaRoutes);
 app.use('/api/gasto-rutas', gastoRutaRoutes);
 app.use('/api/notificaciones', notificacionesRoutes);
+app.use('/api/reportes', reportesRoutes);
 
 // Manejo de errores
 app.use((err, req, res, next) => {

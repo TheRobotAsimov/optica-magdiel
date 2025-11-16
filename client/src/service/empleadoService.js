@@ -12,6 +12,11 @@ const getEmpleadoById = async (id) => {
     return response.data;
 };
 
+const getEmpleadosByPuesto = async (puesto) => {
+    const response = await axios.get(`${API_URL}/puesto/${puesto}`);
+    return response.data;
+};
+
 const createEmpleado = async (empleado) => {
     const response = await axios.post(API_URL, empleado);
     return response.data;
@@ -30,6 +35,7 @@ const deleteEmpleado = async (id) => {
 export default {
     getAllEmpleados,
     getEmpleadoById,
+    getEmpleadosByPuesto,
     createEmpleado,
     updateEmpleado,
     deleteEmpleado

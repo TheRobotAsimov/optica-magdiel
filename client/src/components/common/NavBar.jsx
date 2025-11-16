@@ -227,6 +227,18 @@ const NavComponent = () => {
               </div>
             </div>
 
+            {/* Reportes dropdown */}
+            <div className="relative group">
+              <button className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 inline-flex items-center">
+                Reportes
+              </button>
+              <div className="absolute left-0 top-full w-40 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transform -translate-y-2 transition-all duration-150 pointer-events-none group-hover:pointer-events-auto z-50">
+                <div className="py-1">
+                  {user && user.rol === 'Matriz' && (<Link to="/reportes/desempeno-asesor" className="block px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 hover:text-blue-600">Desempeño por Asesor</Link>)}
+                </div>
+              </div>
+            </div>
+
             <Link to="/ventas/new/unified" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Contrato de Venta</Link>
             <Link to="/entregas/complete" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Registrar Entrega</Link>
             {user && user.puesto === 'Asesor' && (<Link to="/ruta-asesor" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Ruta Asesor</Link>)}
@@ -251,6 +263,13 @@ const NavComponent = () => {
                   <Link to="/entregas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Entregas</Link>
                   <Link to="/gasto-rutas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Gastos de Ruta</Link>
                   {user && user.rol === 'Matriz' && (<Link to="/lentes" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Lentes</Link>)}
+                </div>
+              </details>
+
+              <details className="group">
+                <summary className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 cursor-pointer">Reportes</summary>
+                <div className="pl-4 mt-1 space-y-1">
+                  {user && user.rol === 'Matriz' && (<Link to="/reportes/desempeno-asesor" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Desempeño por Asesor</Link>)}
                 </div>
               </details>
 

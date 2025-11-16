@@ -22,6 +22,15 @@ export const getEmpleadoById = async (req, res) => {
   }
 };
 
+export const getEmpleadosByPuesto = async (req, res) => {
+  try {
+    const empleados = await Empleado.getByPuesto(req.params.puesto);
+    res.status(200).json(empleados);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener los empleados', error });
+  }
+};
+
 export const createEmpleado = async (req, res) => {
   try {
     const empleadoId = await Empleado.create(req.body);
