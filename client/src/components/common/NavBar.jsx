@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
-import { User, Bell } from 'lucide-react';
+import { User, Bell, Menu, X } from 'lucide-react';
 import logo from '../../assets/pez_blanco.webp';
 import notificacionService from '../../service/notificacionService';
 import useSocket from '../../hooks/useSocket';
@@ -11,6 +11,7 @@ const NavComponent = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
     const [notificaciones, setNotificaciones] = useState([]);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     const socket = useSocket();
     const notificationRef = useRef(null);
 
@@ -46,6 +47,24 @@ const NavComponent = () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [showNotifications]);
+
+    // Handle clicks outside mobile menu
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            // Close mobile menu if clicking outside
+            if (showMobileMenu && !event.target.closest('.mobile-menu-container')) {
+                setShowMobileMenu(false);
+            }
+        };
+
+        if (showMobileMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showMobileMenu]);
 
     const fetchUnreadCount = async () => {
         try {
@@ -114,7 +133,7 @@ const NavComponent = () => {
                 </button>
 
                 {showNotifications && (
-                  <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                  <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-md shadow-lg z-50 md:w-80 md:right-0 left-4 md:left-auto">
                     <div className="p-4 border-b border-gray-200">
                       <h3 className="text-lg font-medium text-gray-900">Notificaciones</h3>
                     </div>
@@ -129,13 +148,16 @@ const NavComponent = () => {
                                     key={notif.idnotificacion || notif.fecha}
                                     className="p-4 border-b border-gray-100 hover:bg-gray-50 bg-blue-50"
                                 >
-                                    <p className="text-sm text-gray-800">{notif.mensaje}</p>
+                                    <p className="text-sm text-gray-800 break-words">{notif.mensaje}</p>
                                     <p className="text-xs text-gray-500 mt-1">
                                         {new Date(notif.fecha).toLocaleString('es-ES')}
                                     </p>
                                     <button
-                                        onClick={() => handleMarkAsRead(notif.idnotificacion)}
-                                        className="mt-2 text-xs text-blue-600 hover:text-blue-800"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleMarkAsRead(notif.idnotificacion);
+                                        }}
+                                        className="mt-2 text-xs text-blue-600 hover:text-blue-800 touch-manipulation"
                                     >
                                         Marcar como leída
                                     </button>
@@ -157,12 +179,26 @@ const NavComponent = () => {
             </div>
 
              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Cerrar Sesión
-              </button>
-          </div>
+               onClick={handleLogout}
+               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+             >
+               Cerrar Sesión
+             </button>
+           </div>
+
+           {/* Menú hamburguesa para móviles */}
+           <div className="md:hidden">
+             <button
+               onClick={() => setShowMobileMenu(!showMobileMenu)}
+               className="text-white hover:text-blue-200 p-2"
+             >
+               {showMobileMenu ? (
+                 <X className="h-6 w-6" />
+               ) : (
+                 <Menu className="h-6 w-6" />
+               )}
+             </button>
+           </div>
         </div>
       </div>
 
@@ -170,7 +206,7 @@ const NavComponent = () => {
       <div className="bg-white border-t border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop navigation */}
-          <div className="md:flex space-x-8 py-2 justify-center">
+          <div className="hidden md:flex space-x-8 py-2 justify-center">
             {/* Gestión dropdown */}
             <div className="relative group">
               <button className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 inline-flex items-center">
@@ -198,7 +234,34 @@ const NavComponent = () => {
             {user && user.rol === 'Matriz' && (<Link to="/admin/database" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">BD</Link>)}
           </div>
 
-          
+          {/* Mobile navigation */}
+          {showMobileMenu && (
+            <div className="md:hidden mobile-menu-container">
+              <div className="px-2 pt-2 pb-3 space-y-1">
+              <details className="group">
+                <summary className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 cursor-pointer">Gestiones</summary>
+                <div className="pl-4 mt-1 space-y-1">
+                  {user && user.rol === 'Matriz' && (<Link to="/users" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Usuarios</Link>)}
+                  {user && user.rol === 'Matriz' && (<Link to="/empleados" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Empleados</Link>)}
+                  <Link to="/clients" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Clientes</Link>
+                  <Link to="/ventas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Ventas</Link>
+                  <Link to="/rutas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Rutas</Link>
+                  <Link to="/pagos" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Pagos</Link>
+                  <Link to="/entregas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Entregas</Link>
+                  <Link to="/gasto-rutas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Gastos de Ruta</Link>
+                  {user && user.rol === 'Matriz' && (<Link to="/lentes" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Lentes</Link>)}
+                </div>
+              </details>
+
+              <Link to="/ventas/new/unified" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Contrato de Venta</Link>
+              <Link to="/entregas/complete" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Registrar Entrega</Link>
+              {user && user.puesto === 'Asesor' && (<Link to="/ruta-asesor" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Ruta Asesor</Link>)}
+              {user && user.rol === 'Matriz' && (<Link to="/admin/prices" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Precios</Link>)}
+              {user && user.rol === 'Matriz' && (<Link to="/admin/database" className="text-gray-700 hover:text-blue-600 hover:bg-gray-50 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Base de Datos</Link>)}
+            </div>
+          </div>
+          )}
+
         </div>
       </div>
     </nav>
