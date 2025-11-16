@@ -37,6 +37,8 @@ export const createClient = async (req, res) => {
     const insertId = await Client.create(req.body);
     res.status(201).json({ message: 'Client created successfully', id: insertId });
   } catch (err) {
+    console.log(req.body);
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };

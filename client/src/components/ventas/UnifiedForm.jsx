@@ -7,10 +7,12 @@ import clientService from '../../service/clientService';
 import lenteService from '../../service/lenteService';
 import empleadoService from '../../service/empleadoService';
 import precioService from '../../service/precioService';
+import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import { validateUnifiedForm, validateUnifiedField } from '../../utils/validations/index.js';
+import Swal from 'sweetalert2';
 
 // Componente principal para el formulario unificado de ventas
 const UnifiedForm = () => {
@@ -101,6 +103,7 @@ const UnifiedForm = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [priceIncreaseReason, setPriceIncreaseReason] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -418,6 +421,29 @@ const UnifiedForm = () => {
     setIsClientSelected(false);
   };
 
+  // Funcion para manejar solicitud de aumento de precio
+  const handlePriceIncreaseRequest = () => {
+    Swal.fire({
+      title: 'Solicitar aumento de precio',
+      input: 'textarea',
+      inputLabel: 'Motivo del aumento de precio',
+      inputPlaceholder: 'Describe por qué necesitas aumentar el precio de esta venta...',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes proporcionar un motivo';
+        }
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Guardar solicitud',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setPriceIncreaseReason(result.value);
+        Swal.fire('Solicitud guardada', 'La solicitud de aumento de precio se enviará después de crear la venta.', 'success');
+      }
+    });
+  };
+
 // Funcion para manejar el envio del formulario
    const handleSubmit = async (e) => {
      e.preventDefault();
@@ -503,6 +529,18 @@ const UnifiedForm = () => {
          oi_av: formData.oi_av,
          kit: formData.kit,
        });
+
+       // Enviar notificación si hay una solicitud de aumento de precio pendiente
+       if (priceIncreaseReason) {
+         try {
+           const mensaje = `Incremento de precio - Venta Folio: ${formData.folio}, Motivo: ${priceIncreaseReason}`;
+           await notificacionService.create(mensaje);
+           console.log('Notificación de aumento de precio enviada');
+         } catch (notificationError) {
+           console.error('Error al enviar notificación de aumento de precio:', notificationError);
+           // No fallar la creación de venta por error en notificación
+         }
+       }
 
        // Navigate back to ruta asesor if coming from there, otherwise to ventas
        const urlParams = new URLSearchParams(window.location.search);
@@ -914,6 +952,20 @@ const UnifiedForm = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Entrega *</label>
                     <input type="date" name="fecha_entrega" value={formData.fecha_entrega} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-7"></label>
+                    <button
+                      type="button"
+                      onClick={handlePriceIncreaseRequest}
+                      className={`w-full px-3 py-2 rounded-lg font-medium transition-colors ${
+                        priceIncreaseReason
+                          ? 'bg-green-500 hover:bg-green-600 text-white'
+                          : 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                      }`}
+                    >
+                      {priceIncreaseReason ? '✅ Solicitud guardada' : 'Solicitar aumento de precio'}
+                    </button>
                   </div>
                   <div className="md:col-span-3">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Observaciones</label>

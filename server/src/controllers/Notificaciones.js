@@ -26,7 +26,7 @@ export const createNotificacion = async (req, res) => {
 
         res.status(201).json({ message: 'Notificación creada', id: insertId });
     } catch (err) {
-        //console.log(req);
+        console.log(req.body);
         console.log(err);
         res.status(500).json({ error: err.message });
     }
