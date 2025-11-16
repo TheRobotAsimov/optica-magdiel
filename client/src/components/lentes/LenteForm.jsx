@@ -110,27 +110,91 @@ const LenteForm = () => {
         setVentas(ventasData);
 
         if (id) {
-          const data = await lenteService.getLenteById(id);
-          if (data.fecha_entrega) {
-            data.fecha_entrega = new Date(data.fecha_entrega).toISOString().split('T')[0];
-          }
-          if (data.examen_seguimiento) {
-            data.examen_seguimiento = new Date(data.examen_seguimiento).toISOString().split('T')[0];
-          }
-          setLente(data);
+           const data = await lenteService.getLenteById(id);
+           if (data.fecha_entrega) {
+             data.fecha_entrega = new Date(data.fecha_entrega).toISOString().split('T')[0];
+           }
+           if (data.examen_seguimiento) {
+             data.examen_seguimiento = new Date(data.examen_seguimiento).toISOString().split('T')[0];
+           }
+           setLente(data);
 
-          // Set symptoms state if sintomas is a string
-          if (data.sintomas) {
-            const selectedSymptoms = data.sintomas.split(', ');
-            const newSymptomsState = { ...initialSymptomsState };
-            selectedSymptoms.forEach(symptom => {
-              if (newSymptomsState[symptom] !== undefined) {
-                newSymptomsState[symptom] = true;
-              }
-            });
-            setSymptomsState(newSymptomsState);
-          }
-        }
+           // Parse graduacion from lente data
+           const newGraduacion = { ...graduacion };
+           if (data.od_esf) {
+             if (data.od_esf.startsWith('-')) {
+               newGraduacion.od_esf_sign = '-';
+               newGraduacion.od_esf_val = data.od_esf.substring(1);
+             } else {
+               newGraduacion.od_esf_sign = '+';
+               newGraduacion.od_esf_val = data.od_esf.startsWith('+') ? data.od_esf.substring(1) : data.od_esf;
+             }
+           }
+           if (data.od_cil && data.od_cil.startsWith('-')) {
+             newGraduacion.od_cil_val = data.od_cil.substring(1);
+           }
+           newGraduacion.od_eje_val = data.od_eje || '';
+           if (data.od_add) {
+             newGraduacion.od_add_val = data.od_add.startsWith('+') ? data.od_add.substring(1) : data.od_add;
+           }
+           if (data.od_av) {
+             const parts = data.od_av.split('/');
+             newGraduacion.od_av_1 = parts[0] || '';
+             newGraduacion.od_av_2 = parts[1] || '';
+           }
+           if (data.oi_esf) {
+             if (data.oi_esf.startsWith('-')) {
+               newGraduacion.oi_esf_sign = '-';
+               newGraduacion.oi_esf_val = data.oi_esf.substring(1);
+             } else {
+               newGraduacion.oi_esf_sign = '+';
+               newGraduacion.oi_esf_val = data.oi_esf.startsWith('+') ? data.oi_esf.substring(1) : data.oi_esf;
+             }
+           }
+           if (data.oi_cil && data.oi_cil.startsWith('-')) {
+             newGraduacion.oi_cil_val = data.oi_cil.substring(1);
+           }
+           newGraduacion.oi_eje_val = data.oi_eje || '';
+           if (data.oi_add) {
+             newGraduacion.oi_add_val = data.oi_add.startsWith('+') ? data.oi_add.substring(1) : data.oi_add;
+           }
+           if (data.oi_av) {
+             const parts = data.oi_av.split('/');
+             newGraduacion.oi_av_1 = parts[0] || '';
+             newGraduacion.oi_av_2 = parts[1] || '';
+           }
+           setGraduacion(newGraduacion);
+
+           // Determine examenSeguimientoOption from examen_seguimiento date
+           if (data.examen_seguimiento) {
+             const today = new Date();
+             const examDate = new Date(data.examen_seguimiento);
+             const diffTime = examDate.getTime() - today.getTime();
+             const diffDays = diffTime / (1000 * 3600 * 24);
+             const diffMonths = diffDays / 30.44; // approximate months
+             if (Math.abs(diffMonths - 6) < 1) {
+               setExamenSeguimientoOption('6 months');
+             } else if (Math.abs(diffMonths - 12) < 1) {
+               setExamenSeguimientoOption('1 year');
+             } else if (Math.abs(diffMonths - 24) < 1) {
+               setExamenSeguimientoOption('2 years');
+             } else {
+               setExamenSeguimientoOption('');
+             }
+           }
+
+           // Set symptoms state if sintomas is a string
+           if (data.sintomas) {
+             const selectedSymptoms = data.sintomas.split(', ');
+             const newSymptomsState = { ...initialSymptomsState };
+             selectedSymptoms.forEach(symptom => {
+               if (newSymptomsState[symptom] !== undefined) {
+                 newSymptomsState[symptom] = true;
+               }
+             });
+             setSymptomsState(newSymptomsState);
+           }
+         }
       } catch (err) {
         setError(err.message);
       } finally {
