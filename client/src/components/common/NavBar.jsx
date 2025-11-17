@@ -237,6 +237,7 @@ const NavComponent = () => {
                   {user && user.rol === 'Matriz' && (<Link to="/reportes/desempeno-asesor" className="block px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 hover:text-blue-600">Desempeño por Asesor</Link>)}
                   {user && user.rol === 'Matriz' && (<Link to="/reportes/pagos-clientes" className="block px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 hover:text-blue-600">Pagos de Clientes</Link>)}
                   {user && user.rol === 'Matriz' && (<Link to="/reportes/rutas" className="block px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 hover:text-blue-600">Rutas</Link>)}
+                  {user && user.rol === 'Matriz' && (<Link to="/reportes/balance" className="block px-4 py-2 text-sm text-gray-700 font-medium hover:bg-gray-100 hover:text-blue-600">Balance</Link>)}
                 </div>
               </div>
             </div>
@@ -274,6 +275,7 @@ const NavComponent = () => {
                   {user && user.rol === 'Matriz' && (<Link to="/reportes/desempeno-asesor" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Desempeño por Asesor</Link>)}
                   {user && user.rol === 'Matriz' && (<Link to="/reportes/pagos-clientes" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Pagos de Clientes</Link>)}
                   {user && user.rol === 'Matriz' && (<Link to="/reportes/rutas" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Rutas</Link>)}
+                  {user && user.rol === 'Matriz' && (<Link to="/reportes/balance" className="block text-gray-700 hover:text-blue-600 hover:bg-gray-50 px-3 py-2 rounded-md text-base font-medium">Balance</Link>)}
                 </div>
               </details>
 

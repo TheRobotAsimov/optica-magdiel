@@ -24,6 +24,13 @@ const reporteService = {
     });
     return response.data;
   },
+
+  getBalanceReport: async (fechaInicio, fechaFin) => {
+    const response = await axios.get(API_URL + '/balance', {
+      params: { fechaInicio, fechaFin }
+    });
+    return response.data;
+  },
 };
 
 export default reporteService;

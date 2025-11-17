@@ -287,3 +287,100 @@ export const getRutasReport = async (req, res) => {
    res.status(500).json({ error: error.message });
  }
 };
+
+export const getBalanceReport = async (req, res) => {
+ try {
+   const { fechaInicio, fechaFin } = req.query;
+
+   if (!fechaInicio || !fechaFin) {
+     return res.status(400).json({ message: 'Fecha inicio y fecha fin son requeridas' });
+   }
+
+   // Obtener ingresos diarios (pagos con estatus 'Pagado')
+   const ingresosDiarios = await pool.execute(`
+     SELECT
+       DATE(p.fecha) as fecha,
+       SUM(p.cantidad) as total_ingresos
+     FROM pago p
+     WHERE p.fecha BETWEEN ? AND ?
+       AND p.estatus = 'Pagado'
+     GROUP BY DATE(p.fecha)
+     ORDER BY DATE(p.fecha)
+   `, [fechaInicio, fechaFin]);
+
+   // Obtener egresos diarios (gastos de ruta)
+   const egresosDiarios = await pool.execute(`
+     SELECT
+       DATE(r.fecha) as fecha,
+       SUM(g.cantidad) as total_egresos
+     FROM gasto_ruta g
+     JOIN ruta r ON g.idruta = r.idruta
+     WHERE r.fecha BETWEEN ? AND ?
+     GROUP BY DATE(r.fecha)
+     ORDER BY DATE(r.fecha)
+   `, [fechaInicio, fechaFin]);
+
+   // Calcular totales
+   const totalIngresos = ingresosDiarios[0].reduce((sum, row) => sum + parseFloat(row.total_ingresos), 0);
+   const totalEgresos = egresosDiarios[0].reduce((sum, row) => sum + parseFloat(row.total_egresos), 0);
+
+   // Crear mapa de fechas para combinar ingresos y egresos
+   const fechaMap = new Map();
+
+   // Función para normalizar fechas
+   const normalizeDate = (date) => {
+     if (date instanceof Date) {
+       return date.toISOString().split('T')[0];
+     }
+     if (typeof date === 'string' && date.includes('T')) {
+       return date.split('T')[0];
+     }
+     return date;
+   };
+
+   // Agregar ingresos al mapa
+   ingresosDiarios[0].forEach(row => {
+     const fecha = normalizeDate(row.fecha);
+     fechaMap.set(fecha, {
+       fecha,
+       ingresos: parseFloat(row.total_ingresos) || 0,
+       egresos: 0
+     });
+   });
+
+   // Agregar egresos al mapa
+   egresosDiarios[0].forEach(row => {
+     const fecha = normalizeDate(row.fecha);
+     if (fechaMap.has(fecha)) {
+       fechaMap.get(fecha).egresos = parseFloat(row.total_egresos) || 0;
+     } else {
+       fechaMap.set(fecha, {
+         fecha,
+         ingresos: 0,
+         egresos: parseFloat(row.total_egresos) || 0
+       });
+     }
+   });
+
+   // Convertir mapa a array ordenado
+   const datosDiarios = Array.from(fechaMap.values()).sort((a, b) => {
+     const fechaA = typeof a.fecha === 'string' ? a.fecha : a.fecha.toISOString().split('T')[0];
+     const fechaB = typeof b.fecha === 'string' ? b.fecha : b.fecha.toISOString().split('T')[0];
+     return fechaA.localeCompare(fechaB);
+   });
+
+   res.json({
+     rangoFechas: { inicio: fechaInicio, fin: fechaFin },
+     totales: {
+       ingresos: totalIngresos,
+       egresos: totalEgresos,
+       balance: totalIngresos - totalEgresos
+     },
+     datosDiarios
+   });
+
+ } catch (error) {
+   console.error('Error en getBalanceReport:', error);
+   res.status(500).json({ error: error.message });
+ }
+};
