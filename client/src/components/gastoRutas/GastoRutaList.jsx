@@ -48,7 +48,7 @@ const GastoRutaList = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const mensaje = `Solicitud de eliminación - Gasto de Ruta ID: ${id}, Motivo: ${result.value}`;
+            const mensaje = `Solicitud de eliminación - Gasto de Ruta ID: ${id}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
             await notificacionService.create(mensaje);
             Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
           } catch {
@@ -198,7 +198,7 @@ const GastoRutaList = () => {
                             }).then(async (result) => {
                               if (result.isConfirmed) {
                                 try {
-                                  const mensaje = `Solicitud de edición - Gasto de Ruta ID: ${gastoRuta.idgasto_ruta}, Motivo: ${result.value}`;
+                                  const mensaje = `Solicitud de edición - Gasto de Ruta ID: ${gastoRuta.idgasto_ruta}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
                                   await notificacionService.create(mensaje);
                                   Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
                                 } catch {

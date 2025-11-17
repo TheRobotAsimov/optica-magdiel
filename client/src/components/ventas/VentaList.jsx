@@ -54,7 +54,7 @@ const VentaList = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const mensaje = `Solicitud de eliminación - Venta Folio: ${folio}, Motivo: ${result.value}`;
+            const mensaje = `Solicitud de eliminación - Venta Folio: ${folio}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
             await notificacionService.create(mensaje);
             Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
           } catch {
@@ -115,7 +115,7 @@ const VentaList = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const mensaje = `Solicitud de edición - Venta Folio: ${folio}, Motivo: ${result.value}`;
+            const mensaje = `Solicitud de edición - Venta Folio: ${folio}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
             await notificacionService.create(mensaje);
             Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
           } catch {

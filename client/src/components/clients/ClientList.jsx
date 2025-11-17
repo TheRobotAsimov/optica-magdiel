@@ -49,7 +49,7 @@ const ClientList = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const mensaje = `Solicitud de eliminación - Cliente ID: ${clientId}, Motivo: ${result.value}`;
+            const mensaje = `Solicitud de eliminación - Cliente ID: ${clientId}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
             await notificacionService.create(mensaje);
             Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
           } catch {
@@ -108,7 +108,7 @@ const ClientList = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const mensaje = `Solicitud de edición - Cliente ID: ${clientId}, Motivo: ${result.value}`;
+            const mensaje = `Solicitud de edición - Cliente ID: ${clientId}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
             await notificacionService.create(mensaje);
             Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
           } catch {

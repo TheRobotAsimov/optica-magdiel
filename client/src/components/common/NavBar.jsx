@@ -228,6 +228,7 @@ const NavComponent = () => {
             </div>
 
             {/* Reportes dropdown */}
+            {user && user.rol === 'Matriz' && (
             <div className="relative group">
               <button className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 inline-flex items-center">
                 Reportes
@@ -241,6 +242,7 @@ const NavComponent = () => {
                 </div>
               </div>
             </div>
+            )}
 
             <Link to="/ventas/new/unified" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Contrato de Venta</Link>
             <Link to="/entregas/complete" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Registrar Entrega</Link>

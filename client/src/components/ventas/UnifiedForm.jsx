@@ -533,7 +533,7 @@ const UnifiedForm = () => {
        // Enviar notificación si hay una solicitud de aumento de precio pendiente
        if (priceIncreaseReason) {
          try {
-           const mensaje = `Incremento de precio - Venta Folio: ${formData.folio}, Motivo: ${priceIncreaseReason}`;
+           const mensaje = `Incremento de precio - Venta Folio: ${formData.folio}, Motivo: ${priceIncreaseReason} - Solicitado por: ${user.nombre} ${user.paterno} ${user.materno}`;
            await notificacionService.create(mensaje);
            console.log('Notificación de aumento de precio enviada');
          } catch (notificationError) {

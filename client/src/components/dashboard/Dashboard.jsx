@@ -117,7 +117,7 @@ export const Dashboard = () => {
             </div>
           </div>
 
-          {/* Reportes Section - Only for Asesor role */}
+          {/* Reportes Section - Only for Matriz role */}
           {user?.rol === 'Matriz' && (
             <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
               <div className="px-4 py-5 sm:p-6">

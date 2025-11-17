@@ -240,7 +240,7 @@ const RutaAsesor = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const mensaje = `Ruta Asesor - ID Ruta: ${currentRouteId}, Descripción: ${result.value}`;
+          const mensaje = `Ruta Asesor - ID Ruta: ${currentRouteId}, Descripción: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno} ${user.materno}`;
           await notificacionService.create(mensaje);
           Swal.fire('Solicitud enviada', 'Tu solicitud de edición ha sido enviada al administrador.', 'success');
         } catch {

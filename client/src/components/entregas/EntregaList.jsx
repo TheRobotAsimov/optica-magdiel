@@ -48,7 +48,7 @@ const EntregaList = () => {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            const mensaje = `Solicitud de eliminación - Entrega ID: ${id}, Motivo: ${result.value}`;
+            const mensaje = `Solicitud de eliminación - Entrega ID: ${id}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
             await notificacionService.create(mensaje);
             Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
           } catch {
@@ -198,7 +198,7 @@ const EntregaList = () => {
                             }).then(async (result) => {
                               if (result.isConfirmed) {
                                 try {
-                                  const mensaje = `Solicitud de edición - Entrega ID: ${entrega.identrega}, Motivo: ${result.value}`;
+                                  const mensaje = `Solicitud de edición - Entrega ID: ${entrega.identrega}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
                                   await notificacionService.create(mensaje);
                                   Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
                                 } catch {
