@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { BarChart3, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
@@ -283,8 +284,9 @@ const RutasReport = () => {
             <button
               onClick={handleGenerateReport}
               disabled={loading || !selectedDate}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-2 h-10 mt-6"
+              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-2 h-10 mt-6 flex items-center justify-center gap-2"
             >
+              <BarChart3 className="h-4 w-4" />
               {loading ? 'Generando...' : 'Generar Reporte'}
             </button>
           </div>
@@ -388,9 +390,10 @@ const RutasReport = () => {
 
               <button
                 onClick={downloadPDF}
-                className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-6 py-2 font-semibold"
+                className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-6 py-2 font-semibold flex items-center gap-2"
               >
-                📄 Descargar PDF
+                <Download className="h-4 w-4" />
+                Descargar PDF
               </button>
             </div>
           )}

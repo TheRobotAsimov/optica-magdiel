@@ -117,6 +117,40 @@ export const Dashboard = () => {
             </div>
           </div>
 
+          {/* Reportes Section - Only for Asesor role */}
+          {user?.rol === 'Matriz' && (
+            <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
+              <div className="px-4 py-5 sm:p-6">
+                <h3 className="text-3xl font-bold leading-6 text-purple-500 mb-6 border-b-4 pb-2">
+                  REPORTES
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {[
+                    { title: 'Rutas', icon: FileText, path: '/reportes/rutas', color: 'bg-purple-500' },
+                    { title: 'Desempeño por Asesor', icon: FileText, path: '/reportes/desempeno-asesor', color: 'bg-purple-500' },
+                    { title: 'Pagos de Clientes', icon: FileText, path: '/reportes/pagos-clientes', color: 'bg-purple-500' },
+                    { title: 'Balance', icon: FileText, path: '/reportes/balance', color: 'bg-purple-500' },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+                      >
+                        <div className={`${item.color} p-6 h-32 flex flex-col items-center justify-center text-white`}>
+                          <Icon className="h-10 w-10 mb-2 group-hover:scale-110 transition-transform duration-300" />
+                          <span className="text-center font-medium text-sm">{item.title}</span>
+                        </div>
+                        <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Administración Section - Only for Matriz role */}
           {user?.rol === 'Matriz' && (
             <div className="bg-white overflow-hidden shadow rounded-lg">
