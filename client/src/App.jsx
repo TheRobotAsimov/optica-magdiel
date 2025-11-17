@@ -12,6 +12,7 @@ import ClientList from './components/clients/ClientList';
 import ClientForm from './components/clients/ClientForm';
 import DatabaseAdmin from './components/admin/DatabaseAdmin';
 import DesempenoAsesorReport from './components/admin/DesempenoAsesorReport';
+import PagosClientesReport from './components/admin/PagosClientesReport';
 import EmpleadoList from './components/empleados/EmpleadoList';
 import EmpleadoForm from './components/empleados/EmpleadoForm';
 import LenteList from './components/lentes/LenteList';
@@ -197,6 +198,14 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <DesempenoAsesorReport />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reportes/pagos-clientes"
+            element={
+              <ProtectedRoute>
+                <PagosClientesReport />
               </ProtectedRoute>
             }
           />

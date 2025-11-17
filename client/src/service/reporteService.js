@@ -10,6 +10,13 @@ const reporteService = {
     });
     return response.data;
   },
+
+  getPagosClientes: async (fechaInicio, fechaFin) => {
+    const response = await axios.get(API_URL + '/pagos-clientes', {
+      params: { fechaInicio, fechaFin }
+    });
+    return response.data;
+  },
 };
 
 export default reporteService;
