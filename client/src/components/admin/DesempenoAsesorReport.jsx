@@ -25,9 +25,57 @@ const toNumber = (value) => {
   return isNaN(num) ? 0 : num;
 };
 
+// Format currency with commas for thousands
+const formatCurrency = (value) => {
+  const num = toNumber(value);
+  return num.toLocaleString('es-MX', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+};
+
+// Calculate date range based on selected period
+const getDateRange = (period) => {
+  const today = new Date();
+  const startDate = new Date();
+  let endDate = new Date(today);
+
+  switch (period) {
+    case 'week': {
+      // Start of current week (Monday)
+      const dayOfWeek = today.getDay();
+      const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust for Sunday
+      startDate.setDate(diff);
+      break;
+    }
+    case 'month':
+      // Start of current month
+      startDate.setDate(1);
+      break;
+    case '6months':
+      // 6 months ago
+      startDate.setMonth(today.getMonth() - 6);
+      startDate.setDate(1);
+      break;
+    case 'year':
+      // Start of current year
+      startDate.setMonth(0);
+      startDate.setDate(1);
+      break;
+    default:
+      return { start: '', end: '' };
+  }
+
+  return {
+    start: startDate.toISOString().split('T')[0],
+    end: endDate.toISOString().split('T')[0]
+  };
+};
+
 const DesempenoAsesorReport = () => {
   const [asesores, setAsesores] = useState([]);
   const [selectedAsesor, setSelectedAsesor] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('');
   const [fechaInicio, setFechaInicio] = useState('');
   const [fechaFin, setFechaFin] = useState('');
   const [reportData, setReportData] = useState(null);
@@ -45,6 +93,15 @@ const DesempenoAsesorReport = () => {
     };
     fetchAsesores();
   }, []);
+
+  // Update dates when period changes
+  useEffect(() => {
+    if (selectedPeriod) {
+      const { start, end } = getDateRange(selectedPeriod);
+      setFechaInicio(start);
+      setFechaFin(end);
+    }
+  }, [selectedPeriod]);
 
   const handleGenerateReport = async () => {
     if (!selectedAsesor || !fechaInicio || !fechaFin) return;
@@ -110,7 +167,7 @@ const DesempenoAsesorReport = () => {
           borderWidth: 1,
         },
         {
-          label: 'Gastos',
+          label: 'Gastos de Ruta',
           data: mergedData.gastos,
           backgroundColor: 'rgba(255, 99, 132, 0.7)',
           borderColor: 'rgb(255, 99, 132)',
@@ -128,7 +185,7 @@ const DesempenoAsesorReport = () => {
       tooltip: {
         callbacks: {
           label: function(context) {
-            return context.dataset.label + ': $' + context.parsed.y.toFixed(2);
+            return context.dataset.label + ': $' + formatCurrency(context.parsed.y);
           }
         }
       }
@@ -138,7 +195,7 @@ const DesempenoAsesorReport = () => {
         beginAtZero: true,
         ticks: {
           callback: function(value) {
-            return '$' + value.toFixed(2);
+            return '$' + formatCurrency(value);
           }
         }
       }
@@ -160,12 +217,12 @@ const DesempenoAsesorReport = () => {
     const avgGastos = toNumber(reportData.promedios.gastosPorDia);
     const avgUtilidad = avgVentas - avgGastos;
 
-    doc.text(`Total Ventas: $${totalVentas.toFixed(2)}`, 20, 45);
-    doc.text(`Total Gastos: $${totalGastos.toFixed(2)}`, 20, 55);
-    doc.text(`Utilidad Neta: $${totalUtilidad.toFixed(2)}`, 20, 65);
-    doc.text(`Prom. Ventas/día: $${avgVentas.toFixed(2)}`, 20, 75);
-    doc.text(`Prom. Gastos/día: $${avgGastos.toFixed(2)}`, 20, 85);
-    doc.text(`Prom. Utilidad/día: $${avgUtilidad.toFixed(2)}`, 20, 95);
+    doc.text(`Total Ventas: $${formatCurrency(totalVentas)}`, 20, 45);
+    doc.text(`Total Gastos de Ruta: $${formatCurrency(totalGastos)}`, 20, 55);
+    doc.text(`Utilidad Neta: $${formatCurrency(totalUtilidad)}`, 20, 65);
+    doc.text(`Prom. Ventas/día: $${formatCurrency(avgVentas)}`, 20, 75);
+    doc.text(`Prom. Gastos/día: $${formatCurrency(avgGastos)}`, 20, 85);
+    doc.text(`Prom. Utilidad/día: $${formatCurrency(avgUtilidad)}`, 20, 95);
 
     if (chartRef.current) {
       const canvas = await html2canvas(chartRef.current);
@@ -175,13 +232,13 @@ const DesempenoAsesorReport = () => {
 
     const tableRows = mergedData.tableData.map(row => [
       formatDate(row.date),
-      `$${row.ventas.toFixed(2)}`,
-      `$${row.gastos.toFixed(2)}`,
-      `$${row.utilidad.toFixed(2)}`
+      `$${formatCurrency(row.ventas)}`,
+      `$${formatCurrency(row.gastos)}`,
+      `$${formatCurrency(row.utilidad)}`
     ]);
 
     autoTable(doc, {
-      head: [['Fecha', 'Ventas', 'Gastos']],
+      head: [['Fecha', 'Ventas', 'Gastos de Ruta']],
       body: tableRows,
       startY: 195,
       styles: { fontSize: 9 },
@@ -216,23 +273,25 @@ const DesempenoAsesorReport = () => {
               ))}
             </select>
 
-            <input
-              type="date"
-              value={fechaInicio}
-              onChange={(e) => setFechaInicio(e.target.value)}
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
               className="border rounded-lg p-2"
-            />
+            >
+              <option value="">Seleccionar Periodo</option>
+              <option value="week">Esta semana</option>
+              <option value="month">Este mes</option>
+              <option value="6months">Últimos 6 meses</option>
+              <option value="year">Este año</option>
+            </select>
 
-            <input
-              type="date"
-              value={fechaFin}
-              onChange={(e) => setFechaFin(e.target.value)}
-              className="border rounded-lg p-2"
-            />
+            <div className="border rounded-lg p-2 bg-gray-50 text-gray-600">
+              {fechaInicio && fechaFin ? `${fechaInicio} - ${fechaFin}` : 'Seleccione un periodo'}
+            </div>
 
             <button
               onClick={handleGenerateReport}
-              disabled={loading}
+              disabled={loading || !selectedAsesor || !selectedPeriod}
               className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-2"
             >
               {loading ? 'Generando...' : 'Generar Reporte'}
@@ -251,28 +310,28 @@ const DesempenoAsesorReport = () => {
                 <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
                   <h3 className="font-semibold text-blue-900">Total Ventas</h3>
                   <p className="text-2xl font-bold text-blue-700">
-                    ${toNumber(reportData.totales.ventas).toFixed(2)}
+                    ${formatCurrency(reportData.totales.ventas)}
                   </p>
                   <p className="text-sm text-blue-600">
-                    Prom/día: ${toNumber(reportData.promedios.ventasPorDia).toFixed(2)}
+                    Prom/día: ${formatCurrency(reportData.promedios.ventasPorDia)}
                   </p>
                 </div>
                 <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
-                  <h3 className="font-semibold text-red-900">Total Gastos</h3>
+                  <h3 className="font-semibold text-red-900">Total Gastos de Ruta</h3>
                   <p className="text-2xl font-bold text-red-700">
-                    ${toNumber(reportData.totales.gastos).toFixed(2)}
+                    ${formatCurrency(reportData.totales.gastos)}
                   </p>
                   <p className="text-sm text-red-600">
-                    Prom/día: ${toNumber(reportData.promedios.gastosPorDia).toFixed(2)}
+                    Prom/día: ${formatCurrency(reportData.promedios.gastosPorDia)}
                   </p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
                   <h3 className="font-semibold text-green-900">Utilidad Neta</h3>
                   <p className="text-2xl font-bold text-green-700">
-                    ${(toNumber(reportData.totales.ventas) - toNumber(reportData.totales.gastos)).toFixed(2)}
+                    ${formatCurrency(toNumber(reportData.totales.ventas) - toNumber(reportData.totales.gastos))}
                   </p>
                   <p className="text-sm text-green-600">
-                    Prom/día: ${(toNumber(reportData.promedios.ventasPorDia) - toNumber(reportData.promedios.gastosPorDia)).toFixed(2)}
+                    Prom/día: ${formatCurrency(toNumber(reportData.promedios.ventasPorDia) - toNumber(reportData.promedios.gastosPorDia))}
                   </p>
                 </div>
               </div>
@@ -285,14 +344,14 @@ const DesempenoAsesorReport = () => {
               </div>
 
               <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Detalle Diario</h3>
-                <div className="overflow-x-auto">
+                <h3 className="text-3xl font-semibold mb-3 text-center">Detalle Diario</h3>
+                <div className="overflow-x-auto max-w-3xl mx-auto">
                   <table className="min-w-full table-auto border-collapse border border-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="border border-gray-300 px-4 py-2 text-left">Fecha</th>
                         <th className="border border-gray-300 px-4 py-2 text-right">Ventas</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Gastos</th>
+                        <th className="border border-gray-300 px-4 py-2 text-right">Gastos de Ruta</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -301,10 +360,10 @@ const DesempenoAsesorReport = () => {
                           <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                             <td className="border border-gray-300 px-4 py-2">{formatDate(row.date)}</td>
                             <td className="border border-gray-300 px-4 py-2 text-right text-blue-600 font-medium">
-                              ${row.ventas.toFixed(2)}
+                              ${formatCurrency(row.ventas)}
                             </td>
                             <td className="border border-gray-300 px-4 py-2 text-right text-red-600 font-medium">
-                              ${row.gastos.toFixed(2)}
+                              ${formatCurrency(row.gastos)}
                             </td>
                           </tr>
                         );
@@ -318,14 +377,14 @@ const DesempenoAsesorReport = () => {
                 onClick={downloadPDF}
                 className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-6 py-2 font-semibold"
               >
-                📄 Descargar PDF
+                  Descargar PDF
               </button>
             </>
           )}
 
           {!reportData && !loading && (
             <div className="text-center text-gray-500 py-8">
-              Seleccione un asesor y rango de fechas para generar el reporte
+              Seleccione un asesor y periodo para generar el reporte
             </div>
           )}
         </div>
