@@ -17,6 +17,13 @@ const reporteService = {
     });
     return response.data;
   },
+
+  getRutasReport: async (fecha) => {
+    const response = await axios.get(API_URL + '/rutas', {
+      params: { fecha }
+    });
+    return response.data;
+  },
 };
 
 export default reporteService;
