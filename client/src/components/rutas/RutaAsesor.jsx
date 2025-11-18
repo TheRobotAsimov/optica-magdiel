@@ -486,6 +486,7 @@ const RutaAsesor = () => {
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
                       <h3 className="text-lg font-medium text-yellow-800 mb-4">Registrar Artículos No Entregados</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      { remainingLentes > 0 && (
                         <button
                           onClick={registerUndeliveredLente}
                           className="flex items-center justify-center space-x-2 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
@@ -493,7 +494,8 @@ const RutaAsesor = () => {
                           <Package className="h-5 w-5" />
                           <span>Registrar Lente No Entregado</span>
                         </button>
-
+                      )}
+                      { remainingTarjetas > 0 && (
                         <button
                           onClick={registerUndeliveredPago}
                           className="flex items-center justify-center space-x-2 px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
@@ -501,6 +503,7 @@ const RutaAsesor = () => {
                           <DollarSign className="h-5 w-5" />
                           <span>Registrar Pago No Entregado</span>
                         </button>
+                      )}
                       </div>
                     </div>
                   ) : (

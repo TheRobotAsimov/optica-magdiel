@@ -200,8 +200,8 @@ const CompleteEntregaForm = () => {
         };
         await pagoService.updatePago(pagoId, pagoToUpdate);
 
+        const currentRoute = rutas.find(r => r.idruta == formData.idruta);
         if (formData.estatus === 'Entregado' && formData.idruta) {
-          const currentRoute = rutas.find(r => r.idruta == formData.idruta);
           if (currentRoute) {
             const routeUpdateData = {
               ...currentRoute,
@@ -214,6 +214,19 @@ const CompleteEntregaForm = () => {
 
             await rutaService.updateRuta(formData.idruta, routeUpdateData);
           }
+        }
+
+        if (formData.estatus === 'No entregado' && formData.idruta) {
+          const routeUpdateData = {
+            ...currentRoute,
+            tarjetas_no_entregadas: (currentRoute.tarjetas_no_entregadas || 0) + 1,
+          };
+
+          if (routeUpdateData.fecha) {
+            routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
+          }
+
+          await rutaService.updateRuta(formData.idruta, routeUpdateData);
         }
       }
 
@@ -288,7 +301,13 @@ const CompleteEntregaForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Ruta *</label>
-                  <select name="idruta" value={formData.idruta} onChange={handleChange} required className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200">
+                  <select name="idruta" 
+                          value={formData.idruta} 
+                          onChange={handleChange} 
+                          required 
+                          disabled={new URLSearchParams(window.location.search).get('ruta') !== null}
+                          className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
                     <option value="">Seleccionar Ruta</option>
                     {rutas.map(ruta => (
                       <option key={ruta.idruta} value={ruta.idruta}>{`Ruta ${ruta.idruta} - ${new Date(ruta.fecha).toLocaleDateString()}`}</option>
@@ -310,7 +329,7 @@ const CompleteEntregaForm = () => {
                   </select>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Motivo *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Descripción *</label>
                   <textarea name="motivo" value={formData.motivo} onChange={handleChange} required rows="3" className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"></textarea>
                 </div>
                 <div>
@@ -320,6 +339,8 @@ const CompleteEntregaForm = () => {
               </div>
 
               {/* Lente Section - Improved */}
+
+              {( new URLSearchParams(window.location.search).get('undelivered') === 'lente' || new URLSearchParams(window.location.search).get('undelivered') === null ) && (
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200 mt-8">
                 <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
                   <div className="flex items-center space-x-3">
@@ -340,7 +361,8 @@ const CompleteEntregaForm = () => {
                       name="idlente" 
                       value={formData.idlente} 
                       onChange={handleLenteChange}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-700 font-medium hover:border-gray-400"
+                      disabled={new URLSearchParams(window.location.search).get('undelivered') === 'pago'}
+                      className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-700 font-medium hover:border-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
                       <option value="">— Seleccionar Lente —</option>
                       {pendingLentes.map(lente => {
@@ -471,8 +493,10 @@ const CompleteEntregaForm = () => {
                   )}
                 </div>
               </div>
+              )}
 
               {/* Pago Section - Improved */}
+              {( new URLSearchParams(window.location.search).get('undelivered') === 'pago' || new URLSearchParams(window.location.search).get('undelivered') === null ) && (
               <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200 mt-8">
                 <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
                   <div className="flex items-center space-x-3">
@@ -611,6 +635,7 @@ const CompleteEntregaForm = () => {
                   )}
                 </div>
               </div>
+              )}
 
               <div className="flex justify-end pt-6 border-t-2 border-gray-200 mt-8">
                 <button 
