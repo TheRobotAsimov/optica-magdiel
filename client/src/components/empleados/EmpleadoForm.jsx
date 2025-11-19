@@ -88,9 +88,16 @@ const EmpleadoForm = () => {
 
   useEffect(() => {
     const errors = validateEmpleadoForm(empleado);
+    // Additional validation for user-role match
+    if (empleado.idusuario) {
+      const selectedUser = availableUsers.find(u => u.id === empleado.idusuario);
+      if (selectedUser && selectedUser.rol !== empleado.puesto) {
+        errors.idusuario = `El rol del usuario (${selectedUser.rol}) no coincide con el puesto del empleado (${empleado.puesto})`;
+      }
+    }
     const hasErrors = Object.values(errors).some((err) => err);
     setIsFormValid(!hasErrors);
-  }, [empleado, fieldErrors]);
+  }, [empleado, fieldErrors, availableUsers]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -102,7 +109,13 @@ const EmpleadoForm = () => {
 
     // Validación en tiempo real
     if (touched[name]) {
-      const error = validateEmpleadoField(name, processedValue);
+      let error = validateEmpleadoField(name, processedValue);
+      if (name === 'idusuario' && processedValue) {
+        const selectedUser = availableUsers.find(u => u.id === processedValue);
+        if (selectedUser && selectedUser.rol !== empleado.puesto) {
+          error = `El rol del usuario (${selectedUser.rol}) no coincide con el puesto del empleado (${empleado.puesto})`;
+        }
+      }
       setFieldErrors(prev => ({ ...prev, [name]: error }));
     }
   };
@@ -111,7 +124,13 @@ const EmpleadoForm = () => {
     const { name, value } = e.target;
     setTouched(prev => ({ ...prev, [name]: true }));
 
-    const error = validateEmpleadoField(name, value);
+    let error = validateEmpleadoField(name, value);
+    if (name === 'idusuario' && empleado.idusuario) {
+      const selectedUser = availableUsers.find(u => u.id === empleado.idusuario);
+      if (selectedUser && selectedUser.rol !== empleado.puesto) {
+        error = `El rol del usuario (${selectedUser.rol}) no coincide con el puesto del empleado (${empleado.puesto})`;
+      }
+    }
     setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
@@ -120,6 +139,13 @@ const EmpleadoForm = () => {
 
     // Validación completa del formulario
     const errors = validateEmpleadoForm(empleado);
+    // Additional validation for user-role match
+    if (empleado.idusuario) {
+      const selectedUser = availableUsers.find(u => u.id === empleado.idusuario);
+      if (selectedUser && selectedUser.rol !== empleado.puesto) {
+        errors.idusuario = `El rol del usuario (${selectedUser.rol}) no coincide con el puesto del empleado (${empleado.puesto})`;
+      }
+    }
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       setError('Por favor corrige los errores en el formulario');

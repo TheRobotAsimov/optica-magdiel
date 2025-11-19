@@ -5,6 +5,32 @@ import { Search, Edit, Trash2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 
+const getPuestoBadge = (puesto) => {
+  const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
+  switch (puesto) {
+    case 'Matriz':
+      return `${baseClasses} bg-red-100 text-red-800`;
+    case 'Optometrista':
+      return `${baseClasses} bg-green-100 text-green-800`;
+    case 'Asesor':
+      return `${baseClasses} bg-blue-100 text-blue-800`;
+    default:
+      return `${baseClasses} bg-gray-100 text-gray-800`;
+  }
+};
+
+const getEstadoBadge = (estado) => {
+  const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
+  switch (estado) {
+    case 'Activo':
+      return `${baseClasses} bg-green-100 text-green-800`;
+    case 'Inactivo':
+      return `${baseClasses} bg-red-100 text-red-800`;
+    default:
+      return `${baseClasses} bg-gray-100 text-gray-800`;
+  }
+};
+
 const EmpleadoList = () => {
   const [empleados, setEmpleados] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -148,14 +174,18 @@ const EmpleadoList = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {empleado.nombre} {empleado.paterno} {empleado.materno}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {empleado.puesto}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={getPuestoBadge(empleado.puesto)}>
+                              {empleado.puesto}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {empleado.telefono}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {empleado.estado}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={getEstadoBadge(empleado.estado)}>
+                              {empleado.estado}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <div className="flex items-center space-x-2">
