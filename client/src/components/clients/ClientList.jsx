@@ -74,8 +74,8 @@ const ClientList = () => {
           await clientService.deleteClient(clientId);
           setClients(clients.filter((client) => client.idcliente !== clientId));
           Swal.fire(
-            'Deleted!',
-            'The client has been deleted.',
+            '¡Eliminado!',
+            'El cliente ha sido eliminado.',
             'success'
           )
         } catch {
@@ -199,9 +199,6 @@ const ClientList = () => {
                       <PlusCircle className="h-5 w-5" />
                       <span>Nuevo Cliente</span>
                     </Link>
-                    <button className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors">
-                      Reporte
-                    </button>
                   </div>
                 </div>
               </div>
@@ -230,11 +227,28 @@ const ClientList = () => {
                               {client.idcliente}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {client.nombre} {client.paterno} {client.materno}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
+                                {client.nombre.charAt(0)}{client.paterno.charAt(0)}
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-semibold text-gray-900">
+                                  {client.nombre} {client.paterno}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {client.materno}
+                                </div>
+                              </div>
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {client.telefono1}
+                            <div className="flex items-center text-sm text-gray-700">
+                              <svg className="h-4 w-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              {client.telefono1}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {client.domicilio1}
