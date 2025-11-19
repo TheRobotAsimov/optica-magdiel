@@ -190,6 +190,7 @@ const GastoRutaList = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruta</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Ruta</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asesor</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motivo</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
@@ -203,14 +204,15 @@ const GastoRutaList = () => {
                         className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"
                       >
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">
-                            {gastoRuta.idgasto_ruta}
-                          </span>
-                        </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{gastoRuta.idruta}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(gastoRuta.ruta_fecha).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.cantidad}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.motivo}</td>
+                            <span className="text-sm font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">
+                              {gastoRuta.idgasto_ruta}
+                            </span>
+                          </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{gastoRuta.idruta}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(gastoRuta.ruta_fecha).toLocaleDateString()}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.nombre} {gastoRuta.paterno}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${parseFloat(gastoRuta.cantidad).toLocaleString('es-MX')}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.motivo}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center justify-center space-x-3">
                           <button

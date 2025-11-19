@@ -15,6 +15,19 @@ const PagoList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
+  const getBadgeClass = (estatus) => {
+    switch (estatus) {
+      case 'Pagado':
+        return 'bg-green-100 text-green-800';
+      case 'Pendiente':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Cancelado':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   useEffect(() => {
     const fetchPagos = async () => {
       try {
@@ -211,8 +224,12 @@ const PagoList = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pago.folio}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{`${pago.cliente_nombre} ${pago.cliente_paterno}`}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(pago.fecha).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pago.cantidad}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pago.estatus}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${parseFloat(pago.cantidad).toLocaleString('es-MX')}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getBadgeClass(pago.estatus)}`}>
+                          {pago.estatus}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center justify-center space-x-3">
                           <button

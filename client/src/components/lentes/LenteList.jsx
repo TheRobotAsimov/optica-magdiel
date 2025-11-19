@@ -162,9 +162,6 @@ const LenteList = () => {
                       <PlusCircle className="h-5 w-5" />
                       <span>Nuevo Lente</span>
                     </Link>
-                    <button className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors">
-                      Reporte
-                    </button>
                   </div>
                 </div>
               </div>

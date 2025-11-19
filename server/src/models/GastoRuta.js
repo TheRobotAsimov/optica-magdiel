@@ -3,14 +3,17 @@ import db from '../config/db.js';
 const GastoRuta = {
   getAll: async () => {
     const [rows] = await db.query(`
-      SELECT 
+      SELECT
         g.idgasto_ruta,
         g.idruta,
         g.cantidad,
         g.motivo,
-        r.fecha as ruta_fecha
+        r.fecha as ruta_fecha,
+        e.nombre,
+        e.paterno
       FROM gasto_ruta g
       JOIN ruta r ON g.idruta = r.idruta
+      JOIN empleado e ON r.idasesor = e.idempleado
     `);
     return rows;
   },
