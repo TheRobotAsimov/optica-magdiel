@@ -275,11 +275,11 @@ const PacienteForm = () => {
                       </label>
                       <select name="parentesco" value={paciente.parentesco} onChange={handleChange} onBlur={handleBlur} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 transition-all duration-200">
                         <option value="">Seleccionar Parentesco</option>
-                        <option value="Padre">Padre</option>
-                        <option value="Abuelo">Abuelo</option>
+                        <option value="Hijo">Hijo</option>
+                        <option value="Nieto">Nieto</option>
                         <option value="Hermano">Hermano</option>
-                        <option value="Tío">Tío</option>
                         <option value="Primo">Primo</option>
+                        <option value="Sobrino">Sobrino</option>
                       </select>
                     </div>
                   </div>
