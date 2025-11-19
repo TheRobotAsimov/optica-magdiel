@@ -162,23 +162,24 @@ const EntregaList = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruta</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Ruta</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estatus</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">Acciones</span>
-                    </th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredEntregas.map((entrega) => (
                     <tr key={entrega.identrega}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{entrega.identrega}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{entrega.idruta}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(entrega.ruta_fecha).toLocaleDateString()}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entrega.estatus}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{entrega.hora}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <button onClick={() => {
                           if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
                             // Mostrar modal para solicitar motivo

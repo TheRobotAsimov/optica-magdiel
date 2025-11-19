@@ -103,12 +103,12 @@ const NavComponent = () => {
     };
   
   return (
-    <nav className="bg-gradient-to-r from-blue-700 to-blue-600 shadow-lg" style={{ backgroundColor: '#1A37A5' }}>
+    <nav className="bg-gradient-to-r from-blue-400 to-indigo-800 shadow-lg" style={{ backgroundColor: '#1A37A5' }}>
       {/* Header section with logo, user info, and logout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center transition-all duration-200 transform hover:scale-105">
             <div className="text-black font-bold text-xl">
               <Link to="/dashboard">
                 <img src={logo} alt="Logo" style={{ height: '40px' }} />
@@ -122,11 +122,11 @@ const NavComponent = () => {
               <div className="relative" ref={notificationRef}>
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 text-white hover:text-blue-200 transition-colors"
+                  className="relative p-2 text-white hover:text-blue-200 transition-all duration-200 transform hover:scale-105"
                 >
                   <Bell className="h-6 w-6" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-pink-800 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -171,7 +171,7 @@ const NavComponent = () => {
             )}
 
             {/* Icono de usuario y admin */}
-            <div className="flex items-center space-x-2 bg-blue-800 bg-opacity-50 px-4 py-2 rounded-full">
+            <div className="flex items-center space-x-2 bg-indigo-800 bg-opacity-50 px-4 py-2 rounded-full">
               <div className="bg-white p-1 rounded-full">
                 <User className="h-5 w-5 text-blue-600" />
               </div>
@@ -180,7 +180,7 @@ const NavComponent = () => {
 
              <button
                onClick={handleLogout}
-               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+               className="bg-pink-800 hover:bg-pink-900 text-white px-4 py-2 rounded-md text-sm font-medium"
              >
                Cerrar Sesión
              </button>
