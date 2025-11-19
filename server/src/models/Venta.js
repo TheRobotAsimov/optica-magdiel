@@ -28,9 +28,12 @@ class Venta {
       SELECT
         v.*,
         c.nombre as cliente_nombre,
-        c.paterno as cliente_paterno
+        c.paterno as cliente_paterno,
+        e.nombre as asesor_nombre,
+        e.paterno as asesor_paterno
       FROM venta v
       JOIN cliente c ON v.idcliente = c.idcliente
+      JOIN empleado e ON v.idasesor = e.idempleado
     `);
     return rows;
   }
@@ -41,7 +44,18 @@ class Venta {
   }
 
   static async findById(folio) {
-    const [rows] = await pool.execute('SELECT * FROM venta WHERE folio = ?', [folio]);
+    const [rows] = await pool.execute(`
+      SELECT
+        v.*,
+        c.nombre as cliente_nombre,
+        c.paterno as cliente_paterno,
+        e.nombre as asesor_nombre,
+        e.paterno as asesor_paterno
+      FROM venta v
+      JOIN cliente c ON v.idcliente = c.idcliente
+      JOIN empleado e ON v.idasesor = e.idempleado
+      WHERE v.folio = ?
+    `, [folio]);
     return rows[0];
   }
 
