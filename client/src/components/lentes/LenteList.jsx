@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import lenteService from '../../service/lenteService';
 import NavComponent from '../common/NavBar';
-import { Search, Edit, Trash2 } from 'lucide-react';
+import { Search, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../context/AuthContext';
@@ -114,35 +114,54 @@ const LenteList = () => {
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+        <div className="bg-white rounded-4xl shadow-xl overflow-hidden mb-6">
+          <div className="bg-gradient-to-r from-blue-400 to-indigo-800 px-8 py-6">
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-4">
+                <div>
+                  <h1 className="text-4xl font-bold text-white text-center">
+                    LENTES
+                  </h1>
+                  <p className="text-blue-100 text-sm mt-1">
+                    Listado de lentes registrados en el sistema
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       <div className="px-4 py-6 sm:px-0">
           <div className="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
         
               {/* Header */}
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-blue-700 text-center mb-8">LENTES</h1>
-                
                 {/* Search and Action Bar */}
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-6">
-                  {/* Search Bar */}
-                  <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="text"
-                      placeholder="Buscar Lente"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-gray-200 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
-                    />
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex gap-3">
-                    <button className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors">
+                <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6">
+                  {/* Grupo: Search + Botón Aplicar filtro */}
+                  <div className="flex items-center gap-4 flex-1 max-w-md">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <input
+                        type="text"
+                        placeholder="Buscar Lente"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-gray-200 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
+                      />
+                    </div>
+                    <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                       Aplicar filtro
                     </button>
-                    <button className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">
-                      <Link to="/lentes/new">Nuevo Lente</Link>
-                    </button>
+                  </div>
+
+                  {/* Botón Nuevo Lente (separado) */}
+                  <div className="flex gap-3">
+                    <Link to="/lentes/new" className="flex items-center space-x-2 px-8 py-2 bg-gradient-to-r from-purple-500 to-purple-800 hover:from-purple-700 hover:to-purple-900 disabled:from-purple-300 disabled:to-purple-400 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed">
+                      <PlusCircle className="h-5 w-5" />
+                      <span>Nuevo Lente</span>
+                    </Link>
                     <button className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors">
                       Reporte
                     </button>
@@ -151,10 +170,10 @@ const LenteList = () => {
               </div>
 
               {/* Table Container */}
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+<div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50 border-b">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                       <tr>
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Optometrista</th>
@@ -169,11 +188,16 @@ const LenteList = () => {
                         <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-100">
                       {lentes.map((lente) => (
-                        <tr key={lente.idlente} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {lente.idlente}
+                        <tr
+                          key={lente.idlente}
+                          className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">
+                              {lente.idlente}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {lente.idoptometrista}
@@ -202,12 +226,20 @@ const LenteList = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {lente.kit}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            <div className="flex items-center space-x-2">
-                              <button onClick={() => handleEdit(lente.idlente)} className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-full transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center justify-center space-x-3">
+                              <button
+                                onClick={() => handleEdit(lente.idlente)}
+                                className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110"
+                                title="Editar"
+                              >
                                 <Edit className="h-4 w-4" />
                               </button>
-                              <button onClick={() => handleDelete(lente.idlente)} className="p-1 text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full transition-colors">
+                              <button
+                                onClick={() => handleDelete(lente.idlente)}
+                                className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110"
+                                title="Eliminar"
+                              >
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
