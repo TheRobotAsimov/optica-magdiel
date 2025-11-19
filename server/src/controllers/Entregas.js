@@ -5,6 +5,8 @@ export const getEntregas = async (req, res) => {
     const entregas = await Entrega.getAll();
     res.json(entregas);
   } catch (error) {
+    console.log(req.body);
+    console.log('Error getting entregas:', error);
     res.status(500).json({ message: error.message });
   }
 };

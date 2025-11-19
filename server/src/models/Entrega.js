@@ -3,7 +3,7 @@ import db from '../config/db.js';
 const Entrega = {
   getAll: async () => {
     const [rows] = await db.query(`
-      SELECT 
+      SELECT
         e.identrega,
         e.idruta,
         e.estatus,
@@ -11,9 +11,12 @@ const Entrega = {
         e.idpago,
         e.motivo,
         e.hora,
-        r.fecha as ruta_fecha
+        r.fecha as ruta_fecha,
+        COALESCE(l.folio, p.folio) as folio
       FROM entrega e
       JOIN ruta r ON e.idruta = r.idruta
+      LEFT JOIN lente l ON e.idlente = l.idlente
+      LEFT JOIN pago p ON e.idpago = p.idpago
     `);
     return rows;
   },

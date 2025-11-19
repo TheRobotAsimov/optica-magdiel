@@ -7,7 +7,7 @@ const Ruta = {
   },
 
   findById: async (id) => {
-    const [rows] = await db.query('SELECT * FROM ruta WHERE idruta = ?', [id]);
+    const [rows] = await db.query('SELECT r.*, e.nombre as asesor_nombre, e.paterno as asesor_paterno FROM ruta r JOIN empleado e ON r.idasesor = e.idempleado WHERE r.idruta = ?', [id]);
     return rows[0];
   },
 
