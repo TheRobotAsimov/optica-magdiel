@@ -110,13 +110,19 @@ const EmpleadoForm = () => {
     // Validación en tiempo real
     if (touched[name]) {
       let error = validateEmpleadoField(name, processedValue);
-      if (name === 'idusuario' && processedValue) {
+      if ((name === 'idusuario' || name === 'puesto') && processedValue) {
         const selectedUser = availableUsers.find(u => u.id === processedValue);
         if (selectedUser && selectedUser.rol !== empleado.puesto) {
           error = `El rol del usuario (${selectedUser.rol}) no coincide con el puesto del empleado (${empleado.puesto})`;
         }
       }
-      setFieldErrors(prev => ({ ...prev, [name]: error }));
+
+      let newName = name;
+
+      if(name === 'puesto') {
+        newName = 'idusuario'
+      }
+      setFieldErrors(prev => ({ ...prev, [newName]: error }));
     }
   };
 
@@ -125,13 +131,18 @@ const EmpleadoForm = () => {
     setTouched(prev => ({ ...prev, [name]: true }));
 
     let error = validateEmpleadoField(name, value);
-    if (name === 'idusuario' && empleado.idusuario) {
+    if ((name === 'idusuario' || name === 'puesto') && empleado.idusuario) {
       const selectedUser = availableUsers.find(u => u.id === empleado.idusuario);
       if (selectedUser && selectedUser.rol !== empleado.puesto) {
         error = `El rol del usuario (${selectedUser.rol}) no coincide con el puesto del empleado (${empleado.puesto})`;
       }
     }
-    setFieldErrors(prev => ({ ...prev, [name]: error }));
+    let newName = name;
+
+    if(name === 'puesto') {
+      newName = 'idusuario'
+    }
+    setFieldErrors(prev => ({ ...prev, [newName]: error }));
   };
 
   const handleSubmit = async (e) => {
