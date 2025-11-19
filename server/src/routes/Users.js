@@ -4,7 +4,8 @@ import {
     getUserById,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getUsersWithoutEmployee
 } from '../controllers/Users.js';
 import { authenticateToken, isAdmin } from '../middleware/auth.js';
 
@@ -14,6 +15,7 @@ router.use(authenticateToken);
 router.use(isAdmin);
 
 router.get('/', getAllUsers);
+router.get('/without-employee', getUsersWithoutEmployee);
 router.get('/:id', getUserById);
 router.post('/', createUser);
 router.put('/:id', updateUser);

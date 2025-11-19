@@ -52,3 +52,13 @@ export const deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+export const getUsersWithoutEmployee = async (req, res) => {
+    try {
+        const users = await User.getUsersWithoutEmployee();
+        res.json(users);
+    } catch (error) {
+        console.error('Error getting users without employee:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+};

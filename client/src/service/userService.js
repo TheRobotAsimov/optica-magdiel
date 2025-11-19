@@ -29,6 +29,11 @@ const userService = {
     const response = await axios.delete(API_URL + `/${id}`);
     return response.data;
   },
+
+  getUsersWithoutEmployee: async () => {
+    const response = await axios.get(API_URL + '/without-employee');
+    return response.data;
+  },
 };
 
 export default userService;

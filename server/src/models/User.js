@@ -92,6 +92,16 @@ class User {
         return rows;
     }
 
+    static async getUsersWithoutEmployee() {
+        const [rows] = await pool.execute(`
+            SELECT u.id, u.correo, u.rol
+            FROM usuario u
+            LEFT JOIN empleado e ON e.idusuario = u.id
+            WHERE e.idusuario IS NULL AND u.rol != 'Matriz'
+        `);
+        return rows;
+    }
+
     static async update(id, userData) {
         const {
             correo,

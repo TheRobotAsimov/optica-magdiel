@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import empleadoService from '../../service/empleadoService';
+import userService from '../../service/userService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, User } from 'lucide-react';
 import { validateEmpleadoForm, validateEmpleadoField } from '../../utils/validations/index.js';
@@ -13,7 +14,7 @@ registerLocale('es', es);
 
 const EmpleadoForm = () => {
   const [empleado, setEmpleado] = useState({
-    idusuario: '',
+    idusuario: null,
     nombre: '',
     paterno: '',
     materno: '',
@@ -30,8 +31,21 @@ const EmpleadoForm = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState([]);
   const { id } = useParams();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAvailableUsers = async () => {
+      try {
+        const users = await userService.getUsersWithoutEmployee();
+        setAvailableUsers(users);
+      } catch (err) {
+        console.error('Error fetching available users:', err);
+      }
+    };
+    fetchAvailableUsers();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -46,6 +60,22 @@ const EmpleadoForm = () => {
             data.feccon = new Date(data.feccon).toISOString().split('T')[0];
           }
           setEmpleado(data);
+
+          // If editing and has idusuario, fetch the current user and add to available if not already
+          if (data.idusuario) {
+            try {
+              const currentUser = await userService.getUserById(data.idusuario);
+              setAvailableUsers(prev => {
+                const exists = prev.find(u => u.id === currentUser.id);
+                if (!exists) {
+                  return [...prev, currentUser];
+                }
+                return prev;
+              });
+            } catch (err) {
+              console.error('Error fetching current user:', err);
+            }
+          }
         } catch (err) {
           setError(err.message);
         } finally {
@@ -64,11 +94,15 @@ const EmpleadoForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEmpleado((prevEmpleado) => ({ ...prevEmpleado, [name]: value }));
+    let processedValue = value;
+    if (name === 'idusuario') {
+      processedValue = value === '' ? null : parseInt(value, 10);
+    }
+    setEmpleado((prevEmpleado) => ({ ...prevEmpleado, [name]: processedValue }));
 
     // Validación en tiempo real
     if (touched[name]) {
-      const error = validateEmpleadoField(name, value);
+      const error = validateEmpleadoField(name, processedValue);
       setFieldErrors(prev => ({ ...prev, [name]: error }));
     }
   };
@@ -95,9 +129,6 @@ const EmpleadoForm = () => {
     setLoading(true);
     try {
       const modifiedEmpleado = { ...empleado };
-      if (modifiedEmpleado.idusuario === '') {
-        modifiedEmpleado.idusuario = null;
-      }
       if (modifiedEmpleado.sueldo === '') {
         modifiedEmpleado.sueldo = null;
       }
@@ -326,10 +357,15 @@ const EmpleadoForm = () => {
                         )}
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">ID Usuario</label>
-                        <input type="number" name="idusuario" value={empleado.idusuario} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Asociar Usuario</label>
+                        <select name="idusuario" value={empleado.idusuario || ''} onChange={handleChange} onBlur={handleBlur} className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
                           fieldErrors.idusuario ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                        }`} />
+                        }`}>
+                          <option value="">Seleccionar usuario</option>
+                          {availableUsers.map(user => (
+                            <option key={user.id} value={user.id}>{user.correo}</option>
+                          ))}
+                        </select>
                         {fieldErrors.idusuario && (
                           <p className="text-red-500 text-sm mt-1">{fieldErrors.idusuario}</p>
                         )}

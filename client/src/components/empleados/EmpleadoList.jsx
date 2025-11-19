@@ -121,9 +121,6 @@ const EmpleadoList = () => {
                     <button className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors">
                       <Link to="/empleados/new">Nuevo Empleado</Link>
                     </button>
-                    <button className="px-6 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-medium transition-colors">
-                      Reporte
-                    </button>
                   </div>
                 </div>
               </div>
