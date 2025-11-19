@@ -13,6 +13,7 @@ import rutasRoutes from './routes/Rutas.js';
 import pagoRoutes from './routes/Pagos.js';
 import entregaRoutes from './routes/Entregas.js';
 import gastoRutaRoutes from './routes/GastoRutas.js';
+import pacienteRoutes from './routes/Pacientes.js';
 import notificacionesRoutes from './routes/Notificaciones.js';
 import reportesRoutes from './routes/Reportes.js';
 
@@ -42,6 +43,7 @@ app.use('/api/rutas', rutasRoutes);
 app.use('/api/pagos', pagoRoutes);
 app.use('/api/entregas', entregaRoutes);
 app.use('/api/gasto-rutas', gastoRutaRoutes);
+app.use('/api/pacientes', pacienteRoutes);
 app.use('/api/notificaciones', notificacionesRoutes);
 app.use('/api/reportes', reportesRoutes);
 

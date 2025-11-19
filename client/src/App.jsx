@@ -33,6 +33,8 @@ import EntregaForm from './components/entregas/EntregaForm';
 import CompleteEntregaForm from './components/entregas/CompleteEntregaForm';
 import GastoRutaList from './components/gastoRutas/GastoRutaList';
 import GastoRutaForm from './components/gastoRutas/GastoRutaForm';
+import PacienteList from './components/pacientes/PacienteList';
+import PacienteForm from './components/pacientes/PacienteForm';
 
 const App = () => {
   return (
@@ -331,13 +333,37 @@ const App = () => {
               </ProtectedRoute>
             } 
           />
-          <Route 
-            path="/gasto-rutas/:id/edit" 
+          <Route
+            path="/gasto-rutas/:id/edit"
             element={
               <ProtectedRoute>
                 <GastoRutaForm />
               </ProtectedRoute>
-            } 
+            }
+          />
+          <Route
+            path="/pacientes"
+            element={
+              <ProtectedRoute>
+                <PacienteList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pacientes/new"
+            element={
+              <ProtectedRoute>
+                <PacienteForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pacientes/:id/edit"
+            element={
+              <ProtectedRoute>
+                <PacienteForm />
+              </ProtectedRoute>
+            }
           />
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>

@@ -9,4 +9,5 @@ export * from './lenteValidations.js';
 export * from './unifiedValidations.js';
 export * from './pagoValidations.js';
 export * from './entregaValidations.js';
+export * from './pacienteValidations.js';
 export * from './ventaValidations.js';
