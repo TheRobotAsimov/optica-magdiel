@@ -11,9 +11,14 @@ export const authenticateToken = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = await User.findById(decoded.id);
-        
+
         if (!user) {
             return res.status(401).json({ message: 'Usuario no encontrado' });
+        }
+
+        // Verificar si el usuario tiene un empleado asociado o es Matriz
+        if (user.rol !== 'Matriz' && !user.idempleado) {
+            return res.status(403).json({ message: 'Acceso denegado. Usuario no autorizado.' });
         }
 
         req.user = user;

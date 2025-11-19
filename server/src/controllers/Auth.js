@@ -52,6 +52,11 @@ export const login = async (req, res) => {
 
         const userFull = await User.findById(user.id);
 
+        // Verificar si el usuario tiene un empleado asociado o es Matriz
+        if (userFull.rol !== 'Matriz' && !userFull.idempleado) {
+            return res.status(403).json({ message: 'Acceso denegado. Usuario no autorizado.' });
+        }
+
         // Remover contraseña de la respuesta
         const { contrasena: _, ...userWithoutPassword } = userFull;
 
