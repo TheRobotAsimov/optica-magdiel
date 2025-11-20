@@ -2,17 +2,58 @@ import pool from '../config/db.js';
 
 class Lente {
   static async getAll() {
-    const [rows] = await pool.execute('SELECT * FROM lente');
+    const [rows] = await pool.execute(`
+      SELECT
+        l.*,
+        v.folio,
+        c.nombre as cliente_nombre,
+        c.paterno as cliente_paterno,
+        c.materno as cliente_materno,
+        e.nombre as optometrista_nombre,
+        e.paterno as optometrista_paterno
+      FROM lente l
+      JOIN venta v ON l.folio = v.folio
+      JOIN cliente c ON v.idcliente = c.idcliente
+      JOIN empleado e ON l.idoptometrista = e.idempleado
+    `);
     return rows;
   }
 
   static async getPending() {
-    const [rows] = await pool.execute('SELECT * FROM lente WHERE estatus IN ("Pendiente", "No entregado")');
+    const [rows] = await pool.execute(`
+      SELECT
+        l.*,
+        v.folio,
+        c.nombre as cliente_nombre,
+        c.paterno as cliente_paterno,
+        c.materno as cliente_materno,
+        e.nombre as optometrista_nombre,
+        e.paterno as optometrista_paterno
+      FROM lente l
+      JOIN venta v ON l.folio = v.folio
+      JOIN cliente c ON v.idcliente = c.idcliente
+      JOIN empleado e ON l.idoptometrista = e.idempleado
+      WHERE l.estatus IN ("Pendiente", "No entregado")
+    `);
     return rows;
   }
 
   static async getById(id) {
-    const [rows] = await pool.execute('SELECT * FROM lente WHERE idlente = ?', [id]);
+    const [rows] = await pool.execute(`
+      SELECT
+        l.*,
+        v.folio,
+        c.nombre as cliente_nombre,
+        c.paterno as cliente_paterno,
+        c.materno as cliente_materno,
+        e.nombre as optometrista_nombre,
+        e.paterno as optometrista_paterno
+      FROM lente l
+      JOIN venta v ON l.folio = v.folio
+      JOIN cliente c ON v.idcliente = c.idcliente
+      JOIN empleado e ON l.idoptometrista = e.idempleado
+      WHERE l.idlente = ?
+    `, [id]);
     return rows[0];
   }
 
