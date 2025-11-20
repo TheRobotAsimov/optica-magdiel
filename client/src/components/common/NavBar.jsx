@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
-import { User, Bell, Menu, X } from 'lucide-react';
+import { User, Bell, Menu, X, Check, MailOpen} from 'lucide-react';
 import logo from '../../assets/pez_blanco.webp';
 import notificacionService from '../../service/notificacionService';
 import useSocket from '../../hooks/useSocket';
@@ -116,55 +116,113 @@ const NavComponent = () => {
             </div>
           </div>
 
-          {/* Usuario y admin en la derecha */}
+          {/* Notificaciones */}
           <div className="flex items-center space-x-4">
             {user && user.rol === 'Matriz' && (
               <div className="relative" ref={notificationRef}>
+                {/* Botón Campana */}
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 text-white hover:text-blue-200 transition-all duration-200 transform hover:scale-105"
+                  className={`relative p-2 transition-all duration-200 rounded-full hover:bg-white/10 focus:outline-none ${
+                    showNotifications ? 'bg-white/10 text-blue-200' : 'text-white hover:text-blue-100'
+                  }`}
                 >
-                  <Bell className="h-6 w-6" />
+                  <Bell className={`h-6 w-6 ${unreadCount > 0 ? 'animate-swing' : ''}`} /> {/* animate-swing es opcional si tienes config */}
+                  
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-pink-800 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {unreadCount > 9 ? '9+' : unreadCount}
+                    <span className="absolute top-1 right-1 flex h-4 w-4">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500 text-[10px] font-bold text-white items-center justify-center border-2 border-blue-900/50">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
                     </span>
                   )}
                 </button>
 
+                {/* Dropdown de Notificaciones */}
                 {showNotifications && (
-                  <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white border border-gray-200 rounded-md shadow-lg z-50 md:w-80 md:right-0 left-4 md:left-auto">
-                    <div className="p-4 border-b border-gray-200">
-                      <h3 className="text-lg font-medium text-gray-900">Notificaciones</h3>
-                    </div>
-                    <div className="max-h-96 overflow-y-auto">
-                        {notificaciones.filter(notif => !notif.leido).length === 0 ? (
-                            <div className="p-4 text-center text-gray-500">
-                                No hay notificaciones
-                            </div>
-                        ) : (
-                            notificaciones.filter(notif => !notif.leido).map(notif => (
-                                <div
-                                    key={notif.idnotificacion || notif.fecha}
-                                    className="p-4 border-b border-gray-100 hover:bg-gray-50 bg-blue-50"
-                                >
-                                    <p className="text-sm text-gray-800 break-words">{notif.mensaje}</p>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        {new Date(notif.fecha).toLocaleString('es-ES')}
-                                    </p>
-                                    <button
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleMarkAsRead(notif.idnotificacion);
-                                        }}
-                                        className="mt-2 text-xs text-blue-600 hover:text-blue-800 touch-manipulation"
-                                    >
-                                        Marcar como leída
-                                    </button>
-                                </div>
-                            ))
+                  <div className="
+                    fixed top-16 right-4 left-4 z-50 
+                    md:absolute md:top-full md:right-0 md:left-auto md:mt-3 md:w-96
+                    bg-white border border-gray-100 rounded-xl shadow-2xl overflow-hidden 
+                    transform origin-top-right transition-all animate-in fade-in slide-in-from-top-2
+                  ">  
+                    {/* Header del Dropdown */}
+                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex justify-between items-center">
+                      <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        Notificaciones
+                        {unreadCount > 0 && (
+                          <span className="bg-blue-100 text-blue-700 py-0.5 px-2 rounded-full text-xs">
+                            {unreadCount} nuevas
+                          </span>
                         )}
+                      </h3>
+                      {/* Opcional: Botón cerrar o marcar todo */}
+                      <button 
+                          onClick={() => setShowNotifications(false)}
+                          className="text-gray-400 hover:text-gray-600"
+                      >
+                          <X className="h-4 w-4" />
+                      </button>
                     </div>
+
+                    {/* Lista de Notificaciones */}
+                    <div className="max-h-[60vh] md:max-h-[28rem] overflow-y-auto custom-scrollbar">
+                      {notificaciones.filter(notif => !notif.leido).length === 0 ? (
+                        // Estado Vacío (Empty State)
+                        <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+                          <div className="bg-gray-50 p-3 rounded-full mb-3">
+                            <MailOpen className="h-8 w-8 text-gray-300" />
+                          </div>
+                          <p className="text-gray-500 font-medium text-sm">¡Estás al día!</p>
+                          <p className="text-gray-400 text-xs mt-1">No tienes notificaciones pendientes.</p>
+                        </div>
+                      ) : (
+                        // Lista de Items
+                        <ul className="divide-y divide-gray-50">
+                          {notificaciones.filter(notif => !notif.leido).map((notif) => (
+                            <li 
+                              key={notif.idnotificacion || notif.fecha} 
+                              className="group relative bg-white hover:bg-blue-50/50 transition-colors duration-200 p-4"
+                            >
+                              <div className="flex gap-3 items-start">
+                                {/* Indicador de no leído */}
+                                <div className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500 ring-2 ring-blue-100"></div>
+                                
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm text-gray-800 leading-snug break-words">
+                                    {notif.mensaje}
+                                  </p>
+                                  <p className="text-xs text-gray-400 mt-1.5 font-medium">
+                                    {new Date(notif.fecha).toLocaleDateString('es-ES', { 
+                                        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' 
+                                    })}
+                                  </p>
+                                </div>
+
+                                {/* Botón de Acción (Marcar como leída) */}
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleMarkAsRead(notif.idnotificacion);
+                                  }}
+                                  className="flex-shrink-0 p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-full transition-colors"
+                                  title="Marcar como leída"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    
+                    {/* Footer opcional (Ver todas) */}
+                    <div className="bg-gray-50 border-t border-gray-100 p-2 text-center">
+                      
+                    </div>
+
                   </div>
                 )}
               </div>

@@ -45,7 +45,10 @@ const VentaForm = () => {
 
         if (folio) {
           const ventaData = await ventaService.getVentaByFolio(folio);
-          setVenta(ventaData);
+          setVenta({
+            ...ventaData,
+            fecha: ventaData.fecha ? new Date(ventaData.fecha).toISOString().slice(0, 10) : '',
+          });
         }
       } catch (err) {
         setError(err.message);

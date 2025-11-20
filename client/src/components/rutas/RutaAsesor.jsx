@@ -158,7 +158,7 @@ const RutaAsesor = () => {
 
     setLoading(true);
     try {
-      const now = new Date();
+      const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000);
       const routePayload = {
         idasesor: user.idempleado,
         lentes_recibidos: parseInt(formData.lentes_recibidos),

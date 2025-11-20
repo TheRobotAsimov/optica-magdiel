@@ -30,7 +30,7 @@ const CompleteEntregaForm = () => {
   const [pagoOption, setPagoOption] = useState('existing');
   const [newPagoData, setNewPagoData] = useState({
     folio: '',
-    fecha: new Date().toISOString().slice(0, 10),
+    fecha: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
     cantidad: '',
   });
 
@@ -606,11 +606,7 @@ const CompleteEntregaForm = () => {
                             <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fecha</div>
                           </div>
                           <div className="text-base font-semibold text-gray-900">
-                            {new Date(selectedPago.fecha).toLocaleDateString('es-MX', { 
-                              year: 'numeric', 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}
+                            {new Date(selectedPago.fecha).toLocaleDateString()}
                           </div>
                         </div>
                         

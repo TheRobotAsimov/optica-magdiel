@@ -55,11 +55,11 @@ const ClientList = () => {
         const pendingClients = new Set();
 
         // Check ventas
-        allVentas.forEach(v => {
-          if (v.estatus === 'Pendiente' || v.estatus === 'Atrasado') {
-            pendingClients.add(v.idcliente);
-          }
-        });
+        //allVentas.forEach(v => {
+        //  if (v.estatus === 'Pendiente' || v.estatus === 'Atrasado') {
+        //    pendingClients.add(v.idcliente);
+        //  }
+        //});
 
         // Check pagos
         allPagos.forEach(p => {
@@ -74,7 +74,7 @@ const ClientList = () => {
 
         // Check lentes
         allLentes.forEach(l => {
-          if (l.estatus === 'Pendiente' || l.estatus === 'Atrasado' || l.estatus === 'No entregado') {
+          if (l.estatus === 'Atrasado' || l.estatus === 'No entregado' || new Date(l.fecha) < new Date()) {
             // Find the venta to get idcliente
             const venta = allVentas.find(v => v.folio === l.folio);
             if (venta) {
@@ -539,7 +539,7 @@ const ClientList = () => {
                       <AlertCircle className="h-5 w-5 text-white" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">
-                      Ventas, Pagos y Lentes Pendientes o Atrasados
+                      Pagos y Lentes Pendientes o Atrasados
                     </h3>
                   </div>
                   

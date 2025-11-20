@@ -98,14 +98,14 @@ const VentaList = () => {
           await ventaService.deleteVenta(folio);
           setVentas(ventas.filter((venta) => venta.folio !== folio));
           Swal.fire(
-            'Deleted!',
-            'The sale has been deleted.',
+            '¡Eliminado!',
+            'La venta ha sido eliminada.',
             'success'
           )
         } catch {
             Swal.fire(
-                'Error!',
-                'An error occurred while deleting the sale.',
+                '¡Error!',
+                'No se pudo eliminar la venta.',
                 'error'
             )
         }

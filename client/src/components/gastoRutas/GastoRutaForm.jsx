@@ -173,7 +173,7 @@ const GastoRutaForm = () => {
                         Ruta
                         <span className="text-red-500 ml-1">*</span>
                       </label>
-                      <select name="idruta" value={formData.idruta} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                      <select name="idruta" value={formData.idruta} onChange={handleChange} onBlur={handleBlur} disabled={new URLSearchParams(window.location.search).get('idruta') !== null} required className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 ${
                         fieldErrors.idruta
                           ? 'border-red-500 focus:ring-red-100 bg-red-50'
                           : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'

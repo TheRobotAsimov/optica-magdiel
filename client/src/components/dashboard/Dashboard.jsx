@@ -56,6 +56,7 @@ export const Dashboard = () => {
                     { title: 'Empleados', icon: Briefcase, path: '/empleados', color: 'bg-blue-500' },
                   ] : []),
                   { title: 'Clientes', icon: UserCheck, path: '/clients', color: 'bg-blue-500' },
+                  { title: 'Pacientes', icon: UserCheck, path: '/pacientes', color: 'bg-blue-500' },
                   { title: 'Ventas', icon: ShoppingCart, path: '/ventas', color: 'bg-blue-500' },
                   { title: 'Rutas', icon: MapPin, path: '/rutas', color: 'bg-blue-500' },
                   { title: 'Pagos', icon: DollarSign, path: '/pagos', color: 'bg-blue-500' },
