@@ -57,14 +57,14 @@ const PriceTable = ({ title, data, originalData, onChange }) => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBaseChanged ? 'border-green-400' : 'border-gray-200'}`}>$</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBaseChanged ? 'border-yellow-400' : 'border-gray-200'}`}>$</span>
                       <input
                         type="number"
                         value={values.base}
                         onChange={(e) => onChange(tratamiento, 'base', e.target.value)}
                         className={`w-24 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                           isBaseChanged 
-                            ? 'border-green-400 bg-green-50 focus:ring-green-200' 
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
                         }`}
                       />
@@ -72,14 +72,14 @@ const PriceTable = ({ title, data, originalData, onChange }) => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isProcesadoChanged ? 'border-green-400' : 'border-gray-200'}`}>+</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isProcesadoChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
                       <input
                         type="number"
                         value={values.procesado}
                         onChange={(e) => onChange(tratamiento, 'procesado', e.target.value)}
                         className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                           isProcesadoChanged 
-                            ? 'border-green-400 bg-green-50 focus:ring-green-200' 
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
                         }`}
                       />
@@ -87,14 +87,14 @@ const PriceTable = ({ title, data, originalData, onChange }) => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isPoliChanged ? 'border-green-400' : 'border-gray-200'}`}>+</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isPoliChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
                       <input
                         type="number"
                         value={values.subtipo.Policarbonato}
                         onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Policarbonato')}
                         className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                           isPoliChanged 
-                            ? 'border-green-400 bg-green-50 focus:ring-green-200' 
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
                         }`}
                       />
@@ -102,14 +102,14 @@ const PriceTable = ({ title, data, originalData, onChange }) => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isHaidChanged ? 'border-green-400' : 'border-gray-200'}`}>+</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isHaidChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
                       <input
                         type="number"
                         value={values.subtipo['Haid index']}
                         onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Haid index')}
                         className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                           isHaidChanged 
-                            ? 'border-green-400 bg-green-50 focus:ring-green-200' 
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
                         }`}
                       />
@@ -118,14 +118,14 @@ const PriceTable = ({ title, data, originalData, onChange }) => {
                   {isBifocal && (
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBlendChanged ? 'border-green-400' : 'border-gray-200'}`}>+</span>
+                        <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBlendChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
                         <input
                           type="number"
                           value={values.blend}
                           onChange={(e) => onChange(tratamiento, 'blend', e.target.value)}
                           className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                             isBlendChanged 
-                              ? 'border-green-400 bg-green-50 focus:ring-green-200' 
+                              ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
                               : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
                           }`}
                         />
@@ -165,15 +165,15 @@ const AdditivesEditor = ({ data, originalData, onChange }) => {
             <span>Kit</span>
           </label>
           <div className="flex items-center">
-            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isKitChanged ? 'border-green-400' : 'border-gray-200'}`}>+</span>
+            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isKitChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
             <input
               type="number"
               value={data.kit}
               onChange={(e) => onChange('kit', e.target.value)}
               className={`w-full px-4 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                 isKitChanged 
-                  ? 'border-green-400 bg-green-50 focus:ring-green-200' 
-                  : 'border-gray-200 focus:ring-green-200 focus:border-green-400'
+                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                  : 'border-gray-200 focus:ring-yellow-200 focus:border-yellow-400'
               }`}
             />
           </div>
@@ -186,14 +186,14 @@ const AdditivesEditor = ({ data, originalData, onChange }) => {
             <span>Tinte</span>
           </label>
           <div className="flex items-center">
-            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isTinteChanged ? 'border-green-400' : 'border-gray-200'}`}>+</span>
+            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isTinteChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
             <input
               type="number"
               value={data.tinte}
               onChange={(e) => onChange('tinte', e.target.value)}
               className={`w-full px-4 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                 isTinteChanged 
-                  ? 'border-green-400 bg-green-50 focus:ring-green-200' 
+                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
                   : 'border-gray-200 focus:ring-amber-200 focus:border-amber-400'
               }`}
             />
@@ -213,18 +213,18 @@ const AdditivesEditor = ({ data, originalData, onChange }) => {
               onChange={(e) => onChange('inapam_discount', e.target.value)}
               className={`w-full px-4 py-2.5 border-2 rounded-l-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
                 isInapamChanged 
-                  ? 'border-green-400 bg-green-50 focus:ring-green-200' 
+                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
                   : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
               }`}
             />
-            <span className={`px-3 py-2.5 border-2 border-l-0 rounded-r-xl bg-white text-gray-600 font-semibold ${isInapamChanged ? 'border-green-400' : 'border-gray-200'}`}>%</span>
+            <span className={`px-3 py-2.5 border-2 border-l-0 rounded-r-xl bg-white text-gray-600 font-semibold ${isInapamChanged ? 'border-yellow-400' : 'border-gray-200'}`}>%</span>
           </div>
         </div>
 
         {/* Help Text */}
         <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
           <p className="text-xs text-gray-500 leading-relaxed">
-            <span className="font-semibold text-gray-700">Nota:</span> Los campos con borde verde indican cambios sin guardar. Haz clic en "Guardar Cambios" para aplicarlos.
+            <span className="font-semibold text-gray-700">Nota:</span> Los campos con borde amarillo indican cambios sin guardar. Haz clic en "Guardar Cambios" para aplicarlos.
           </p>
         </div>
       </div>

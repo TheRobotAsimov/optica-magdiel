@@ -19,6 +19,9 @@ const PagoForm = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [saldoPendiente, setSaldoPendiente] = useState(null);
+  const [originalAmount, setOriginalAmount] = useState(0);
+  const [originalFolio, setOriginalFolio] = useState('');
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -35,6 +38,18 @@ const PagoForm = () => {
             ...pagoData,
             fecha: new Date(pagoData.fecha).toISOString().slice(0, 10),
           });
+
+          // GUARDAMOS LA FOTO INICIAL
+          setOriginalAmount(parseFloat(pagoData.cantidad) || 0);
+          setOriginalFolio(pagoData.folio);
+          
+          // Ejecutamos el cálculo inicial del saldo para que aparezca al cargar
+          const ventaAsociada = ventasData.find(v => v.folio === pagoData.folio);
+          if (ventaAsociada) {
+              const deudaReal = parseFloat(ventaAsociada.total) - parseFloat(ventaAsociada.pagado);
+              // Al editar, mi saldo disponible es: Lo que debe la venta + Lo que yo ya había pagado en este registro
+              setSaldoPendiente(deudaReal + (parseFloat(pagoData.cantidad) || 0));
+          }
         }
       } catch (err) {
         setError(err.message);
@@ -55,12 +70,63 @@ const PagoForm = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
+    // LÓGICA AGREGADA: Calcular saldo al cambiar folio
+    if (name === 'folio') {
+      const ventaSeleccionada = ventas.find(v => v.folio === value);
+      if (ventaSeleccionada) {
+        // Si estamos editando, debemos sumar el pago actual al saldo pendiente "visual"
+        // para permitir que el usuario vuelva a poner el mismo monto.
+        const pagadoActualEnBD = parseFloat(ventaSeleccionada.pagado) || 0;
+        const total = parseFloat(ventaSeleccionada.total) || 0;
+        
+        // Si es edición (id existe), el saldo disponible es (Total - PagadoReal + MontoDeEstePago)
+        // Si es nuevo, es (Total - PagadoReal)
+        let disponible = total - pagadoActualEnBD;
+        
+        // TRUCO DE EDICIÓN:
+        // Si estoy editando (id existe) Y el folio que seleccioné es el mismo que tenía originalmente...
+        // entonces sumo el monto original al disponible, porque ese dinero "regresa" a mi cartera para reasignarlo.
+        if (id && value === originalFolio) {
+          disponible += originalAmount;
+        }
+        
+        setSaldoPendiente(disponible);
+        
+        // Re-validar cantidad si ya había un número escrito
+        if (formData.cantidad) {
+             validateAmount(formData.cantidad, disponible);
+        }
+      } else {
+        setSaldoPendiente(null);
+      }
+    }
+
+    // VALIDACIÓN DE CANTIDAD
+    if (name === 'cantidad') {
+        // Si cambio la cantidad, valido contra el saldoPendiente actual
+        if (saldoPendiente !== null) {
+            validateAmount(value, saldoPendiente);
+        }
+    }
+
     // Validación en tiempo real
     if (touched[name]) {
       const error = validatePagoField(name, value);
       setFieldErrors(prev => ({ ...prev, [name]: error }));
     }
   };
+
+  const validateAmount = (val, maximo) => {
+      if (parseFloat(val) > maximo + 0.1) { // +0.1 margen decimales
+          setFieldErrors(prev => ({...prev, cantidad: `Máximo permitido: $${maximo.toFixed(2)}`}));
+      } else {
+          setFieldErrors(prev => {
+             const newErr = {...prev};
+             delete newErr.cantidad;
+             return newErr;
+          });
+      }
+  }
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
@@ -194,22 +260,42 @@ const PagoForm = () => {
                         </p>
                       )}
                     </div>
+
                     <div className="group">
                       <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                         Cantidad
                         <span className="text-red-500 ml-1">*</span>
                       </label>
-                      <input type="number" step="0.01" name="cantidad" value={formData.cantidad} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
-                        fieldErrors.cantidad
-                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
-                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
-                      }`} />
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        name="cantidad" 
+                        value={formData.cantidad} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        required 
+                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                          fieldErrors.cantidad
+                            ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                            : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                        }`}
+                      />
+                      
+                      {/* MENSAJE DE AYUDA VISUAL */}
+                      {saldoPendiente !== null && !fieldErrors.cantidad && (
+                        <p className="text-blue-600 text-xs mt-2 font-medium">
+                            Saldo pendiente de la venta: ${saldoPendiente.toLocaleString('es-MX')}
+                        </p>
+                      )}
+                      
+                      {/* MENSAJE DE ERROR */}
                       {fieldErrors.cantidad && (
                         <p className="text-red-600 text-sm mt-2 flex items-center">
                           <span className="mr-1">⚠</span> {fieldErrors.cantidad}
                         </p>
                       )}
                     </div>
+
                     <div className="group">
                       <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                         Estatus

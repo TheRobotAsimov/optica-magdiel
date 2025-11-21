@@ -137,6 +137,17 @@ const CompleteEntregaForm = () => {
        setSelectedPago(null);
        const lente = lentes.find(l => l.idlente == value);
        setSelectedLente(lente);
+
+       // --- LÓGICA AGREGADA ---
+       // Si selecciono lente, automáticamente pongo su folio en el formulario de Nuevo Pago
+       if (lente) {
+         setNewPagoData(prev => ({ ...prev, folio: lente.folio }));
+       } else {
+         // Si deselecciono (valor vacío), limpio el folio del pago
+         setNewPagoData(prev => ({ ...prev, folio: '' }));
+       }
+       // -----------------------
+
     } else {
        setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -171,6 +182,50 @@ const CompleteEntregaForm = () => {
   const handleNewPagoChange = (e) => {
     const { name, value } = e.target;
     setNewPagoData((prev) => ({ ...prev, [name]: value }));
+
+    // 1. Si cambia el Folio -> Recalcular cuánto debe esa venta
+    if (name === 'folio') {
+       const venta = ventas.find(v => v.folio === value);
+       // Si cambiamos de folio, limpiamos error de cantidad previo
+       setFieldErrors(prev => {
+          const newE = {...prev};
+          delete newE.cantidadPago; 
+          return newE;
+       });
+       
+       // Opcional: Si ya había cantidad escrita, validarla contra el nuevo folio inmediatamente
+       if (newPagoData.cantidad && venta) {
+           const restante = parseFloat(venta.total) - parseFloat(venta.pagado || 0);
+           if (parseFloat(newPagoData.cantidad) > restante + 0.1) {
+               setFieldErrors(prev => ({...prev, cantidadPago: `La venta solo debe $${restante.toFixed(2)}`}));
+           }
+       }
+    }
+
+    // 2. Si cambia la Cantidad -> Validar contra el folio seleccionado
+    if (name === 'cantidad') {
+        const venta = ventas.find(v => v.folio === newPagoData.folio);
+        
+        if (venta) {
+            const restante = parseFloat(venta.total) - parseFloat(venta.pagado || 0);
+            
+            if (parseFloat(value) > restante + 0.1) { // Margen de error decimal
+                setFieldErrors(prev => ({
+                    ...prev, 
+                    cantidadPago: `El monto excede la deuda ($${restante.toFixed(2)})`
+                }));
+            } else {
+                 setFieldErrors(prev => {
+                    const newE = {...prev};
+                    delete newE.cantidadPago;
+                    return newE;
+                 });
+            }
+        } else if (value && !newPagoData.folio) {
+             // Caso borde: Escriben cantidad sin seleccionar folio
+             setFieldErrors(prev => ({...prev, cantidadPago: 'Selecciona un folio primero'}));
+        }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -576,6 +631,15 @@ const CompleteEntregaForm = () => {
 
                       {selectedLente && (
                         <div className="space-y-6">
+                          {/* --- NUEVA TARJETA DE FOLIO --- */}
+                          <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border border-gray-300 shadow-sm">
+                            <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Folio Venta</div>
+                            <div className="text-xl font-bold text-gray-800 flex items-center">
+                              <span className="mr-2">📄</span>
+                              {selectedLente.folio}
+                            </div>
+                          </div>
+                          {/* ----------------------------- */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
                               <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">ID Lente</div>
@@ -778,10 +842,21 @@ const CompleteEntregaForm = () => {
                             </label>
                             <select 
                               name="folio" 
-                              value={newPagoData.folio} 
+                              // SI hay lente seleccionado, usa su folio. SI NO, usa el del estado del formulario
+                              value={selectedLente?.folio || newPagoData.folio} 
+                              
+                              // Cuando hay lente seleccionado, actualizamos el estado interno (ver paso 2), 
+                              // pero visualmente bloqueamos este input para que no cambien el folio
                               onChange={handleNewPagoChange} 
+                              
+                              // Deshabilitar si hay un lente seleccionado (para forzar consistencia)
+                              disabled={!!selectedLente} 
+                              
                               required 
-                              className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300"
+                              className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 
+                                ${selectedLente ? 'bg-gray-100 cursor-not-allowed' : ''} 
+                                ${fieldErrors.folio ? 'border-red-500' : 'border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300'}
+                              `}
                             >
                               <option value="">Seleccionar Folio</option>
                               {ventas.map(venta => (
@@ -806,12 +881,15 @@ const CompleteEntregaForm = () => {
                               className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed" 
                             />
                           </div>
+
+                          {/* Dentro del bloque: if (pagoOption !== 'existing') */}
                           <div>
                             <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
                               <DollarSign className="h-4 w-4 text-green-600" />
                               <span>Cantidad</span>
                               <span className="text-red-500">*</span>
                             </label>
+                            
                             <input 
                               type="number" 
                               step="0.01" 
@@ -820,9 +898,31 @@ const CompleteEntregaForm = () => {
                               onChange={handleNewPagoChange} 
                               required 
                               placeholder="0.00"
-                              className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300" 
+                              className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 
+                                ${fieldErrors.cantidadPago 
+                                  ? 'border-red-500 focus:ring-red-100 bg-red-50' 
+                                  : 'border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300'
+                                }`} 
                             />
+
+                            {/* MENSAJE DE ERROR */}
+                            {fieldErrors.cantidadPago && (
+                              <p className="text-red-600 text-sm mt-2 flex items-center animate-pulse">
+                                <span className="mr-1">⚠</span> {fieldErrors.cantidadPago}
+                              </p>
+                            )}
+
+                            {/* MENSAJE INFORMATIVO (SALDO) */}
+                            {!fieldErrors.cantidadPago && newPagoData.folio && (
+                              <div className="mt-2 text-xs font-medium text-gray-500 flex justify-between px-1">
+                                  <span>Deuda actual de la venta:</span>
+                                  <span className="text-green-600 font-bold">
+                                    ${(ventas.find(v => v.folio === newPagoData.folio)?.total - ventas.find(v => v.folio === newPagoData.folio)?.pagado || 0).toFixed(2)}
+                                  </span>
+                              </div>
+                            )}
                           </div>
+
                         </div>
                       )}
 
