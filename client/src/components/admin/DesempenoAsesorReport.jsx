@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { BarChart3, Download } from 'lucide-react';
+import { BarChart3, Download, Calendar, User, TrendingUp, DollarSign } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
@@ -43,23 +43,19 @@ const getDateRange = (period) => {
 
   switch (period) {
     case 'week': {
-      // Start of current week (Monday)
       const dayOfWeek = today.getDay();
-      const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust for Sunday
+      const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
       startDate.setDate(diff);
       break;
     }
     case 'month':
-      // Start of current month
       startDate.setDate(1);
       break;
     case '6months':
-      // 6 months ago
       startDate.setMonth(today.getMonth() - 6);
       startDate.setDate(1);
       break;
     case 'year':
-      // Start of current year
       startDate.setMonth(0);
       startDate.setDate(1);
       break;
@@ -95,7 +91,6 @@ const DesempenoAsesorReport = () => {
     fetchAsesores();
   }, []);
 
-  // Update dates when period changes
   useEffect(() => {
     if (selectedPeriod) {
       const { start, end } = getDateRange(selectedPeriod);
@@ -123,7 +118,6 @@ const DesempenoAsesorReport = () => {
 
     const dataMap = {};
     
-    // ✅ Convert strings to numbers during merge
     reportData.ventasDiarias.forEach(v => {
       const date = v.fecha.split('T')[0];
       dataMap[date] = { ventas: toNumber(v.total_ventas), gastos: 0 };
@@ -163,16 +157,18 @@ const DesempenoAsesorReport = () => {
         {
           label: 'Ventas',
           data: mergedData.ventas,
-          backgroundColor: 'rgba(54, 162, 235, 0.7)',
-          borderColor: 'rgb(54, 162, 235)',
-          borderWidth: 1,
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 2,
+          borderRadius: 6,
         },
         {
           label: 'Gastos de Ruta',
           data: mergedData.gastos,
-          backgroundColor: 'rgba(255, 99, 132, 0.7)',
-          borderColor: 'rgb(255, 99, 132)',
-          borderWidth: 1,
+          backgroundColor: 'rgba(239, 68, 68, 0.8)',
+          borderColor: 'rgb(239, 68, 68)',
+          borderWidth: 2,
+          borderRadius: 6,
         },
       ],
     };
@@ -182,8 +178,19 @@ const DesempenoAsesorReport = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
+      legend: { 
+        position: 'top',
+        labels: {
+          font: { size: 13, weight: '600' },
+          padding: 15,
+          usePointStyle: true,
+        }
+      },
       tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
         callbacks: {
           label: function(context) {
             return context.dataset.label + ': $' + formatCurrency(context.parsed.y);
@@ -194,10 +201,22 @@ const DesempenoAsesorReport = () => {
     scales: {
       y: {
         beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+        },
         ticks: {
+          font: { size: 12, weight: '500' },
           callback: function(value) {
             return '$' + formatCurrency(value);
           }
+        }
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: { size: 11, weight: '500' },
         }
       }
     }
@@ -210,7 +229,6 @@ const DesempenoAsesorReport = () => {
     doc.text(`Reporte de Desempeño - ${reportData.asesor.nombre}`, 20, 20);
     doc.text(`Rango de fechas: ${fechaInicio} - ${fechaFin}`, 20, 30);
 
-    // ✅ Convert totals to numbers
     const totalVentas = toNumber(reportData.totales.ventas);
     const totalGastos = toNumber(reportData.totales.gastos);
     const totalUtilidad = totalVentas - totalGastos;
@@ -239,14 +257,15 @@ const DesempenoAsesorReport = () => {
     ]);
 
     autoTable(doc, {
-      head: [['Fecha', 'Ventas', 'Gastos de Ruta']],
+      head: [['Fecha', 'Ventas', 'Gastos de Ruta', 'Utilidad']],
       body: tableRows,
       startY: 195,
       styles: { fontSize: 9 },
       headStyles: { fillColor: [59, 130, 246] },
       columnStyles: {
         1: { halign: 'right' },
-        2: { halign: 'right' }
+        2: { halign: 'right' },
+        3: { halign: 'right' }
       }
     });
 
@@ -254,143 +273,276 @@ const DesempenoAsesorReport = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
       <NavComponent />
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg p-6">
-          <h1 className="text-3xl font-bold text-blue-700 mb-6">Reporte de Desempeño por Asesor</h1>
+        
+        {/* Header */}
+        <div className="bg-white rounded-4xl shadow-xl overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                  <BarChart3 className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-white">
+                    Reporte de Desempeño por Asesor
+                  </h1>
+                  <p className="text-blue-100 text-sm mt-1">
+                    Análisis de ventas, gastos y utilidad por período
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <select
-              value={selectedAsesor}
-              onChange={(e) => setSelectedAsesor(e.target.value)}
-              className="border rounded-lg p-2"
-            >
-              <option value="">Seleccionar Asesor</option>
-              {asesores.map(asesor => (
-                <option key={asesor.idempleado} value={asesor.idempleado}>
-                  {asesor.nombre} {asesor.paterno}
-                </option>
-              ))}
-            </select>
+        {/* Filters Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-6">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+              Filtros de Búsqueda
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Asesor Select */}
+              <div className="group">
+                <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <User className="h-4 w-4 mr-1.5 text-blue-600" />
+                  Asesor
+                  <span className="text-red-500 ml-1">*</span>
+                </label>
+                <select
+                  value={selectedAsesor}
+                  onChange={(e) => setSelectedAsesor(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium bg-white hover:border-gray-300"
+                >
+                  <option value="">Seleccionar Asesor</option>
+                  {asesores.map(asesor => (
+                    <option key={asesor.idempleado} value={asesor.idempleado}>
+                      {asesor.nombre} {asesor.paterno}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <select
-              value={selectedPeriod}
-              onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="border rounded-lg p-2"
-            >
-              <option value="">Seleccionar Periodo</option>
-              <option value="week">Esta semana</option>
-              <option value="month">Este mes</option>
-              <option value="6months">Últimos 6 meses</option>
-              <option value="year">Este año</option>
-            </select>
+              {/* Period Select */}
+              <div className="group">
+                <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <Calendar className="h-4 w-4 mr-1.5 text-blue-600" />
+                  Período
+                  <span className="text-red-500 ml-1">*</span>
+                </label>
+                <select
+                  value={selectedPeriod}
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium bg-white hover:border-gray-300"
+                >
+                  <option value="">Seleccionar Periodo</option>
+                  <option value="week">Esta semana</option>
+                  <option value="month">Este mes</option>
+                  <option value="6months">Últimos 6 meses</option>
+                  <option value="year">Este año</option>
+                </select>
+              </div>
 
-            <div className="border rounded-lg p-2 bg-gray-50 text-gray-600">
-              {fechaInicio && fechaFin ? `${fechaInicio} - ${fechaFin}` : 'Seleccione un periodo'}
+              {/* Date Range Display */}
+              <div className="group">
+                <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <Calendar className="h-4 w-4 mr-1.5 text-gray-600" />
+                  Rango de Fechas
+                </label>
+                <div className="px-4 py-3 border-2 border-gray-200 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 text-gray-700 font-medium flex items-center">
+                  {fechaInicio && fechaFin ? (
+                    <span className="text-sm">{fechaInicio} → {fechaFin}</span>
+                  ) : (
+                    <span className="text-gray-400 text-sm">Seleccione un periodo</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Generate Button */}
+              <div className="group">
+                <label className="text-sm font-semibold text-gray-700 mb-2 block opacity-0">Action</label>
+                <button
+                  onClick={handleGenerateReport}
+                  disabled={loading || !selectedAsesor || !selectedPeriod}
+                  className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
+                >
+                  <BarChart3 className="h-5 w-5" />
+                  <span>{loading ? 'Generando...' : 'Generar Reporte'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {reportData && mergedData && (
+          <>
+            {/* Asesor Info */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 mb-6 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-blue-100 p-3 rounded-xl">
+                    <User className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{reportData.asesor.nombre}</h2>
+                    <p className="text-gray-600 text-sm">Período: {fechaInicio} - {fechaFin}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={downloadPDF}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <Download className="h-5 w-5" />
+                  <span>Descargar PDF</span>
+                </button>
+              </div>
             </div>
 
-            <button
-              onClick={handleGenerateReport}
-              disabled={loading || !selectedAsesor || !selectedPeriod}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-2 flex items-center justify-center gap-2"
-            >
-              <BarChart3 className="h-4 w-4" />
-              {loading ? 'Generando...' : 'Generar Reporte'}
-            </button>
-          </div>
-
-          {reportData && mergedData && (
-            <>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2">Asesor: {reportData.asesor.nombre}</h2>
-                <p className="text-gray-600">Rango de fechas: {fechaInicio} - {fechaFin}</p>
-              </div>
-
-              {/* ✅ Convert totals to numbers before using toFixed */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                  <h3 className="font-semibold text-blue-900">Total Ventas</h3>
-                  <p className="text-2xl font-bold text-blue-700">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Total Ventas */}
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 border-l-4 border-blue-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-blue-900 text-lg">Total Ventas</h3>
+                    <div className="bg-blue-100 p-2 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-700 mb-2">
                     ${formatCurrency(reportData.totales.ventas)}
                   </p>
-                  <p className="text-sm text-blue-600">
+                  <div className="flex items-center text-sm text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg inline-block">
+                    <TrendingUp className="h-4 w-4 mr-1" />
                     Prom/día: ${formatCurrency(reportData.promedios.ventasPorDia)}
-                  </p>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
-                  <h3 className="font-semibold text-red-900">Total Gastos de Ruta</h3>
-                  <p className="text-2xl font-bold text-red-700">
-                    ${formatCurrency(reportData.totales.gastos)}
-                  </p>
-                  <p className="text-sm text-red-600">
-                    Prom/día: ${formatCurrency(reportData.promedios.gastosPorDia)}
-                  </p>
-                </div>
-                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                  <h3 className="font-semibold text-green-900">Utilidad Neta</h3>
-                  <p className="text-2xl font-bold text-green-700">
-                    ${formatCurrency(toNumber(reportData.totales.ventas) - toNumber(reportData.totales.gastos))}
-                  </p>
-                  <p className="text-sm text-green-600">
-                    Prom/día: ${formatCurrency(toNumber(reportData.promedios.ventasPorDia) - toNumber(reportData.promedios.gastosPorDia))}
-                  </p>
+                  </div>
                 </div>
               </div>
 
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3">Gráfico de Desempeño</h3>
+              {/* Total Gastos */}
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-br from-red-50 to-rose-50 p-6 border-l-4 border-red-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-red-900 text-lg">Total Gastos</h3>
+                    <div className="bg-red-100 p-2 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-red-600" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-red-700 mb-2">
+                    ${formatCurrency(reportData.totales.gastos)}
+                  </p>
+                  <div className="flex items-center text-sm text-red-600 bg-red-100 px-3 py-1.5 rounded-lg inline-block">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    Prom/día: ${formatCurrency(reportData.promedios.gastosPorDia)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Utilidad Neta */}
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 border-l-4 border-green-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-green-900 text-lg">Utilidad Neta</h3>
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-green-700 mb-2">
+                    ${formatCurrency(toNumber(reportData.totales.ventas) - toNumber(reportData.totales.gastos))}
+                  </p>
+                  <div className="flex items-center text-sm text-green-600 bg-green-100 px-3 py-1.5 rounded-lg inline-block">
+                    <TrendingUp className="h-4 w-4 mr-1" />
+                    Prom/día: ${formatCurrency(toNumber(reportData.promedios.ventasPorDia) - toNumber(reportData.promedios.gastosPorDia))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-6">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
+                  Gráfico de Desempeño
+                </h3>
+              </div>
+              <div className="p-6">
                 <div className="h-96" ref={chartRef}>
                   <Bar data={prepareChartData()} options={chartOptions} />
                 </div>
               </div>
-
-              <div className="mb-6">
-                <h3 className="text-3xl font-semibold mb-3 text-center">Detalle Diario</h3>
-                <div className="overflow-x-auto max-w-3xl mx-auto">
-                  <table className="min-w-full table-auto border-collapse border border-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="border border-gray-300 px-4 py-2 text-left">Fecha</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Ventas</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Gastos de Ruta</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mergedData.tableData.map((row, idx) => {
-                        return (
-                          <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                            <td className="border border-gray-300 px-4 py-2">{formatDate(row.date)}</td>
-                            <td className="border border-gray-300 px-4 py-2 text-right text-blue-600 font-medium">
-                              ${formatCurrency(row.ventas)}
-                            </td>
-                            <td className="border border-gray-300 px-4 py-2 text-right text-red-600 font-medium">
-                              ${formatCurrency(row.gastos)}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <button
-                onClick={downloadPDF}
-                className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-6 py-2 font-semibold flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Descargar PDF
-              </button>
-            </>
-          )}
-
-          {!reportData && !loading && (
-            <div className="text-center text-gray-500 py-8">
-              Seleccione un asesor y periodo para generar el reporte
             </div>
-          )}
-        </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 text-center">
+                  Detalle Diario
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Fecha</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Ventas</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Gastos de Ruta</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Utilidad</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {mergedData.tableData.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">
+                            {formatDate(row.date)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-blue-600">
+                            ${formatCurrency(row.ventas)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-red-600">
+                            ${formatCurrency(row.gastos)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className={`text-sm font-bold ${row.utilidad >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            ${formatCurrency(row.utilidad)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
+        {!reportData && !loading && (
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 p-12">
+            <div className="text-center">
+              <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="h-10 w-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                No hay datos para mostrar
+              </h3>
+              <p className="text-gray-500">
+                Seleccione un asesor y período para generar el reporte
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
