@@ -475,7 +475,7 @@ const LenteForm = () => {
                     {/* Symptoms */}
                     <div className="md:col-span-2">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">Síntomas</label>
-                      <div className="grid grid-cols-3 gap-x-4 gap-y-3 p-4 bg-white border-2 border-gray-200 rounded-xl">
+                      <div className="grid grid-cols-3 gap-x-4 gap-y-3 p-4 border-2 border-gray-200 rounded-xl">
                         {symptomsList.map(symptom => (
                           <label key={symptom} className="flex items-center space-x-2 text-xs font-medium text-gray-600 hover:text-blue-600 cursor-pointer transition-colors">
                             <input
