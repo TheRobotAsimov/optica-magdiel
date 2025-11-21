@@ -8,6 +8,7 @@ import ventaService from '../../service/ventaService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, Eye, Package, Calendar, CheckCircle, AlertCircle, DollarSign, CreditCard, Truck, Clock, MapPin } from 'lucide-react';
 import Swal from 'sweetalert2';
+import { validateEntregaForm, validateEntregaField } from '../../utils/validations/index.js';
 
 const CompleteEntregaForm = () => {
   const [formData, setFormData] = useState({
@@ -32,6 +33,9 @@ const CompleteEntregaForm = () => {
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
   const [pagoOption, setPagoOption] = useState('existing');
   
   const [newPagoData, setNewPagoData] = useState({
@@ -118,9 +122,15 @@ const CompleteEntregaForm = () => {
     }
   }, [formData.idruta, rutas]);
 
+  useEffect(() => {
+    const errors = validateEntregaForm(formData, { pagoOption });
+    const hasErrors = Object.values(errors).some((err) => err);
+    setIsFormValid(!hasErrors);
+  }, [formData, fieldErrors, pagoOption]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
     // Si cambiamos el lente, reseteamos el pago para evitar inconsistencias de folio
     if (name === 'idlente') {
        setFormData(prev => ({ ...prev, [name]: value, idpago: '' }));
@@ -130,11 +140,25 @@ const CompleteEntregaForm = () => {
     } else {
        setFormData((prev) => ({ ...prev, [name]: value }));
     }
+
+    // Validación en tiempo real
+    if (touched[name]) {
+      const error = validateEntregaField(name, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+
+    const error = validateEntregaField(name, value);
+    setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
   // Manejador específico (aunque integrado arriba, lo mantenemos por consistencia visual)
   const handleLenteChange = (e) => {
-    handleChange(e); 
+    handleChange(e);
   };
 
   const handlePagoChange = (e) => {
@@ -152,15 +176,12 @@ const CompleteEntregaForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación básica
-    if (!formData.idlente && !formData.idpago && pagoOption !== 'new') {
-      Swal.fire({
-        title: 'Validación requerida',
-        text: 'Debe seleccionar al menos un lente o un pago.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Entendido'
-      });
+    // Validación completa del formulario
+    const errors = validateEntregaForm(formData, { pagoOption });
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const generalError = errors.general || 'Por favor corrige los errores en el formulario';
+      setError(generalError);
       return;
     }
 
@@ -404,19 +425,29 @@ const CompleteEntregaForm = () => {
                         <span>Ruta</span>
                         <span className="text-red-500">*</span>
                       </label>
-                      <select 
-                        name="idruta" 
-                        value={formData.idruta} 
-                        onChange={handleChange} 
-                        required 
+                      <select
+                        name="idruta"
+                        value={formData.idruta}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        required
                         disabled={new URLSearchParams(window.location.search).get('ruta') !== null}
-                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                          fieldErrors.idruta
+                            ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                            : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                        } disabled:bg-gray-100 disabled:cursor-not-allowed`}
                       >
                         <option value="">Seleccionar Ruta</option>
                         {rutas.map(ruta => (
                           <option key={ruta.idruta} value={ruta.idruta}>{`Ruta ${ruta.idruta} - ${new Date(ruta.fecha).toLocaleDateString()}`}</option>
                         ))}
                       </select>
+                      {fieldErrors.idruta && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <span className="mr-1">⚠</span> {fieldErrors.idruta}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -429,13 +460,23 @@ const CompleteEntregaForm = () => {
                         name="estatus"
                         value={formData.estatus}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                         disabled={new URLSearchParams(window.location.search).get('undelivered') !== null}
-                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                          fieldErrors.estatus
+                            ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                            : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                        } disabled:bg-gray-100 disabled:cursor-not-allowed`}
                       >
                         <option value="No entregado">No entregado</option>
                         <option value="Entregado">Entregado</option>
                       </select>
+                      {fieldErrors.estatus && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <span className="mr-1">⚠</span> {fieldErrors.estatus}
+                        </p>
+                      )}
                     </div>
 
                     <div className="md:col-span-2">
@@ -443,15 +484,25 @@ const CompleteEntregaForm = () => {
                         <span>Descripción</span>
                         <span className="text-red-500">*</span>
                       </label>
-                      <textarea 
-                        name="motivo" 
-                        value={formData.motivo} 
-                        onChange={handleChange} 
-                        required 
-                        rows="3" 
-                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 resize-none"
+                      <textarea
+                        name="motivo"
+                        value={formData.motivo}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        required
+                        rows="3"
+                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 resize-none ${
+                          fieldErrors.motivo
+                            ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                            : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                        }`}
                         placeholder="Describe los detalles de la entrega..."
                       />
+                      {fieldErrors.motivo && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <span className="mr-1">⚠</span> {fieldErrors.motivo}
+                        </p>
+                      )}
                     </div>
 
                     <div>
@@ -460,14 +511,24 @@ const CompleteEntregaForm = () => {
                         <span>Hora</span>
                         <span className="text-red-500">*</span>
                       </label>
-                      <input 
-                        type="time" 
-                        name="hora" 
-                        value={formData.hora} 
-                        onChange={handleChange} 
-                        required 
-                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300" 
+                      <input
+                        type="time"
+                        name="hora"
+                        value={formData.hora}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        required
+                        className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                          fieldErrors.hora
+                            ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                            : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                        }`}
                       />
+                      {fieldErrors.hora && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <span className="mr-1">⚠</span> {fieldErrors.hora}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -833,9 +894,9 @@ const CompleteEntregaForm = () => {
                 >
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
-                  disabled={loading} 
+                <button
+                  type="submit"
+                  disabled={!isFormValid || loading}
                   className="flex items-center justify-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-400 disabled:to-indigo-400 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
                 >
                   <Save className="h-5 w-5" />

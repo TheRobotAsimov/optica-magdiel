@@ -297,7 +297,7 @@ const App = () => {
             path="/entregas/new"
             element={
               <ProtectedRoute>
-                <CompleteEntregaForm />
+                <EntregaForm />
               </ProtectedRoute>
             }
           />

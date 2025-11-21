@@ -1,6 +1,6 @@
 import { validateRequired } from './commonValidations.js';
 
-export const validateEntregaForm = (formData) => {
+export const validateEntregaForm = (formData, options = {}) => {
   const errors = {};
 
   // Ruta
@@ -18,10 +18,20 @@ export const validateEntregaForm = (formData) => {
   // Motivo
   const motivoError = validateRequired(formData.motivo, 'Motivo');
   if (motivoError) errors.motivo = motivoError;
+  else {
+    if (formData.motivo.length < 5) {
+      errors.motivo = 'Motivo debe tener al menos 5 caracteres';
+    }
+  }
 
   // Hora
   const horaError = validateRequired(formData.hora, 'Hora');
   if (horaError) errors.hora = horaError;
+
+  // Al menos un lente o pago
+  if (!formData.idlente && !formData.idpago && options.pagoOption !== 'new') {
+    errors.general = 'Debe seleccionar al menos un lente o un pago.';
+  }
 
   return errors;
 };
@@ -36,8 +46,12 @@ export const validateEntregaField = (name, value) => {
       if (!validEstatus.includes(value)) return 'Estatus inválido';
       return null;
     }
-    case 'motivo':
-      return validateRequired(value, 'Motivo');
+    case 'motivo': {
+      const reqError = validateRequired(value, 'Motivo');
+      if (reqError) return reqError;
+      if (value.length < 5) return 'Motivo debe tener al menos 5 caracteres';
+      return null;
+    }
     case 'hora':
       return validateRequired(value, 'Hora');
     default:
