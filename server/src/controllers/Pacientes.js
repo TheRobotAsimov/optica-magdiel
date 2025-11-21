@@ -26,6 +26,17 @@ export const getPacienteById = async (req, res) => {
   }
 };
 
+// Método para obtener pacientes por cliente
+export const getPacientesByCliente = async (req, res) => {
+  try {
+    const { idcliente } = req.params;
+    const pacientes = await Paciente.getByCliente(idcliente);
+    res.json(pacientes);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Método para crear un nuevo paciente
 export const createPaciente = async (req, res) => {
   try {

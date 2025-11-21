@@ -2,6 +2,7 @@ import express from 'express';
 import {
     getAllPacientes,
     getPacienteById,
+    getPacientesByCliente,
     createPaciente,
     updatePaciente,
     deletePaciente
@@ -13,6 +14,7 @@ router.use(authenticateToken);
 
 router.get('/', getAllPacientes);
 router.get('/:id', getPacienteById);
+router.get('/cliente/:idcliente', getPacientesByCliente);
 router.post('/', createPaciente);
 router.put('/:id', updatePaciente);
 router.delete('/:id', deletePaciente);

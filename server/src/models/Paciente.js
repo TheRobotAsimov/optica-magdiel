@@ -11,6 +11,11 @@ class Paciente {
     return rows[0];
   }
 
+  static async getByCliente(idcliente) {
+    const [rows] = await pool.execute('SELECT * FROM paciente WHERE idcliente = ?', [idcliente]);
+    return rows;
+  }
+
   static async create(data) {
     const { idcliente, nombre, paterno, materno, sexo, edad, parentesco } = data;
     const [result] = await pool.execute(

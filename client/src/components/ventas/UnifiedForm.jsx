@@ -11,10 +11,12 @@ import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
-import { Save, ArrowLeft, ShoppingCart, User, Eye, Glasses } from 'lucide-react';
+import pacienteService from '../../service/pacienteService'; // <--- IMPORTAR ESTO
+import { Save, ArrowLeft, ShoppingCart, User, Eye, Glasses, Users } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import { validateUnifiedForm, validateUnifiedField } from '../../utils/validations/index.js';
 import Swal from 'sweetalert2';
+
 
 // Componente principal para el formulario unificado de ventas
 const UnifiedForm = () => {
@@ -47,6 +49,13 @@ const UnifiedForm = () => {
     telefono2: '',
     edad: '',
     sexo: '',
+    // --- NUEVOS CAMPOS PACIENTE ---
+    paciente_nombre: '',
+    paciente_paterno: '',
+    paciente_materno: '',
+    paciente_edad: '',
+    paciente_sexo: '',
+    paciente_parentesco: '',
     // Lente fields
     sintomas: '',
     idoptometrista: '',
@@ -110,6 +119,8 @@ const UnifiedForm = () => {
   const [priceIncreaseReason, setPriceIncreaseReason] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [clientPatients, setClientPatients] = useState([]); // Lista de pacientes del cliente
+  const [isPatientSelected, setIsPatientSelected] = useState(false); // Para saber si es edición o lectura
 
 // Efecto para pre-llenar el asesor si el usuario logueado es asesor
   useEffect(() => {
@@ -402,25 +413,35 @@ const UnifiedForm = () => {
      setFieldErrors(prev => ({ ...prev, [errorField]: error }));
    };
 
-// Funcion para seleccionar un cliente de las sugerencias
-  const handleSelectClient = (client) => {
-    setFormData((prev) => ({
-      ...prev,
-      nombre: client.nombre,
-      paterno: client.paterno,
-      materno: client.materno || '',
-      domicilio1: client.domicilio1 || '',
-      domicilio2: client.domicilio2 || '',
-      telefono1: client.telefono1 || '',
-      telefono2: client.telefono2 || '',
-      edad: client.edad || '',
-      sexo: client.sexo || '',
-    }));
-    setSelectedClient(client);
-    setIsClientSelected(true);
-    setShowSuggestions(false);
-    setSearchResults([]);
-  };
+    // Modificar handleSelectClient para buscar pacientes
+    const handleSelectClient = async (client) => { // Hacer async
+        setFormData((prev) => ({
+          ...prev,
+          nombre: client.nombre,
+          paterno: client.paterno,
+          materno: client.materno || '',
+          domicilio1: client.domicilio1 || '',
+          domicilio2: client.domicilio2 || '',
+          telefono1: client.telefono1 || '',
+          telefono2: client.telefono2 || '',
+          edad: client.edad || '',
+          sexo: client.sexo || '',
+        }));
+        setSelectedClient(client);
+        setIsClientSelected(true);
+        setShowSuggestions(false);
+        setSearchResults([]);
+
+        // --- NUEVO: Cargar pacientes asociados al cliente ---
+        try {
+          const pacientes = await pacienteService.getPacientesByCliente(client.idcliente);
+          setClientPatients(pacientes);
+        } catch (error) {
+          console.error("Error cargando pacientes", error);
+          setClientPatients([]);
+        }
+        // --------------------------------------------------
+    };
 
 // Funcion para limpiar la seleccion de cliente
   const handleClearClient = () => {
@@ -435,10 +456,52 @@ const UnifiedForm = () => {
       telefono2: '',
       edad: '',
       sexo: '',
+      paciente_nombre: '',
+      paciente_paterno: '',
+      paciente_materno: '',
+      paciente_edad: '',
+      paciente_sexo: '',
+      paciente_parentesco: '',
     }));
     setSelectedClient(null);
     setIsClientSelected(false);
+    setClientPatients([]); // Limpiar lista de pacientes
+    setIsPatientSelected(false);
   };
+
+  // --- NUEVA FUNCION: Manejar selección de paciente existente ---
+const handleSelectPatient = (e) => {
+    const idPaciente = e.target.value;
+    
+    if (idPaciente === "new") {
+        // Modo crear nuevo paciente
+        setFormData(prev => ({
+            ...prev,
+            paciente_nombre: '',
+            paciente_paterno: '',
+            paciente_materno: '',
+            paciente_edad: '',
+            paciente_sexo: '',
+            paciente_parentesco: '',
+        }));
+        setIsPatientSelected(false);
+    } else {
+        // Modo paciente existente
+        const paciente = clientPatients.find(p => p.idpaciente.toString() === idPaciente);
+        if (paciente) {
+            setFormData(prev => ({
+                ...prev,
+                paciente_nombre: paciente.nombre,
+                paciente_paterno: paciente.paterno,
+                paciente_materno: paciente.materno || '',
+                paciente_edad: paciente.edad,
+                paciente_sexo: paciente.sexo,
+                paciente_parentesco: paciente.parentesco || '',
+            }));
+            setIsPatientSelected(true);
+        }
+    }
+};
 
   // Funcion para manejar solicitud de aumento de precio
   const handlePriceIncreaseRequest = () => {
@@ -496,6 +559,21 @@ const UnifiedForm = () => {
          });
          clientId = newClient.id;
        }
+
+       // --- NUEVO: Crear Paciente si no se seleccionó uno existente ---
+       // Solo creamos si se llenaron al menos nombre y paterno del paciente
+       if (!isPatientSelected && formData.paciente_nombre && formData.paciente_paterno) {
+            await pacienteService.createPaciente({
+                idcliente: clientId,
+                nombre: formData.paciente_nombre,
+                paterno: formData.paciente_paterno,
+                materno: formData.paciente_materno,
+                edad: formData.paciente_edad,
+                sexo: formData.paciente_sexo,
+                parentesco: formData.paciente_parentesco
+            });
+       }
+       // ---------------------------------------------------------------
 
        const finalTotal = formData.total;
 
@@ -720,7 +798,7 @@ const UnifiedForm = () => {
                    <div className="bg-blue-600 p-2 rounded-lg">
                       <User className="h-5 w-5 text-white" />
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900">Información Personal</h3>
+                    <h3 className="text-xl font-bold text-gray-900">Información del Cliente</h3>
                     {isClientSelected && (
                       <button type="button" onClick={handleClearClient} className="px-2 py-1 bg-red-500 text-white rounded-3xl text-sm">Limpiar</button>
                     )}
@@ -827,6 +905,120 @@ const UnifiedForm = () => {
                  </div>
                 </div>
                </div>
+
+               {/* Seccion de informacion del Paciente */}
+              <div className="relative">
+                <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-green-500 to-teal-500 rounded-full"></div>
+                <div className="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-8 border border-green-100">
+
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                      <div className="bg-green-600 p-2 rounded-lg">
+                        <Users className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900">Información del Paciente</h3>
+                    </div>
+                    
+                    {/* Selector de pacientes existentes (Solo visible si hay cliente seleccionado) */}
+                    {isClientSelected && (
+                      <div className="w-64">
+                         <select 
+                            className="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white text-sm"
+                            onChange={handleSelectPatient}
+                            defaultValue="new"
+                         >
+                            <option value="new">+ Nuevo Paciente</option>
+                            {clientPatients.length > 0 && <option disabled>──────────</option>}
+                            {clientPatients.map(p => (
+                                <option key={p.idpaciente} value={p.idpaciente}>
+                                    {p.nombre} {p.paterno} ({p.parentesco})
+                                </option>
+                            ))}
+                         </select>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                      <input 
+                        type="text" 
+                        name="paciente_nombre" 
+                        value={formData.paciente_nombre} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isPatientSelected ? 'bg-gray-100' : 'bg-white'}`}
+                        disabled={isPatientSelected}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Paterno</label>
+                      <input 
+                        type="text" 
+                        name="paciente_paterno" 
+                        value={formData.paciente_paterno} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isPatientSelected ? 'bg-gray-100' : 'bg-white'}`}
+                        disabled={isPatientSelected}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Apellido Materno</label>
+                      <input 
+                        type="text" 
+                        name="paciente_materno" 
+                        value={formData.paciente_materno} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isPatientSelected ? 'bg-gray-100' : 'bg-white'}`}
+                        disabled={isPatientSelected}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Edad</label>
+                      <input 
+                        type="number" 
+                        name="paciente_edad" 
+                        value={formData.paciente_edad} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isPatientSelected ? 'bg-gray-100' : 'bg-white'}`}
+                        disabled={isPatientSelected}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Sexo</label>
+                      <select 
+                        name="paciente_sexo" 
+                        value={formData.paciente_sexo} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isPatientSelected ? 'bg-gray-100' : 'bg-white'}`}
+                        disabled={isPatientSelected}
+                      >
+                        <option value="">Seleccionar</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Parentesco</label>
+                      <input 
+                        type="text" 
+                        name="paciente_parentesco" 
+                        value={formData.paciente_parentesco} 
+                        onChange={handleChange} 
+                        onBlur={handleBlur} 
+                        placeholder="Ej. Hijo, Esposo, Tio"
+                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isPatientSelected ? 'bg-gray-100' : 'bg-white'}`}
+                        disabled={isPatientSelected}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Seccion de informacion del lente*/}
               <div className="relative">

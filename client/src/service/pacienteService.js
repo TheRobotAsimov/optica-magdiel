@@ -11,6 +11,10 @@ const pacienteService = {
     const response = await axios.get(`${API_BASE_URL}/pacientes/${id}`);
     return response.data;
   },
+  getPacientesByCliente: async (idcliente) => {
+    const response = await axios.get(`${API_BASE_URL}/pacientes/cliente/${idcliente}`);
+    return response.data;
+  },
   createPaciente: async (pacienteData) => {
     const response = await axios.post(`${API_BASE_URL}/pacientes`, pacienteData);
     return response.data;
