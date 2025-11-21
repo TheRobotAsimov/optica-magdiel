@@ -9,6 +9,8 @@ import DatePicker from 'react-datepicker';
 import { registerLocale } from 'react-datepicker';
 import es from 'date-fns/locale/es';
 import 'react-datepicker/dist/react-datepicker.css';
+import Loading from '../common/Loading.jsx';
+import Error from '../common/Error.jsx';
 
 registerLocale('es', es);
 
@@ -183,29 +185,11 @@ const EmpleadoForm = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-xl text-gray-600">Cargando...</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-800">Error: {error}</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Error message={error} />;
   }
 
   return (

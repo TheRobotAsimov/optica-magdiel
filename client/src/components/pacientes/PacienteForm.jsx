@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router';
 import pacienteService from '../../service/pacienteService';
 import clientService from '../../service/clientService';
 import NavComponent from '../common/NavBar';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 import { Save, ArrowLeft, User } from 'lucide-react';
 import { validatePacienteForm, validatePacienteField } from '../../utils/validations/index.js';
 
@@ -111,29 +113,11 @@ const PacienteForm = () => {
   };
 
   if (loading && !id) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-xl text-gray-600">Cargando...</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-800">Error: {error}</div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Error message={error} />;
   }
 
   return (

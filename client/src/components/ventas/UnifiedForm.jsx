@@ -9,6 +9,8 @@ import empleadoService from '../../service/empleadoService';
 import precioService from '../../service/precioService';
 import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 import { Save, ArrowLeft, ShoppingCart, User, Eye, Glasses } from 'lucide-react';
 import { useDebounce } from 'use-debounce';
 import { validateUnifiedForm, validateUnifiedField } from '../../utils/validations/index.js';
@@ -578,33 +580,14 @@ const UnifiedForm = () => {
    };
 
 // Renderizado condicional para estado de carga
-  if (loading) {
-  // Renderizado principal del componente
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-xl text-gray-600">Cargando...</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (loading) {
+     return <Loading />;
+   }
 
 // Renderizado condicional para estado de error
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-800">Error: {error}</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+   if (error) {
+     return <Error message={error} />;
+   }
 
   return (
     <div className="min-h-screen bg-gray-50">

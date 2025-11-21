@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import rutaService from '../../service/rutaService';
 import empleadoService from '../../service/empleadoService';
 import NavComponent from '../common/NavBar';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 import { Save, ArrowLeft, User } from 'lucide-react';
 import { validateRouteForm, validateRouteField } from '../../utils/validations/index.js';
 
@@ -123,11 +125,11 @@ const RutaForm = () => {
   };
 
   if (loading && !formData.idasesor) {
-    return <div>Cargando...</div>;
+    return <Loading />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <Error message={error} />;
   }
 
   return (

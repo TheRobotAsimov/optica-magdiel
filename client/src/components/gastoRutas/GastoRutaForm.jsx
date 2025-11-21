@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router';
 import gastoRutaService from '../../service/gastoRutaService';
 import rutaService from '../../service/rutaService';
 import NavComponent from '../common/NavBar';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 import { Save, ArrowLeft, User } from 'lucide-react';
 import { validateGastoRutaForm, validateGastoRutaField } from '../../utils/validations/index.js';
 
@@ -113,11 +115,11 @@ const GastoRutaForm = () => {
   };
 
   if (loading && !id) {
-    return <div>Cargando...</div>;
+    return <Loading />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <Error message={error} />;
   }
 
   return (

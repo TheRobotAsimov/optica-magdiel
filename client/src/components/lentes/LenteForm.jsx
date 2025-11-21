@@ -4,6 +4,8 @@ import lenteService from '../../service/lenteService';
 import empleadoService from '../../service/empleadoService';
 import ventaService from '../../service/ventaService';
 import NavComponent from '../common/NavBar';
+import Loading from '../common/Loading';
+import Error from '../common/Error';
 import { Save, ArrowLeft, Eye, Glasses, Calendar, ClipboardList, Settings, AlertCircle } from 'lucide-react';
 import { validateLenteForm, validateLenteField } from '../../utils/validations/index.js';
 
@@ -387,40 +389,11 @@ const LenteForm = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-        <NavComponent />
-        <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-              <span className="text-xl font-medium text-gray-600">Cargando...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-        <NavComponent />
-        <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl p-6 shadow-lg">
-            <div className="flex items-center space-x-3">
-              <div className="bg-red-100 p-2 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-red-900">Error</h3>
-                <p className="text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <Error message={error} />;
   }
 
   return (

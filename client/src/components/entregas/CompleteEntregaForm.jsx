@@ -7,8 +7,9 @@ import pagoService from '../../service/pagoService';
 import ventaService from '../../service/ventaService';
 import NavComponent from '../common/NavBar';
 import { Save, ArrowLeft, Eye, Package, Calendar, CheckCircle, AlertCircle, DollarSign, CreditCard, Truck, Clock, MapPin } from 'lucide-react';
-import Swal from 'sweetalert2';
 import { validateEntregaForm, validateEntregaField } from '../../utils/validations/index.js';
+import Loading from '../common/Loading.jsx';
+import Error from '../common/Error.jsx';
 
 const CompleteEntregaForm = () => {
   const [formData, setFormData] = useState({
@@ -403,29 +404,11 @@ const CompleteEntregaForm = () => {
 
 
   if (loading && rutas.length === 0) {
-    return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>; 
-  }
-  
-  // Componente de carga simple inline para ahorrar espacio
-  function LoadingSpinner() {
-      return (
-        <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-            <span className="text-xl font-medium text-gray-600">Cargando...</span>
-        </div>
-      );
+    return <Loading />; 
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-8">
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
-            <h3 className="font-bold text-red-900">Error</h3>
-            <p className="text-red-700">{error}</p>
-            <button onClick={() => navigate(-1)} className="mt-4 text-red-700 underline">Volver</button>
-          </div>
-      </div>
-    );
+    return <Error message={error} />;
   }
 
   return (
