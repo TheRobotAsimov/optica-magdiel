@@ -6,7 +6,7 @@ import lenteService from '../../service/lenteService';
 import pagoService from '../../service/pagoService';
 import ventaService from '../../service/ventaService';
 import NavComponent from '../common/NavBar';
-import { Save, ArrowLeft, Eye, Package, Calendar, CheckCircle, AlertCircle, DollarSign, CreditCard } from 'lucide-react';
+import { Save, ArrowLeft, Eye, Package, Calendar, CheckCircle, AlertCircle, DollarSign, CreditCard, Truck, Clock, MapPin } from 'lucide-react';
 import Swal from 'sweetalert2';
 
 const CompleteEntregaForm = () => {
@@ -70,6 +70,15 @@ const CompleteEntregaForm = () => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (formData.idruta && rutas.length > 0) {
+      const selectedRoute = rutas.find(r => r.idruta == formData.idruta);
+      if (selectedRoute && selectedRoute.fecha) {
+        setNewPagoData(prev => ({ ...prev, fecha: selectedRoute.fecha.split('T')[0] }));
+      }
+    }
+  }, [formData.idruta, rutas]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -262,11 +271,14 @@ const CompleteEntregaForm = () => {
 
   if (loading && rutas.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
         <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-center h-64">
-            <div className="text-xl text-gray-600">Cargando...</div>
+            <div className="flex flex-col items-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+              <span className="text-xl font-medium text-gray-600">Cargando...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -275,11 +287,19 @@ const CompleteEntregaForm = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
         <NavComponent />
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="text-red-800">Error: {error}</div>
+        <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+          <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl p-6 shadow-lg">
+            <div className="flex items-center space-x-3">
+              <div className="bg-red-100 p-2 rounded-lg">
+                <AlertCircle className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-red-900">Error</h3>
+                <p className="text-red-700">{error}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -287,357 +307,476 @@ const CompleteEntregaForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
       <NavComponent />
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white overflow-hidden shadow-xl rounded-xl border border-gray-200">
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 border-b border-blue-800">
+      <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Header Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6 border border-gray-100">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-white">NUEVA ENTREGA COMPLETA</h1>
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                  <Truck className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-white">Nueva Entrega Completa</h1>
+                  <p className="text-blue-100 text-sm mt-1">Registra la entrega de lentes y pagos</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="flex items-center space-x-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Volver</span>
+              </button>
             </div>
           </div>
-          <div className="px-6 py-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Ruta *</label>
-                  <select name="idruta" 
-                          value={formData.idruta} 
-                          onChange={handleChange} 
-                          required 
-                          disabled={new URLSearchParams(window.location.search).get('ruta') !== null}
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Seleccionar Ruta</option>
-                    {rutas.map(ruta => (
-                      <option key={ruta.idruta} value={ruta.idruta}>{`Ruta ${ruta.idruta} - ${new Date(ruta.fecha).toLocaleDateString()}`}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Estatus *</label>
-                  <select
-                    name="estatus"
-                    value={formData.estatus}
-                    onChange={handleChange}
-                    required
-                    disabled={new URLSearchParams(window.location.search).get('undelivered') !== null}
-                    className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  >
-                    <option value="No entregado">No entregado</option>
-                    <option value="Entregado">Entregado</option>
-                  </select>
-                </div>
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Descripción *</label>
-                  <textarea name="motivo" value={formData.motivo} onChange={handleChange} required rows="3" className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"></textarea>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Hora *</label>
-                  <input type="time" name="hora" value={formData.hora} onChange={handleChange} required className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200" />
+        </div>
+
+        {/* Main Form Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+          <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* General Information Section */}
+              <div className="relative">
+                <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+                  <div className="flex items-center space-x-3 mb-6">
+                    <div className="bg-blue-600 p-2 rounded-lg">
+                      <Package className="h-5 w-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Información General</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                        <MapPin className="h-4 w-4 text-blue-600" />
+                        <span>Ruta</span>
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <select 
+                        name="idruta" 
+                        value={formData.idruta} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={new URLSearchParams(window.location.search).get('ruta') !== null}
+                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      >
+                        <option value="">Seleccionar Ruta</option>
+                        {rutas.map(ruta => (
+                          <option key={ruta.idruta} value={ruta.idruta}>{`Ruta ${ruta.idruta} - ${new Date(ruta.fecha).toLocaleDateString()}`}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <span>Estatus</span>
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        name="estatus"
+                        value={formData.estatus}
+                        onChange={handleChange}
+                        required
+                        disabled={new URLSearchParams(window.location.search).get('undelivered') !== null}
+                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      >
+                        <option value="No entregado">No entregado</option>
+                        <option value="Entregado">Entregado</option>
+                      </select>
+                    </div>
+
+                    <div className="md:col-span-2">
+                      <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                        <span>Descripción</span>
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <textarea 
+                        name="motivo" 
+                        value={formData.motivo} 
+                        onChange={handleChange} 
+                        required 
+                        rows="3" 
+                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 resize-none"
+                        placeholder="Describe los detalles de la entrega..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                        <Clock className="h-4 w-4 text-blue-600" />
+                        <span>Hora</span>
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input 
+                        type="time" 
+                        name="hora" 
+                        value={formData.hora} 
+                        onChange={handleChange} 
+                        required 
+                        className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300" 
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Lente Section - Improved */}
-
-              {( new URLSearchParams(window.location.search).get('undelivered') === 'lente' || new URLSearchParams(window.location.search).get('undelivered') === null ) && (
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200 mt-8">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-white/20 p-2 rounded-lg">
-                      <Eye className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white">Información del Lente</h3>
-                  </div>
-                </div>
-
-                <div className="p-6 space-y-6">
-                  <div>
-                    <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
-                      <Package className="h-4 w-4 text-blue-600" />
-                      <span>Seleccionar Lente</span>
-                    </label>
-                    <select 
-                      name="idlente" 
-                      value={formData.idlente} 
-                      onChange={handleLenteChange}
-                      disabled={new URLSearchParams(window.location.search).get('undelivered') === 'pago'}
-                      className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-gray-700 font-medium hover:border-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                    >
-                      <option value="">— Seleccionar Lente —</option>
-                      {pendingLentes.map(lente => {
-                        const venta = ventas.find(v => v.folio === lente.folio);
-                        const cliente = venta ? `${venta.cliente_nombre} ${venta.cliente_paterno}` : 'Cliente desconocido';
-                        return (
-                          <option key={lente.idlente} value={lente.idlente}>
-                            {`${cliente} — ID: ${lente.idlente} — Modelo: ${lente.material} — $${venta ? venta.total : 'N/A'}`}
-                          </option>
-                        );
-                      })}
-                    </select>
-                  </div>
-
-                  {selectedLente && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                          <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">ID Lente</div>
-                          <div className="text-lg font-bold text-blue-900">{selectedLente.idlente}</div>
+              {/* Lente Section */}
+              {(new URLSearchParams(window.location.search).get('undelivered') === 'lente' || new URLSearchParams(window.location.search).get('undelivered') === null) && (
+                <div className="relative">
+                  <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl overflow-hidden border border-indigo-100">
+                    <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+                          <Eye className="h-6 w-6 text-white" />
                         </div>
-                        
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
-                          <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">Material</div>
-                          <div className="text-lg font-bold text-purple-900">{selectedLente.material}</div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border border-indigo-200">
-                          <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Tratamiento</div>
-                          <div className="text-lg font-bold text-indigo-900">{selectedLente.tratamiento}</div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-4 border border-cyan-200">
-                          <div className="text-xs font-semibold text-cyan-600 uppercase tracking-wide mb-1">Tipo</div>
-                          <div className="text-lg font-bold text-cyan-900">{selectedLente.tipo_de_lente}</div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Armazón</div>
-                          <div className="text-base font-semibold text-gray-900">{selectedLente.armazon}</div>
-                        </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <Calendar className="h-3 w-3 text-gray-600" />
-                            <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fecha Entrega</div>
-                          </div>
-                          <div className="text-base font-semibold text-gray-900">
-                            {new Date(selectedLente.fecha_entrega).toLocaleDateString('es-MX', { 
-                              year: 'numeric', 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}
-                          </div>
-                        </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Estatus</div>
-                          <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(selectedLente.estatus)}`}>
-                            {selectedLente.estatus === 'Entregado' ? (
-                              <CheckCircle className="h-3 w-3" />
-                            ) : (
-                              <AlertCircle className="h-3 w-3" />
-                            )}
-                            <span>{selectedLente.estatus}</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-gray-50 to-white rounded-lg p-6 border-2 border-gray-200 shadow-sm">
-                        <div className="flex items-center space-x-2 mb-4">
-                          <div className="bg-blue-100 p-2 rounded-lg">
-                            <Eye className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <h4 className="text-lg font-bold text-gray-900">Graduación</h4>
-                        </div>
-                        
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse">
-                            <thead>
-                              <tr className="bg-gradient-to-r from-blue-600 to-blue-700">
-                                <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">Ojo</th>
-                                <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">Esfera</th>
-                                <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">Cilindro</th>
-                                <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">Eje</th>
-                                <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">Add</th>
-                                <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">AV</th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                              <tr className="hover:bg-blue-50 transition-colors duration-150">
-                                <td className="px-4 py-4 border-r border-gray-200">
-                                  <div className="flex items-center space-x-2">
-                                    <div className="bg-blue-100 p-1.5 rounded">
-                                      <Eye className="h-4 w-4 text-blue-600" />
-                                    </div>
-                                    <span className="font-semibold text-gray-900">Derecho</span>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.od_esf}</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.od_cil}</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.od_eje}°</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.od_add}</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.od_av}</td>
-                              </tr>
-                              <tr className="hover:bg-blue-50 transition-colors duration-150">
-                                <td className="px-4 py-4 border-r border-gray-200">
-                                  <div className="flex items-center space-x-2">
-                                    <div className="bg-indigo-100 p-1.5 rounded">
-                                      <Eye className="h-4 w-4 text-indigo-600" />
-                                    </div>
-                                    <span className="font-semibold text-gray-900">Izquierdo</span>
-                                  </div>
-                                </td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.oi_esf}</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.oi_cil}</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.oi_eje}°</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900 border-r border-gray-200">{selectedLente.oi_add}</td>
-                                <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.oi_av}</td>
-                              </tr>
-                            </tbody>
-                          </table>
-                        </div>
+                        <h3 className="text-xl font-bold text-white">Información del Lente</h3>
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
-              )}
 
-              {/* Pago Section - Improved */}
-              {( new URLSearchParams(window.location.search).get('undelivered') === 'pago' || new URLSearchParams(window.location.search).get('undelivered') === null ) && (
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200 mt-8">
-                <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-white/20 p-2 rounded-lg">
-                      <DollarSign className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white">Información del Pago</h3>
-                  </div>
-                </div>
-
-                <div className="p-6 space-y-6">
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">Opción de Pago</label>
-                    <div className="flex space-x-4">
-                      <label className="flex items-center px-4 py-3 bg-white border-2 border-gray-300 rounded-lg cursor-pointer hover:border-green-500 transition-all duration-200">
-                        <input 
-                          type="radio" 
-                          name="pagoOption" 
-                          value="existing" 
-                          checked={pagoOption === 'existing'} 
-                          onChange={() => setPagoOption('existing')} 
-                          className="mr-3 w-4 h-4 text-green-600" 
-                        />
-                        <span className="font-medium text-gray-700">Pago Existente</span>
-                      </label>
-                      <label className="flex items-center px-4 py-3 bg-white border-2 border-gray-300 rounded-lg cursor-pointer hover:border-green-500 transition-all duration-200">
-                        <input 
-                          type="radio" 
-                          name="pagoOption" 
-                          value="new" 
-                          checked={pagoOption === 'new'} 
-                          onChange={() => setPagoOption('new')} 
-                          className="mr-3 w-4 h-4 text-green-600" 
-                        />
-                        <span className="font-medium text-gray-700">Nuevo Pago</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {pagoOption === 'existing' ? (
-                    <div className="grid grid-cols-1 gap-6">
+                    <div className="p-6 space-y-6">
                       <div>
                         <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
-                          <CreditCard className="h-4 w-4 text-green-600" />
-                          <span>Seleccionar Pago</span>
+                          <Package className="h-4 w-4 text-indigo-600" />
+                          <span>Seleccionar Lente</span>
                         </label>
                         <select 
-                          name="idpago" 
-                          value={formData.idpago} 
-                          onChange={handlePagoChange} 
-                          className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 text-gray-700 font-medium hover:border-gray-400"
+                          name="idlente" 
+                          value={formData.idlente} 
+                          onChange={handleLenteChange}
+                          disabled={new URLSearchParams(window.location.search).get('undelivered') === 'pago'}
+                          className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-indigo-100 focus:border-indigo-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         >
-                          <option value="">— Seleccionar Pago —</option>
-                          {pendingPagos.map(pago => (
-                            <option key={pago.idpago} value={pago.idpago}>
-                              {`${pago.cliente_nombre} ${pago.cliente_paterno} — $${pago.cantidad}`}
-                            </option>
-                          ))}
+                          <option value="">— Seleccionar Lente —</option>
+                          {pendingLentes.map(lente => {
+                            const venta = ventas.find(v => v.folio === lente.folio);
+                            const cliente = venta ? `${venta.cliente_nombre} ${venta.cliente_paterno}` : 'Cliente desconocido';
+                            return (
+                              <option key={lente.idlente} value={lente.idlente}>
+                                {`${cliente} — ID: ${lente.idlente} — Modelo: ${lente.material} — $${venta ? venta.total : 'N/A'}`}
+                              </option>
+                            );
+                          })}
                         </select>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Folio de Venta *</label>
-                        <select name="folio" value={newPagoData.folio} onChange={handleNewPagoChange} required className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200">
-                          <option value="">Seleccionar Folio</option>
-                          {ventas.map(venta => (
-                            <option key={venta.folio} value={venta.folio}>{venta.folio}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Fecha *</label>
-                        <input type="date" name="fecha" value={newPagoData.fecha} onChange={handleNewPagoChange} required className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Cantidad *</label>
-                        <input type="number" step="0.01" name="cantidad" value={newPagoData.cantidad} onChange={handleNewPagoChange} required className="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200" />
-                      </div>
-                    </div>
-                  )}
 
-                  {selectedPago && pagoOption === 'existing' && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                          <div className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">ID Pago</div>
-                          <div className="text-lg font-bold text-green-900">{selectedPago.idpago}</div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                          <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">Folio</div>
-                          <div className="text-lg font-bold text-blue-900">{selectedPago.folio}</div>
-                        </div>
-                        
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
-                          <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">Cantidad</div>
-                          <div className="text-lg font-bold text-purple-900">${selectedPago.cantidad}</div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <Calendar className="h-3 w-3 text-gray-600" />
-                            <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fecha</div>
+                      {selectedLente && (
+                        <div className="space-y-6">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                              <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">ID Lente</div>
+                              <div className="text-lg font-bold text-blue-900">{selectedLente.idlente}</div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                              <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">Material</div>
+                              <div className="text-lg font-bold text-purple-900">{selectedLente.material}</div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg p-4 border border-indigo-200">
+                              <div className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Tratamiento</div>
+                              <div className="text-lg font-bold text-indigo-900">{selectedLente.tratamiento}</div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-lg p-4 border border-cyan-200">
+                              <div className="text-xs font-semibold text-cyan-600 uppercase tracking-wide mb-1">Tipo</div>
+                              <div className="text-lg font-bold text-cyan-900">{selectedLente.tipo_de_lente}</div>
+                            </div>
                           </div>
-                          <div className="text-base font-semibold text-gray-900">
-                            {new Date(selectedPago.fecha).toLocaleDateString()}
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Armazón</div>
+                              <div className="text-base font-semibold text-gray-900">{selectedLente.armazon}</div>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <Calendar className="h-3 w-3 text-gray-600" />
+                                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fecha Entrega</div>
+                              </div>
+                              <div className="text-base font-semibold text-gray-900">
+                                {new Date(selectedLente.fecha_entrega).toLocaleDateString('es-MX', { 
+                                  year: 'numeric', 
+                                  month: 'short', 
+                                  day: 'numeric' 
+                                })}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Estatus</div>
+                              <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(selectedLente.estatus)}`}>
+                                {selectedLente.estatus === 'Entregado' ? (
+                                  <CheckCircle className="h-3 w-3" />
+                                ) : (
+                                  <AlertCircle className="h-3 w-3" />
+                                )}
+                                <span>{selectedLente.estatus}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Graduation Table */}
+                          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                            <div className="flex items-center space-x-3 mb-4">
+                              <div className="bg-indigo-100 p-2 rounded-lg">
+                                <Eye className="h-5 w-5 text-indigo-600" />
+                              </div>
+                              <h4 className="text-lg font-bold text-gray-900">Graduación</h4>
+                            </div>
+                            
+                            <div className="overflow-x-auto rounded-xl border border-gray-200">
+                              <table className="w-full">
+                                <thead>
+                                  <tr className="bg-gradient-to-r from-indigo-600 to-purple-600">
+                                    <th className="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Ojo</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Esfera</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Cilindro</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Eje</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Add</th>
+                                    <th className="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">AV</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-100">
+                                  <tr className="hover:bg-indigo-50 transition-colors duration-150">
+                                    <td className="px-4 py-4">
+                                      <div className="flex items-center space-x-2">
+                                        <div className="bg-indigo-100 p-1.5 rounded-lg">
+                                          <Eye className="h-4 w-4 text-indigo-600" />
+                                        </div>
+                                        <span className="font-semibold text-gray-900">Derecho</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.od_esf}</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.od_cil}</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.od_eje}°</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.od_add}</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.od_av}</td>
+                                  </tr>
+                                  <tr className="hover:bg-purple-50 transition-colors duration-150">
+                                    <td className="px-4 py-4">
+                                      <div className="flex items-center space-x-2">
+                                        <div className="bg-purple-100 p-1.5 rounded-lg">
+                                          <Eye className="h-4 w-4 text-purple-600" />
+                                        </div>
+                                        <span className="font-semibold text-gray-900">Izquierdo</span>
+                                      </div>
+                                    </td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.oi_esf}</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.oi_cil}</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.oi_eje}°</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.oi_add}</td>
+                                    <td className="px-4 py-4 text-center font-mono font-semibold text-gray-900">{selectedLente.oi_av}</td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Cliente</div>
-                          <div className="text-base font-semibold text-gray-900">{selectedPago.cliente_nombre} {selectedPago.cliente_paterno}</div>
-                        </div>
-                      </div>
-
-                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Estatus</div>
-                        <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(selectedPago.estatus)}`}>
-                          {selectedPago.estatus === 'Pagado' ? (
-                            <CheckCircle className="h-3 w-3" />
-                          ) : (
-                            <AlertCircle className="h-3 w-3" />
-                          )}
-                          <span>{selectedPago.estatus}</span>
-                        </span>
-                      </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
               )}
 
-              <div className="flex justify-end pt-6 border-t-2 border-gray-200 mt-8">
+              {/* Pago Section */}
+              {(new URLSearchParams(window.location.search).get('undelivered') === 'pago' || new URLSearchParams(window.location.search).get('undelivered') === null) && (
+                <div className="relative">
+                  <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-green-500 to-emerald-500 rounded-full"></div>
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl overflow-hidden border border-green-100">
+                    <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="bg-white/20 backdrop-blur-sm p-2 rounded-lg">
+                          <DollarSign className="h-6 w-6 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold text-white">Información del Pago</h3>
+                      </div>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+                      {/* Payment Option Toggle */}
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-3">Opción de Pago</label>
+                        <div className="flex flex-wrap gap-4">
+                          <label className={`flex items-center px-5 py-3 bg-white border-2 rounded-xl cursor-pointer transition-all duration-200 ${pagoOption === 'existing' ? 'border-green-500 ring-4 ring-green-100 shadow-md' : 'border-gray-200 hover:border-green-300'}`}>
+                            <input 
+                              type="radio" 
+                              name="pagoOption" 
+                              value="existing" 
+                              checked={pagoOption === 'existing'} 
+                              onChange={() => setPagoOption('existing')} 
+                              className="mr-3 w-4 h-4 text-green-600 focus:ring-green-500" 
+                            />
+                            <span className="font-medium text-gray-700">Pago Existente</span>
+                          </label>
+                          <label className={`flex items-center px-5 py-3 bg-white border-2 rounded-xl cursor-pointer transition-all duration-200 ${pagoOption === 'new' ? 'border-green-500 ring-4 ring-green-100 shadow-md' : 'border-gray-200 hover:border-green-300'}`}>
+                            <input 
+                              type="radio" 
+                              name="pagoOption" 
+                              value="new" 
+                              checked={pagoOption === 'new'} 
+                              onChange={() => setPagoOption('new')} 
+                              className="mr-3 w-4 h-4 text-green-600 focus:ring-green-500" 
+                            />
+                            <span className="font-medium text-gray-700">Nuevo Pago</span>
+                          </label>
+                        </div>
+                      </div>
+
+                      {pagoOption === 'existing' ? (
+                        <div>
+                          <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-3">
+                            <CreditCard className="h-4 w-4 text-green-600" />
+                            <span>Seleccionar Pago</span>
+                          </label>
+                          <select 
+                            name="idpago" 
+                            value={formData.idpago} 
+                            onChange={handlePagoChange} 
+                            className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300"
+                          >
+                            <option value="">— Seleccionar Pago —</option>
+                            {pendingPagos.map(pago => (
+                              <option key={pago.idpago} value={pago.idpago}>
+                                {`${pago.cliente_nombre} ${pago.cliente_paterno} — $${pago.cantidad}`}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div>
+                            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                              <span>Folio de Venta</span>
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <select 
+                              name="folio" 
+                              value={newPagoData.folio} 
+                              onChange={handleNewPagoChange} 
+                              required 
+                              className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300"
+                            >
+                              <option value="">Seleccionar Folio</option>
+                              {ventas.map(venta => (
+                                <option key={venta.folio} value={venta.folio}>{venta.folio}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                              <Calendar className="h-4 w-4 text-green-600" />
+                              <span>Fecha</span>
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                              type="date" 
+                              name="fecha" 
+                              value={newPagoData.fecha} 
+                              onChange={handleNewPagoChange}
+                              disabled
+                              required 
+                              className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed" 
+                            />
+                          </div>
+                          <div>
+                            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
+                              <DollarSign className="h-4 w-4 text-green-600" />
+                              <span>Cantidad</span>
+                              <span className="text-red-500">*</span>
+                            </label>
+                            <input 
+                              type="number" 
+                              step="0.01" 
+                              name="cantidad" 
+                              value={newPagoData.cantidad} 
+                              onChange={handleNewPagoChange} 
+                              required 
+                              placeholder="0.00"
+                              className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300" 
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedPago && pagoOption === 'existing' && (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
+                              <div className="text-xs font-semibold text-green-600 uppercase tracking-wide mb-1">ID Pago</div>
+                              <div className="text-lg font-bold text-green-900">{selectedPago.idpago}</div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                              <div className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">Folio</div>
+                              <div className="text-lg font-bold text-blue-900">{selectedPago.folio}</div>
+                            </div>
+                            
+                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-200">
+                              <div className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">Cantidad</div>
+                              <div className="text-lg font-bold text-purple-900">${parseFloat(selectedPago.cantidad).toLocaleString('es-MX')}</div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <Calendar className="h-3 w-3 text-gray-600" />
+                                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fecha</div>
+                              </div>
+                              <div className="text-base font-semibold text-gray-900">
+                                {new Date(selectedPago.fecha).toLocaleDateString('es-MX', { 
+                                  year: 'numeric', 
+                                  month: 'short', 
+                                  day: 'numeric' 
+                                })}
+                              </div>
+                            </div>
+                            
+                            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                              <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-1">Cliente</div>
+                              <div className="text-base font-semibold text-gray-900">{selectedPago.cliente_nombre} {selectedPago.cliente_paterno}</div>
+                            </div>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Estatus</div>
+                            <span className={`inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold border ${getStatusColor(selectedPago.estatus)}`}>
+                              {selectedPago.estatus === 'Pagado' ? (
+                                <CheckCircle className="h-3 w-3" />
+                              ) : (
+                                <AlertCircle className="h-3 w-3" />
+                              )}
+                              <span>{selectedPago.estatus}</span>
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-end pt-8 border-t-2 border-gray-100">
+                <button 
+                  type="button" 
+                  onClick={() => navigate(-1)} 
+                  className="px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 hover:border-gray-400 font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                >
+                  Cancelar
+                </button>
                 <button 
                   type="submit" 
                   disabled={loading} 
-                  className="flex items-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white rounded-lg font-semibold shadow-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
+                  className="flex items-center justify-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-400 disabled:to-indigo-400 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
                 >
                   <Save className="h-5 w-5" />
                   <span>{loading ? 'Creando...' : 'Crear Entrega'}</span>

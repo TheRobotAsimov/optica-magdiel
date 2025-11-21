@@ -6,6 +6,11 @@ export const validateVentaForm = (formData) => {
   // Folio
   const folioError = validateRequired(formData.folio, 'Folio');
   if (folioError) errors.folio = folioError;
+  else {
+    if (!/^V\d{3}$/.test(formData.folio)) {
+      errors.folio = 'Folio debe tener el formato VXXX (V seguido de 3 números)';
+    }
+  }
 
   // Asesor
   const asesorError = validateRequired(formData.idasesor, 'Asesor');
@@ -59,8 +64,14 @@ export const validateVentaForm = (formData) => {
 
 export const validateVentaField = (name, value, formData = {}) => {
   switch (name) {
-    case 'folio':
-      return validateRequired(value, 'Folio');
+    case 'folio': {
+      const req = validateRequired(value, 'Folio');
+      if (req) return req;
+      if (!/^V\d{3}$/.test(value)) {
+        return 'Folio debe tener el formato VXXX (V seguido de 3 números)';
+      }
+      return null;
+    }
     case 'idasesor':
       return validateRequired(value, 'Asesor');
     case 'idcliente':

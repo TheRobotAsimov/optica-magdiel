@@ -53,13 +53,24 @@ const PacienteForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setPaciente((prev) => ({ ...prev, [name]: value }));
+    setPaciente((prevPaciente) => ({ ...prevPaciente, [name]: value }));
 
     // Validación en tiempo real
-    if (touched[name]) {
+    if (value.length > 3 || touched[name]) {
+      const error = validatePacienteField(name, value);
+      setFieldErrors(prev => ({ ...prev, [name]: error }));
+    } else if (name === 'edad'){
       const error = validatePacienteField(name, value);
       setFieldErrors(prev => ({ ...prev, [name]: error }));
     }
+
+    // si paciente ya tiene un valor en todos los campos, validar el formulario completo
+    const allFieldsFilled = Object.values({ ...paciente, [name]: value }).every(val => val !== '');
+    if (allFieldsFilled) {
+      const errors = validatePacienteForm({ ...paciente, [name]: value });
+      setFieldErrors(errors);
+    }
+    
   };
 
   const handleBlur = (e) => {
@@ -203,7 +214,7 @@ const PacienteForm = () => {
                         fieldErrors.nombre
                           ? 'border-red-500 focus:ring-red-100 bg-red-50'
                           : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
-                      }`} />
+                      }`} placeholder="Ingrese el nombre" />
                       {fieldErrors.nombre && (
                         <p className="text-red-600 text-sm mt-2 flex items-center">
                           <span className="mr-1">⚠</span> {fieldErrors.nombre}
@@ -227,10 +238,19 @@ const PacienteForm = () => {
                       )}
                     </div>
                     <div className="group">
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                         Apellido Materno
                       </label>
-                      <input type="text" name="materno" value={paciente.materno} onChange={handleChange} onBlur={handleBlur} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 transition-all duration-200" />
+                      <input type="text" name="materno" value={paciente.materno} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                        fieldErrors.materno
+                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                      }`} />
+                      {fieldErrors.materno && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <span className="mr-1">⚠</span> {fieldErrors.materno}
+                        </p>
+                      )}
                     </div>
                     <div className="group">
                       <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">

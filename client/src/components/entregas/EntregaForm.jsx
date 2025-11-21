@@ -67,7 +67,13 @@ const EntregaForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Actualizamos el estado. Si cambia el lente, reseteamos el pago.
+    setFormData((prev) => ({ 
+      ...prev, 
+      [name]: value,
+      ...(name === 'idlente' ? { idpago: '' } : {}) // Reset pago si cambia el lente
+    }));
 
     // Validación en tiempo real
     if (touched[name]) {
@@ -91,7 +97,8 @@ const EntregaForm = () => {
     const errors = validateEntregaForm(formData);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      setError('Por favor corrige los errores en el formulario');
+      const generalError = errors.general || 'Por favor corrige los errores en el formulario';
+      setError(generalError);
       return;
     }
 
@@ -109,6 +116,16 @@ const EntregaForm = () => {
       setLoading(false);
     }
   };
+
+  // --- LÓGICA DE FILTRADO ---
+  // Buscamos el objeto lente completo basado en el ID seleccionado
+  const selectedLente = lentes.find(l => String(l.idlente) === String(formData.idlente));
+  
+  // Filtramos los pagos: Si hay lente seleccionado, solo mostramos los pagos con el mismo folio.
+  // Si no hay lente, mostramos todos (o podrías mostrar lista vacía si prefieres).
+  const filteredPagos = selectedLente 
+    ? pagos.filter(pago => pago.folio === selectedLente.folio)
+    : pagos;
 
   if (loading && !id) {
     return <Loading />;
@@ -206,12 +223,17 @@ const EntregaForm = () => {
                         </p>
                       )}
                     </div>
+                    <div className="group md:col-span-2 mb-4">
+                      <p className="text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <span className="font-medium text-blue-800">Nota:</span> Debe seleccionar al menos un lente o un pago.
+                      </p>
+                    </div>
                     <div className="group">
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Lente
                       </label>
                       <select name="idlente" value={formData.idlente} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 transition-all duration-200">
-                        <option value="">Seleccionar Lente (Opcional)</option>
+                        <option value="">Seleccionar Lente</option>
                         {lentes.map(lente => (
                           <option key={lente.idlente} value={lente.idlente}>{`${lente.idlente} - ${lente.armazon}`}</option>
                         ))}
@@ -221,12 +243,31 @@ const EntregaForm = () => {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Pago
                       </label>
-                      <select name="idpago" value={formData.idpago} onChange={handleChange} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 transition-all duration-200">
-                        <option value="">Seleccionar Pago (Opcional)</option>
-                        {pagos.map(pago => (
+                      <select 
+                        name="idpago" 
+                        value={formData.idpago} 
+                        onChange={handleChange} 
+                        // Deshabilitar si hay lente seleccionado pero no hay pagos coincidentes
+                        disabled={selectedLente && filteredPagos.length === 0}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300 transition-all duration-200 disabled:bg-gray-100 disabled:text-gray-400"
+                      >
+                        <option value="">
+                           {selectedLente && filteredPagos.length === 0 
+                             ? "No hay pagos con este folio" 
+                             : "Seleccionar Pago"}
+                        </option>
+                        {/* Usamos filteredPagos en lugar de pagos */}
+                        {filteredPagos.map(pago => (
                           <option key={pago.idpago} value={pago.idpago}>{`Pago ${pago.idpago} - Folio ${pago.folio}`}</option>
                         ))}
                       </select>
+                      {selectedLente && (
+                        <p className="text-xs text-blue-600 mt-1">
+                           {filteredPagos.length > 0 
+                             ? `Filtrando por Folio: ${selectedLente.folio}`
+                             : `No se encontraron pagos para el Folio: ${selectedLente.folio}`}
+                        </p>
+                      )}
                     </div>
                     <div className="group md:col-span-2">
                       <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">

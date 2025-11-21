@@ -1,48 +1,85 @@
-export const validatePacienteForm = (data) => {
+import { validateRequired, validateTextOnly, validateNumber } from './commonValidations.js';
+
+export const validatePacienteForm = (formData) => {
   const errors = {};
 
-  if (!data.idcliente) {
-    errors.idcliente = 'El cliente es requerido';
+  // Cliente
+  const clienteError = validateRequired(formData.idcliente, 'Cliente');
+  if (clienteError) errors.idcliente = clienteError;
+
+  // Nombres
+  const nombreError = validateRequired(formData.nombre, 'Nombre');
+  if (nombreError) errors.nombre = nombreError;
+  else {
+    const textError = validateTextOnly(formData.nombre, 'Nombre', 3);
+    if (textError) errors.nombre = textError;
   }
 
-  if (!data.nombre?.trim()) {
-    errors.nombre = 'El nombre es requerido';
+  const paternoError = validateRequired(formData.paterno, 'Apellido paterno');
+  if (paternoError) errors.paterno = paternoError;
+  else {
+    const textError = validateTextOnly(formData.paterno, 'Apellido paterno', 3);
+    if (textError) errors.paterno = textError;
   }
 
-  if (!data.paterno?.trim()) {
-    errors.paterno = 'El apellido paterno es requerido';
+  // Materno es opcional pero si se proporciona debe ser válido
+  if (formData.materno) {
+    const textError = validateTextOnly(formData.materno, 'Apellido materno', 3);
+    if (textError) errors.materno = textError;
   }
 
-  if (!data.sexo) {
-    errors.sexo = 'El sexo es requerido';
+  // Sexo
+  const validSexos = ['M', 'F'];
+  if (!formData.sexo) {
+    errors.sexo = 'Sexo es requerido';
+  } else if (!validSexos.includes(formData.sexo)) {
+    errors.sexo = 'Sexo inválido';
   }
 
-  if (!data.edad || data.edad <= 0) {
-    errors.edad = 'La edad es requerida y debe ser mayor a 0';
+  // Edad
+  if (!formData.edad) {
+    errors.edad = 'Edad es requerida';
+  } else {
+    const ageError = validateNumber(formData.edad, 'Edad', 0, 120);
+    if (ageError) errors.edad = ageError;
   }
 
-  if (!data.parentesco) {
-    errors.parentesco = 'El parentesco es requerido';
-  }
+  // Parentesco
+  const parentescoError = validateRequired(formData.parentesco, 'Parentesco');
+  if (parentescoError) errors.parentesco = parentescoError;
 
   return errors;
 };
 
-export const validatePacienteField = (field, value) => {
-  switch (field) {
+export const validatePacienteField = (name, value) => {
+  switch (name) {
     case 'idcliente':
-      return !value ? 'El cliente es requerido' : '';
-    case 'nombre':
-      return !value?.trim() ? 'El nombre es requerido' : '';
-    case 'paterno':
-      return !value?.trim() ? 'El apellido paterno es requerido' : '';
-    case 'sexo':
-      return !value ? 'El sexo es requerido' : '';
+      return validateRequired(value, 'Cliente');
+    case 'nombre': {
+      const nombreReq = validateRequired(value, 'Nombre');
+      if (nombreReq) return nombreReq;
+      return validateTextOnly(value, 'Nombre', 3);
+    }
+    case 'paterno': {
+      const paternoReq = validateRequired(value, 'Apellido paterno');
+      if (paternoReq) return paternoReq;
+      return validateTextOnly(value, 'Apellido paterno', 3);
+    }
+    case 'materno':
+      if (value) return validateTextOnly(value, 'Apellido materno', 3);
+      return null;
+    case 'sexo': {
+      if (!value) return 'Sexo es requerido';
+      const validSexos = ['M', 'F'];
+      if (!validSexos.includes(value)) return 'Sexo inválido';
+      return null;
+    }
     case 'edad':
-      return !value || value <= 0 ? 'La edad es requerida y debe ser mayor a 0' : '';
+      if (!value) return 'Edad es requerida';
+      return validateNumber(value, 'Edad', 0, 120);
     case 'parentesco':
-      return !value ? 'El parentesco es requerido' : '';
+      return validateRequired(value, 'Parentesco');
     default:
-      return '';
+      return null;
   }
 };
