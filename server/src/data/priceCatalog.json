@@ -121,6 +121,7 @@
   },
   "additives": {
     "kit": 100,
-    "tinte": 300
+    "tinte": 300,
+    "inapam_discount": 15
   }
 }

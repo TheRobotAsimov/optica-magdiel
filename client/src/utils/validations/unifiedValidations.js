@@ -85,10 +85,28 @@ export const validateUnifiedForm = (formData) => {
     if (totalError) errors.total = totalError;
   }
 
-  // Enganche (si es crédito)
-  if (formData.tipo === 'Credito' && formData.enganche !== undefined) {
+  // Enganche
+  if (formData.enganche !== undefined) {
     const engancheError = validateNumber(formData.enganche, 'Enganche', 0);
     if (engancheError) errors.enganche = engancheError;
+    else if (parseFloat(formData.enganche) > parseFloat(formData.total)) {
+      errors.enganche = 'Enganche no puede ser mayor que el Total';
+    }
+  }
+
+  // Cantidad de pagos
+  if (formData.cant_pagos !== undefined && formData.cant_pagos !== '') {
+    const cantPagosError = validateNumber(formData.cant_pagos, 'Cantidad de pagos', 1);
+    if (cantPagosError) errors.cant_pagos = cantPagosError;
+    else if (!Number.isInteger(Number(formData.cant_pagos))) {
+      errors.cant_pagos = 'Cantidad de pagos debe ser un número entero';
+    }
+  }
+
+  // Institución
+  if (formData.institucion && formData.institucion.trim() !== '') {
+    const institucionError = validateTextOnly(formData.institucion, 'Institución', 3);
+    if (institucionError) errors.institucion = institucionError;
   }
 
   return errors;
@@ -157,8 +175,26 @@ export const validateUnifiedField = (name, value, formData = {}) => {
       }
       return null;
     case 'enganche':
-      if (formData.tipo === 'Credito' && value !== undefined) {
-        return validateNumber(value, 'Enganche', 0);
+      if (value !== undefined) {
+        const numError = validateNumber(value, 'Enganche', 0);
+        if (numError) return numError;
+        if (parseFloat(value) > parseFloat(formData.total)) {
+          return 'Enganche no puede ser mayor que el Total';
+        }
+      }
+      return null;
+    case 'cant_pagos':
+      if (formData.tipo === 'Credito' && value !== undefined && value !== '') {
+        const numError = validateNumber(value, 'Cantidad de pagos', 1);
+        if (numError) return numError;
+        if (!Number.isInteger(Number(value))) {
+          return 'Cantidad de pagos debe ser un número entero';
+        }
+      }
+      return null;
+    case 'institucion':
+      if (value && value.trim() !== '') {
+        return validateTextOnly(value, 'Institución', 3);
       }
       return null;
     default:

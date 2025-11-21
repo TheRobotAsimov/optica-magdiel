@@ -25,7 +25,9 @@ const UnifiedForm = () => {
     folio: '',
     idasesor: '',
     fecha: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
+    institucion: '',
     tipo: 'Contado',
+    inapam: 'No',
     enganche: '',
     total: '',
     observaciones: '',
@@ -175,7 +177,11 @@ const UnifiedForm = () => {
       Math.abs(parseFloat(newOdEsf)) >= 5 ||
       Math.abs(parseFloat(newOdCil)) >= 5 ||
       Math.abs(parseFloat(newOiEsf)) >= 5 ||
-      Math.abs(parseFloat(newOiCil)) >= 5;
+      Math.abs(parseFloat(newOiCil)) >= 5 ||
+      (od_cil_val && od_eje_val) ||
+      (oi_cil_val && oi_eje_val) ||
+      (od_cil_val && oi_eje_val) ||
+      (oi_cil_val && od_eje_val);
 
     setFormData(prev => ({
       ...prev,
@@ -258,42 +264,47 @@ const UnifiedForm = () => {
   }, []);
 
 // Efecto para calcular el total basado en las selecciones del lente
-  useEffect(() => {
-    // Si todos los datos necesarios estan disponibles, calcular el total
-    if (priceCatalog && formData.material && formData.tipo_de_lente && formData.tratamiento) {
-      let newTotal = 0;
-      const material = priceCatalog[formData.material];
-      if (material) {
-        const tipoDeLente = material[formData.tipo_de_lente];
-        if (tipoDeLente) {
-          const tratamiento = tipoDeLente[formData.tratamiento];
-          if (tratamiento) {
-            newTotal += tratamiento.base;
-            if (formData.procesado === 'Si') {
-              newTotal += tratamiento.procesado;
-            }
-            if (formData.subtipo && tratamiento.subtipo) {
-              newTotal += tratamiento.subtipo[formData.subtipo] || 0;
-            }
-            if (formData.blend === 'Si' && tratamiento.blend) {
-              newTotal += tratamiento.blend;
-            }
-          }
-        }
-      }
+   useEffect(() => {
+     // Si todos los datos necesarios estan disponibles, calcular el total
+     if (priceCatalog && formData.material && formData.tipo_de_lente && formData.tratamiento) {
+       let newTotal = 0;
+       const material = priceCatalog[formData.material];
+       if (material) {
+         const tipoDeLente = material[formData.tipo_de_lente];
+         if (tipoDeLente) {
+           const tratamiento = tipoDeLente[formData.tratamiento];
+           if (tratamiento) {
+             newTotal += tratamiento.base;
+             if (formData.procesado === 'Si') {
+               newTotal += tratamiento.procesado;
+             }
+             if (formData.subtipo && tratamiento.subtipo) {
+               newTotal += tratamiento.subtipo[formData.subtipo] || 0;
+             }
+             if (formData.blend === 'Si' && tratamiento.blend) {
+               newTotal += tratamiento.blend;
+             }
+           }
+         }
+       }
 
-      if (additives) {
-        if (formData.kit === 'Completo') {
-          newTotal += additives.kit;
-        }
-        if (formData.tinte_color) {
-          newTotal += additives.tinte;
-        }
-      }
+       if (additives) {
+         if (formData.kit === 'Completo') {
+           newTotal += additives.kit;
+         }
+         if (formData.tinte_color) {
+           newTotal += additives.tinte;
+         }
+       }
 
-      setFormData((prev) => ({ ...prev, total: newTotal }));
-    }
-  }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, formData.kit, formData.tinte_color, priceCatalog, additives]);
+       // Aplicar descuento INAPAM si está activado
+       if (formData.inapam === 'Si' && additives && additives.inapam_discount) {
+         newTotal = newTotal * (1 - additives.inapam_discount / 100);
+       }
+
+       setFormData((prev) => ({ ...prev, total: newTotal }));
+     }
+   }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, formData.kit, formData.tinte_color, formData.inapam, priceCatalog, additives]);
 
   useEffect(() => {
     const errors = validateUnifiedForm(formData);
@@ -486,9 +497,12 @@ const UnifiedForm = () => {
          idasesor: parseInt(formData.idasesor),
          idcliente: clientId,
          fecha: formData.fecha,
+         institucion: formData.institucion,
          tipo: formData.tipo,
+         inapam: formData.inapam,
          enganche: parseFloat(formData.enganche) || 0,
          total: finalTotal,
+         pagado: parseFloat(formData.enganche) || 0,
          observaciones: formData.observaciones,
          estatus: formData.estatus,
          cant_pagos: parseInt(formData.cant_pagos) || 0,
@@ -623,6 +637,10 @@ const UnifiedForm = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Fecha *</label>
                     <input type="date" name="fecha" value={formData.fecha} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Institución</label>
+                    <input type="text" name="institucion" value={formData.institucion} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                   </div>
                 </div>
               </div>
@@ -935,6 +953,25 @@ const UnifiedForm = () => {
                     </select>
                   </div>
                   <div>
+                    <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                        INAPAM
+                    </label>
+                    <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl flex items-center  hover:border-gray-300 transition-all duration-200">
+                      <label className="flex items-center w-full cursor-pointer">
+                        <input
+                          type="checkbox"
+                          name="inapam"
+                          checked={formData.inapam === 'Si'}
+                          onChange={(e) => setFormData(prev => ({ ...prev, inapam: e.target.checked ? 'Si' : 'No' }))}
+                          className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
+                        />
+                        <span className="ml-3 text-gray-600 font-medium select-none">
+                          Aplicar descuento
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Total *</label>
                     <input
                       type="number"
@@ -949,6 +986,12 @@ const UnifiedForm = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enganche</label>
                     <input type="number" name="enganche" value={formData.enganche} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Cant. Pagos</label>
+                    <input type="number" name="cant_pagos" value={formData.cant_pagos} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                  </div>
+                  
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Entrega *</label>
                     <input type="date" name="fecha_entrega" value={formData.fecha_entrega} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg" />

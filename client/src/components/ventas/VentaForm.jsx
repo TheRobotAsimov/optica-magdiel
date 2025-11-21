@@ -13,9 +13,12 @@ const VentaForm = () => {
     idasesor: '',
     idcliente: '',
     fecha: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
+    institucion: '',
     tipo: 'Contado',
+    inapam: 'No',
     enganche: '',
     total: '',
+    pagado: '',
     estatus: 'Pendiente',
     cant_pagos: '',
     observaciones: '',
@@ -29,6 +32,7 @@ const VentaForm = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [initialSnapshot, setInitialSnapshot] = useState(null);
   const { folio } = useParams();
   const navigate = useNavigate();
 
@@ -48,6 +52,11 @@ const VentaForm = () => {
           setVenta({
             ...ventaData,
             fecha: ventaData.fecha ? new Date(ventaData.fecha).toISOString().slice(0, 10) : '',
+          });
+
+          setInitialSnapshot({
+            enganche: ventaData.enganche,
+            pagado: ventaData.pagado
           });
         }
       } catch (err) {
@@ -82,6 +91,30 @@ const VentaForm = () => {
 
     const error = validateVentaField(name, value, venta);
     setFieldErrors(prev => ({ ...prev, [name]: error }));
+
+    // --- LÓGICA AGREGADA PARA ENGANCHE/PAGADO ---
+    if (name === 'enganche') {
+      const valNumerico = parseFloat(value) || 0;
+
+      if (!folio) {
+        // CASO 1: NUEVA VENTA
+        // Si es nueva venta, lo que pongas en enganche se copia a pagado
+        setVenta(prev => ({ ...prev, pagado: valNumerico }));
+      } 
+      else if (initialSnapshot) {
+        // CASO 2: EDITAR VENTA EXISTENTE
+        // Calculamos la diferencia entre el NUEVO enganche y el ORIGINAL (base de datos)
+        const engancheOriginal = parseFloat(initialSnapshot.enganche) || 0;
+        const pagadoOriginal = parseFloat(initialSnapshot.pagado) || 0;
+        
+        const diferencia = valNumerico - engancheOriginal;
+
+        // Ajustamos el pagado sumando (o restando) esa diferencia al pagado original
+        const nuevoPagado = pagadoOriginal + diferencia;
+
+        setVenta(prev => ({ ...prev, pagado: nuevoPagado }));
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -268,6 +301,21 @@ const VentaForm = () => {
                       )}
                     </div>
                     <div className="group">
+                      <label className="text-sm font-semibold text-gray-700 mb-2">
+                        Institución
+                      </label>
+                      <input type="text" name="institucion" value={venta.institucion} onChange={handleChange} onBlur={handleBlur} className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                        fieldErrors.institucion
+                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                      }`} />
+                      {fieldErrors.institucion && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <span className="mr-1">⚠</span> {fieldErrors.institucion}
+                        </p>
+                      )}
+                    </div>
+                    <div className="group">
                       <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                         Tipo
                         <span className="text-red-500 ml-1">*</span>
@@ -302,6 +350,25 @@ const VentaForm = () => {
                       )}
                     </div>
                     <div className="group">
+                      <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                        INAPAM
+                      </label>
+                      <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl flex items-center  hover:border-gray-300 transition-all duration-200">
+                        <label className="flex items-center w-full cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name="inapam"
+                            checked={venta.inapam === 'Si'}
+                            onChange={(e) => setVenta(prev => ({ ...prev, inapam: e.target.checked ? 'Si' : 'No' }))}
+                            className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
+                          />
+                          <span className="ml-3 text-gray-600 font-medium select-none">
+                            Aplicar descuento
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                    <div className="group">
                       <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                         Total
                         <span className="text-red-500 ml-1">*</span>
@@ -314,6 +381,21 @@ const VentaForm = () => {
                       {fieldErrors.total && (
                         <p className="text-red-600 text-sm mt-2 flex items-center">
                           <span className="mr-1">⚠</span> {fieldErrors.total}
+                        </p>
+                      )}
+                    </div>
+                    <div className="group">
+                      <label className="text-sm font-semibold text-gray-700 mb-2">
+                        Pagado
+                      </label>
+                      <input type="number" name="pagado" value={venta.pagado} onChange={handleChange} onBlur={handleBlur} disabled className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 bg-gray-100 ${
+                        fieldErrors.pagado
+                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                      }`} />
+                      {fieldErrors.pagado && (
+                        <p className="text-red-600 text-sm mt-2 flex items-center">
+                          <span className="mr-1">⚠</span> {fieldErrors.pagado}
                         </p>
                       )}
                     </div>

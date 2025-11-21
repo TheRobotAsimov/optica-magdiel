@@ -102,11 +102,12 @@ const PriceTable = ({ title, data, originalData, onChange }) => {
 const AdditivesEditor = ({ data, originalData, onChange }) => {
   const isKitChanged = data.kit !== originalData.kit;
   const isTinteChanged = data.tinte !== originalData.tinte;
+  const isInapamChanged = data.inapam_discount !== originalData.inapam_discount;
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-bold text-gray-800 mb-4">Extras</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Kit</label>
           <div className="flex items-center">
@@ -129,6 +130,18 @@ const AdditivesEditor = ({ data, originalData, onChange }) => {
               onChange={(e) => onChange('tinte', e.target.value)}
               className={`w-full px-3 py-2 border rounded-r-lg ${isTinteChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
             />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Descuento INAPAM (%)</label>
+          <div className="flex items-center">
+            <input
+              type="number"
+              value={data.inapam_discount}
+              onChange={(e) => onChange('inapam_discount', e.target.value)}
+              className={`w-full px-3 py-2 border rounded-lg ${isInapamChanged ? 'border-blue-500 bg-blue-100' : 'border-gray-300'}`}
+            />
+            <span className="px-3 py-2 border-r border-t border-b border-gray-300 rounded-r-lg bg-gray-100">%</span>
           </div>
         </div>
       </div>
