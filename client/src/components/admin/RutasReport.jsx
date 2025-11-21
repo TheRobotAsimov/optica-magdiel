@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { BarChart3, Download } from 'lucide-react';
+import { BarChart3, Download, Calendar, TrendingUp, DollarSign, Users } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
@@ -42,7 +42,6 @@ const RutasReport = () => {
   const chartRef1 = useRef(null);
   const chartRef2 = useRef(null);
   const chartRef3 = useRef(null);
-  const reportRef = useRef(null);
 
   const handleGenerateReport = async () => {
     if (!selectedDate) return;
@@ -68,30 +67,34 @@ const RutasReport = () => {
         {
           label: 'Ventas Realizadas',
           data: reportData.asesores.map(asesor => asesor.ventas.cantidad),
-          backgroundColor: 'rgba(54, 162, 235, 0.7)',
-          borderColor: 'rgb(54, 162, 235)',
-          borderWidth: 1,
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          borderColor: 'rgb(59, 130, 246)',
+          borderWidth: 2,
+          borderRadius: 6,
         },
         {
           label: 'Gastos Realizados',
           data: reportData.asesores.map(asesor => asesor.gastos.cantidad),
-          backgroundColor: 'rgba(255, 99, 132, 0.7)',
-          borderColor: 'rgb(255, 99, 132)',
-          borderWidth: 1,
+          backgroundColor: 'rgba(239, 68, 68, 0.8)',
+          borderColor: 'rgb(239, 68, 68)',
+          borderWidth: 2,
+          borderRadius: 6,
         },
         {
           label: 'Entregas Completadas',
           data: reportData.asesores.map(asesor => asesor.entregas.completadas),
-          backgroundColor: 'rgba(75, 192, 192, 0.7)',
-          borderColor: 'rgb(75, 192, 192)',
-          borderWidth: 1,
+          backgroundColor: 'rgba(34, 197, 94, 0.8)',
+          borderColor: 'rgb(34, 197, 94)',
+          borderWidth: 2,
+          borderRadius: 6,
         },
         {
           label: 'Entregas Pendientes',
           data: reportData.asesores.map(asesor => asesor.entregas.pendientes),
-          backgroundColor: 'rgba(255, 206, 86, 0.7)',
-          borderColor: 'rgb(255, 206, 86)',
-          borderWidth: 1,
+          backgroundColor: 'rgba(234, 179, 8, 0.8)',
+          borderColor: 'rgb(234, 179, 8)',
+          borderWidth: 2,
+          borderRadius: 6,
         },
       ],
     };
@@ -107,16 +110,18 @@ const RutasReport = () => {
         {
           label: 'Dinero Recibido por Pagos',
           data: reportData.asesores.map(asesor => asesor.pagos.monto),
-          backgroundColor: 'rgba(34, 197, 94, 0.7)',
+          backgroundColor: 'rgba(34, 197, 94, 0.8)',
           borderColor: 'rgb(34, 197, 94)',
-          borderWidth: 1,
+          borderWidth: 2,
+          borderRadius: 6,
         },
         {
           label: 'Dinero Perdido por Gastos',
           data: reportData.asesores.map(asesor => asesor.gastos.monto),
-          backgroundColor: 'rgba(239, 68, 68, 0.7)',
+          backgroundColor: 'rgba(239, 68, 68, 0.8)',
           borderColor: 'rgb(239, 68, 68)',
-          borderWidth: 1,
+          borderWidth: 2,
+          borderRadius: 6,
         },
       ],
     };
@@ -127,11 +132,14 @@ const RutasReport = () => {
     if (!reportData) return null;
 
     const { totales_generales } = reportData;
+    const total = totales_generales.pagos_total + totales_generales.gastos_total;
+    const pagosPercent = total > 0 ? ((totales_generales.pagos_total / total) * 100).toFixed(1) : 0;
+    const gastosPercent = total > 0 ? ((totales_generales.gastos_total / total) * 100).toFixed(1) : 0;
 
     return {
       labels: [
-        `Dinero Recibido por Pagos (${((totales_generales.pagos_total / (totales_generales.pagos_total + totales_generales.gastos_total)) * 100).toFixed(1)}%)`,
-        `Dinero Perdido por Gastos (${((totales_generales.gastos_total / (totales_generales.pagos_total + totales_generales.gastos_total)) * 100).toFixed(1)}%)`
+        `Dinero Recibido por Pagos (${pagosPercent}%)`,
+        `Dinero Perdido por Gastos (${gastosPercent}%)`
       ],
       datasets: [
         {
@@ -154,8 +162,19 @@ const RutasReport = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
+      legend: { 
+        position: 'top',
+        labels: {
+          font: { size: 13, weight: '600' },
+          padding: 15,
+          usePointStyle: true,
+        }
+      },
       tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
         callbacks: {
           label: function(context) {
             if (context.dataset.label.includes('Dinero')) {
@@ -169,10 +188,22 @@ const RutasReport = () => {
     scales: {
       y: {
         beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+        },
         ticks: {
+          font: { size: 12, weight: '500' },
           callback: function(value) {
             return value;
           }
+        }
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: { size: 11, weight: '500' },
         }
       }
     }
@@ -187,9 +218,14 @@ const RutasReport = () => {
         labels: {
           padding: 20,
           usePointStyle: true,
+          font: { size: 13, weight: '600' },
         }
       },
       tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
         callbacks: {
           label: function(context) {
             return context.label + ': $' + formatCurrency(context.parsed);
@@ -200,40 +236,90 @@ const RutasReport = () => {
   };
 
   const downloadPDF = async () => {
-    if (!reportData || !reportRef.current) return;
+    if (!reportData) return;
 
     const doc = new jsPDF();
+    
+    // Title
+    doc.setFontSize(16);
+    doc.setFont(undefined, 'bold');
     doc.text(`Reporte de Rutas - ${formatDate(reportData.fecha)}`, 20, 20);
-
-    // Summary
-    doc.text(`Fecha: ${formatDate(reportData.fecha)}`, 20, 30);
+    
+    // Summary section
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'normal');
+    doc.text(`Fecha: ${formatDate(reportData.fecha)}`, 20, 32);
     doc.text(`Total Asesores: ${reportData.asesores.length}`, 20, 40);
-    doc.text(`Total Dinero Recibido: $${formatCurrency(reportData.totales_generales.pagos_total)}`, 20, 50);
-    doc.text(`Total Dinero Perdido: $${formatCurrency(reportData.totales_generales.gastos_total)}`, 20, 60);
+    doc.text(`Total Dinero Recibido: $${formatCurrency(reportData.totales_generales.pagos_total)}`, 20, 48);
+    doc.text(`Total Dinero Perdido: $${formatCurrency(reportData.totales_generales.gastos_total)}`, 20, 56);
+    doc.text(`Utilidad Neta: $${formatCurrency(reportData.totales_generales.pagos_total - reportData.totales_generales.gastos_total)}`, 20, 64);
 
     let yPosition = 75;
 
-    // Charts
+    // Chart 1: Quantities
     if (chartRef1.current) {
-      const canvas1 = await html2canvas(chartRef1.current);
-      const imgData1 = canvas1.toDataURL('image/png');
-      doc.addImage(imgData1, 'PNG', 20, yPosition, 170, 60);
-      yPosition += 70;
+      try {
+        const canvas1 = await html2canvas(chartRef1.current, {
+          scale: 2,
+          backgroundColor: '#ffffff'
+        });
+        const imgData1 = canvas1.toDataURL('image/png');
+        doc.addImage(imgData1, 'PNG', 15, yPosition, 180, 70);
+        yPosition += 78;
+      } catch (error) {
+        console.error('Error capturing chart 1:', error);
+      }
     }
 
+    // Check if we need a new page
+    if (yPosition > 200) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    // Chart 2: Amounts
     if (chartRef2.current) {
-      const canvas2 = await html2canvas(chartRef2.current);
-      const imgData2 = canvas2.toDataURL('image/png');
-      doc.addImage(imgData2, 'PNG', 20, yPosition, 170, 60);
-      yPosition += 70;
+      try {
+        const canvas2 = await html2canvas(chartRef2.current, {
+          scale: 2,
+          backgroundColor: '#ffffff'
+        });
+        const imgData2 = canvas2.toDataURL('image/png');
+        doc.addImage(imgData2, 'PNG', 15, yPosition, 180, 70);
+        yPosition += 78;
+      } catch (error) {
+        console.error('Error capturing chart 2:', error);
+      }
     }
 
-    if (chartRef3.current) {
-      const canvas3 = await html2canvas(chartRef3.current);
-      const imgData3 = canvas3.toDataURL('image/png');
-      doc.addImage(imgData3, 'PNG', 20, yPosition, 170, 60);
-      yPosition += 70;
+    // Check if we need a new page
+    if (yPosition > 200) {
+      doc.addPage();
+      yPosition = 20;
     }
+
+    // Chart 3: Pie chart
+    if (chartRef3.current) {
+      try {
+        const canvas3 = await html2canvas(chartRef3.current, {
+          scale: 2,
+          backgroundColor: '#ffffff'
+        });
+        const imgData3 = canvas3.toDataURL('image/png');
+        const imgWidth = 300; 
+        const xPos = -50; // Centramos la grafica
+
+        const imgHeight = (canvas3.height * imgWidth) / canvas3.width;
+        doc.addImage(imgData3, 'PNG', xPos, yPosition, imgWidth, imgHeight);
+        yPosition += 78;
+      } catch (error) {
+        console.error('Error capturing chart 3:', error);
+      }
+    }
+
+    // Add new page for table
+    doc.addPage();
+    yPosition = 20;
 
     // Table
     const tableRows = reportData.asesores.map(asesor => [
@@ -250,11 +336,23 @@ const RutasReport = () => {
       head: [['Asesor', 'Ventas', 'Gastos', 'Entregas Comp.', 'Entregas Pend.', 'Pagos Recibidos', 'Gastos Monto']],
       body: tableRows,
       startY: yPosition,
-      styles: { fontSize: 7 },
-      headStyles: { fillColor: [59, 130, 246] },
+      styles: { 
+        fontSize: 9,
+        cellPadding: 3,
+      },
+      headStyles: { 
+        fillColor: [59, 130, 246],
+        fontStyle: 'bold',
+        halign: 'center',
+      },
       columnStyles: {
-        5: { halign: 'right' },
-        6: { halign: 'right' }
+        0: { halign: 'left', cellWidth: 35 },
+        1: { halign: 'center', cellWidth: 20 },
+        2: { halign: 'center', cellWidth: 20 },
+        3: { halign: 'center', cellWidth: 25 },
+        4: { halign: 'center', cellWidth: 25 },
+        5: { halign: 'right', cellWidth: 35 },
+        6: { halign: 'right', cellWidth: 30 }
       }
     });
 
@@ -262,148 +360,281 @@ const RutasReport = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
       <NavComponent />
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg p-6">
-          <h1 className="text-3xl font-bold text-blue-700 mb-6">Reporte de Rutas</h1>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Día</label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="border rounded-lg p-2 w-full"
-              />
+        
+        {/* Header */}
+        <div className="bg-white rounded-4xl shadow-xl overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                  <BarChart3 className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-white">Reporte de Rutas</h1>
+                  <p className="text-blue-100 text-sm mt-1">Análisis de desempeño por asesor del día</p>
+                </div>
+              </div>
             </div>
-
-            <div></div> {/* Empty space for alignment */}
-
-            <button
-              onClick={handleGenerateReport}
-              disabled={loading || !selectedDate}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg p-2 h-10 mt-6 flex items-center justify-center gap-2"
-            >
-              <BarChart3 className="h-4 w-4" />
-              {loading ? 'Generando...' : 'Generar Reporte'}
-            </button>
           </div>
+        </div>
 
-          {reportData && (
-            <div ref={reportRef}>
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2">Día: {formatDate(reportData.fecha)}</h2>
+        {/* Filters Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-6">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900 flex items-center">
+              <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+              Selección de Fecha
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="group">
+                <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                  <Calendar className="h-4 w-4 mr-1.5 text-blue-600" />
+                  Día
+                  <span className="text-red-500 ml-1">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 font-medium bg-white hover:border-gray-300"
+                />
               </div>
 
-              {/* First Bar Chart - Quantities */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 text-center">Estadísticas de Cantidad por Asesor</h3>
-                <div className="h-96" ref={chartRef1}>
-                  <Bar data={prepareQuantityChartData()} options={chartOptions} />
-                </div>
-              </div>
+              <div></div>
 
-              {/* Second Bar Chart - Amounts */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 text-center">Estadísticas de Monto por Asesor</h3>
-                <div className="h-96" ref={chartRef2}>
-                  <Bar data={prepareAmountChartData()} options={chartOptions} />
-                </div>
+              <div className="group">
+                <label className="text-sm font-semibold text-gray-700 mb-2 block opacity-0">Action</label>
+                <button
+                  onClick={handleGenerateReport}
+                  disabled={loading || !selectedDate}
+                  className="w-full flex items-center justify-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
+                >
+                  <BarChart3 className="h-5 w-5" />
+                  <span>{loading ? 'Generando...' : 'Generar Reporte'}</span>
+                </button>
               </div>
+            </div>
+          </div>
+        </div>
 
-              {/* Pie Chart */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 text-center">Distribución General de Dinero</h3>
-                <div className="h-96 flex justify-center" ref={chartRef3}>
-                  <div className="w-96">
-                    <Pie data={preparePieChartData()} options={pieChartOptions} />
+        {reportData && (
+          <>
+            {/* Date Info */}
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100 mb-6 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="bg-blue-100 p-3 rounded-xl">
+                    <Calendar className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{formatDate(reportData.fecha)}</h2>
+                    <p className="text-gray-600 text-sm">Reporte del día seleccionado</p>
                   </div>
                 </div>
+                <button
+                  onClick={downloadPDF}
+                  className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <Download className="h-5 w-5" />
+                  <span>Descargar PDF</span>
+                </button>
               </div>
+            </div>
 
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
-                  <h3 className="font-semibold text-green-900">Total Pagos Recibidos</h3>
-                  <p className="text-2xl font-bold text-green-700">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 border-l-4 border-green-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-green-900 text-lg">Total Pagos Recibidos</h3>
+                    <div className="bg-green-100 p-2 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-green-600" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-green-700">
                     ${formatCurrency(reportData.totales_generales.pagos_total)}
                   </p>
                 </div>
-                <div className="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
-                  <h3 className="font-semibold text-red-900">Total Gastos</h3>
-                  <p className="text-2xl font-bold text-red-700">
+              </div>
+
+              
+              
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-br from-red-50 to-rose-50 p-6 border-l-4 border-red-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-red-900 text-lg">Total Gastos</h3>
+                    <div className="bg-red-100 p-2 rounded-lg">
+                      <TrendingUp className="h-5 w-5 text-red-600" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-red-700">
                     ${formatCurrency(reportData.totales_generales.gastos_total)}
                   </p>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
-                  <h3 className="font-semibold text-blue-900">Utilidad Neta</h3>
-                  <p className="text-2xl font-bold text-blue-700">
+              </div>
+              
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 border-l-4 border-blue-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-blue-900 text-lg">Utilidad Neta</h3>
+                    <div className="bg-blue-100 p-2 rounded-lg">
+                      <DollarSign className="h-5 w-5 text-blue-600" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-700">
                     ${formatCurrency(reportData.totales_generales.pagos_total - reportData.totales_generales.gastos_total)}
                   </p>
                 </div>
-                <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500">
-                  <h3 className="font-semibold text-yellow-900">Total Asesores</h3>
-                  <p className="text-2xl font-bold text-yellow-700">
+              </div>
+              
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                <div className="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 border-l-4 border-yellow-500">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-yellow-900 text-lg">Total Asesores</h3>
+                    <div className="bg-yellow-100 p-2 rounded-lg">
+                      <Users className="h-5 w-5 text-yellow-600" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-yellow-700">
                     {reportData.asesores.length}
                   </p>
                 </div>
               </div>
+            </div>
 
-              {/* Table */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold mb-3 text-center">Detalle por Asesor</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full table-auto border-collapse border border-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="border border-gray-300 px-4 py-2 text-left">Asesor</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Ventas</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Gastos</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Entregas Comp.</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Entregas Pend.</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Pagos Recibidos</th>
-                        <th className="border border-gray-300 px-4 py-2 text-right">Monto Gastos</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {reportData.asesores.map((asesor, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="border border-gray-300 px-4 py-2">{asesor.nombre}</td>
-                          <td className="border border-gray-300 px-4 py-2 text-right">{asesor.ventas.cantidad}</td>
-                          <td className="border border-gray-300 px-4 py-2 text-right">{asesor.gastos.cantidad}</td>
-                          <td className="border border-gray-300 px-4 py-2 text-right text-green-600 font-medium">{asesor.entregas.completadas}</td>
-                          <td className="border border-gray-300 px-4 py-2 text-right text-yellow-600 font-medium">{asesor.entregas.pendientes}</td>
-                          <td className="border border-gray-300 px-4 py-2 text-right text-green-600 font-medium">
-                            ${formatCurrency(asesor.pagos.monto)}
-                          </td>
-                          <td className="border border-gray-300 px-4 py-2 text-right text-red-600 font-medium">
-                            ${formatCurrency(asesor.gastos.monto)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {/* First Bar Chart - Quantities */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-6">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />
+                  Estadísticas de Cantidad por Asesor
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="h-96" ref={chartRef1}>
+                  <Bar data={prepareQuantityChartData()} options={chartOptions} />
                 </div>
               </div>
-
-              <button
-                onClick={downloadPDF}
-                className="bg-green-500 hover:bg-green-600 text-white rounded-lg px-6 py-2 font-semibold flex items-center gap-2"
-              >
-                <Download className="h-4 w-4" />
-                Descargar PDF
-              </button>
             </div>
-          )}
 
-          {!reportData && !loading && (
-            <div className="text-center text-gray-500 py-8">
-              Seleccione una fecha para generar el reporte
+            {/* Second Bar Chart - Amounts */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-6">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center">
+                  <DollarSign className="h-5 w-5 mr-2 text-green-600" />
+                  Estadísticas de Monto por Asesor
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="h-96" ref={chartRef2}>
+                  <Bar data={prepareAmountChartData()} options={chartOptions} />
+                </div>
+              </div>
             </div>
-          )}
-        </div>
+
+            {/* Pie Chart */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 mb-6">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 text-center">
+                  Distribución General de Dinero
+                </h3>
+              </div>
+              <div className="p-6">
+                <div className="h-96 flex justify-center" ref={chartRef3}>
+                  <div className="w-full max-w-md">
+                    <Pie data={preparePieChartData()} options={pieChartOptions} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-bold text-gray-900 text-center">
+                  Detalle por Asesor
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
+                      <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Asesor</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Ventas</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Gastos</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Entregas Comp.</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Entregas Pend.</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Pagos Recibidos</th>
+                      <th className="px-6 py-4 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Monto Gastos</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {reportData.asesores.map((asesor, idx) => (
+                      <tr key={idx} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">
+                            {asesor.nombre}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-blue-600">
+                            {asesor.ventas.cantidad}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-red-600">
+                            {asesor.gastos.cantidad}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-green-600">
+                            {asesor.entregas.completadas}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-yellow-600">
+                            {asesor.entregas.pendientes}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-green-600">
+                            ${formatCurrency(asesor.pagos.monto)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="text-sm font-bold text-red-600">
+                            ${formatCurrency(asesor.gastos.monto)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
+        {!reportData && !loading && (
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 p-12">
+            <div className="text-center">
+              <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <BarChart3 className="h-10 w-10 text-gray-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                No hay datos para mostrar
+              </h3>
+              <p className="text-gray-500">
+                Seleccione una fecha para generar el reporte
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

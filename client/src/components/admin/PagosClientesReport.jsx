@@ -201,7 +201,7 @@ const PagosClientesReport = () => {
       // 1. ANCHO MÁXIMO: Usamos 180 (dejando solo 15mm de margen a cada lado)
       // Una hoja A4 mide 210mm de ancho.
       const imgWidth = 300; 
-      const xPos = -50; // Centramos un poco reduciendo el margen izquierdo
+      const xPos = -50; // Centramos la grafica
 
       // 2. ALTO PROPORCIONAL: Calculamos la altura para que NO se deforme
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
