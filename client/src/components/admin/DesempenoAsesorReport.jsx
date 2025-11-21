@@ -418,7 +418,7 @@ const DesempenoAsesorReport = () => {
                   <p className="text-3xl font-bold text-blue-700 mb-2">
                     ${formatCurrency(reportData.totales.ventas)}
                   </p>
-                  <div className="flex items-center text-sm text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg inline-block">
+                  <div className="flex items-center text-sm text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg">
                     <TrendingUp className="h-4 w-4 mr-1" />
                     Prom/día: ${formatCurrency(reportData.promedios.ventasPorDia)}
                   </div>
@@ -437,7 +437,7 @@ const DesempenoAsesorReport = () => {
                   <p className="text-3xl font-bold text-red-700 mb-2">
                     ${formatCurrency(reportData.totales.gastos)}
                   </p>
-                  <div className="flex items-center text-sm text-red-600 bg-red-100 px-3 py-1.5 rounded-lg inline-block">
+                  <div className="flex items-center text-sm text-red-600 bg-red-100 px-3 py-1.5 rounded-lg">
                     <TrendingUp className="h-4 w-4 mr-1" />
                     Prom/día: ${formatCurrency(reportData.promedios.gastosPorDia)}
                   </div>
@@ -456,7 +456,7 @@ const DesempenoAsesorReport = () => {
                   <p className="text-3xl font-bold text-green-700 mb-2">
                     ${formatCurrency(toNumber(reportData.totales.ventas) - toNumber(reportData.totales.gastos))}
                   </p>
-                  <div className="flex items-center text-sm text-green-600 bg-green-100 px-3 py-1.5 rounded-lg inline-block">
+                  <div className="flex items-center text-sm text-green-600 bg-green-100 px-3 py-1.5 rounded-lg">
                     <TrendingUp className="h-4 w-4 mr-1" />
                     Prom/día: ${formatCurrency(toNumber(reportData.promedios.ventasPorDia) - toNumber(reportData.promedios.gastosPorDia))}
                   </div>
