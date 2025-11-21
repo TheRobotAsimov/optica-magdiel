@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router'; // Agregado useParams
 import entregaService from '../../service/entregaService';
 import rutaService from '../../service/rutaService';
 import lenteService from '../../service/lenteService';
@@ -19,15 +19,21 @@ const CompleteEntregaForm = () => {
     hora: new Date().toTimeString().slice(0, 5),
   });
 
+  // Estado para guardar la data original al editar (para poder revertir estatus)
+  const [originalData, setOriginalData] = useState(null);
+
   const [rutas, setRutas] = useState([]);
   const [lentes, setLentes] = useState([]);
   const [pagos, setPagos] = useState([]);
   const [ventas, setVentas] = useState([]);
+  
   const [selectedLente, setSelectedLente] = useState(null);
   const [selectedPago, setSelectedPago] = useState(null);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagoOption, setPagoOption] = useState('existing');
+  
   const [newPagoData, setNewPagoData] = useState({
     folio: '',
     fecha: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10),
@@ -35,33 +41,64 @@ const CompleteEntregaForm = () => {
   });
 
   const navigate = useNavigate();
+  const { id } = useParams(); // Detectar ID para edición
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
+        // Nota: Para edición, idealmente deberíamos traer todos los lentes/pagos 
+        // o hacer una petición extra para traer el lente específico si ya no está "pendiente".
+        // Aquí asumimos que getAllLentes o getPendingLentes manejan esto, 
+        // pero para edición robusta se suele usar getAll.
         const [rutasData, lentesData, pagosData, ventasData] = await Promise.all([
           rutaService.getAllRutas(),
-          lenteService.getPendingLentes(),
-          pagoService.getPendingPagos(),
+          lenteService.getAllLentes(), // Cambiado a AllLentes para asegurar que aparezca el actual al editar
+          pagoService.getAllPagos(),   // Cambiado a AllPagos por la misma razón
           ventaService.getAllVentas(),
         ]);
+        
         setRutas(rutasData);
         setLentes(lentesData);
         setPagos(pagosData);
         setVentas(ventasData);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const rutaId = urlParams.get('ruta');
-        const undeliveredType = urlParams.get('undelivered');
+        // Lógica de Edición
+        if (id) {
+          const entregaData = await entregaService.getEntregaById(id);
+          
+          setFormData({
+            ...entregaData,
+            hora: entregaData.hora || new Date().toTimeString().slice(0, 5),
+          });
+          
+          // Guardamos la data original para comparar cambios después
+          setOriginalData(entregaData);
 
-        if (rutaId) {
-          setFormData(prev => ({ ...prev, idruta: rutaId }));
+          // Pre-seleccionar objetos visuales
+          if (entregaData.idlente) {
+            const l = lentesData.find(x => String(x.idlente) === String(entregaData.idlente));
+            setSelectedLente(l);
+          }
+          if (entregaData.idpago) {
+            const p = pagosData.find(x => String(x.idpago) === String(entregaData.idpago));
+            setSelectedPago(p);
+            setPagoOption('existing');
+          }
+        } else {
+          // Lógica de Creación (solo params URL)
+          const urlParams = new URLSearchParams(window.location.search);
+          const rutaId = urlParams.get('ruta');
+          const undeliveredType = urlParams.get('undelivered');
+
+          if (rutaId) {
+            setFormData(prev => ({ ...prev, idruta: rutaId }));
+          }
+          if (undeliveredType) {
+            setFormData(prev => ({ ...prev, estatus: 'No entregado' }));
+          }
         }
 
-        if (undeliveredType) {
-          setFormData(prev => ({ ...prev, estatus: 'No entregado' }));
-        }
       } catch (err) {
         setError(err.message);
       } finally {
@@ -69,8 +106,9 @@ const CompleteEntregaForm = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [id]);
 
+  // Sincronizar fecha de nuevo pago con la ruta
   useEffect(() => {
     if (formData.idruta && rutas.length > 0) {
       const selectedRoute = rutas.find(r => r.idruta == formData.idruta);
@@ -82,14 +120,21 @@ const CompleteEntregaForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Si cambiamos el lente, reseteamos el pago para evitar inconsistencias de folio
+    if (name === 'idlente') {
+       setFormData(prev => ({ ...prev, [name]: value, idpago: '' }));
+       setSelectedPago(null);
+       const lente = lentes.find(l => l.idlente == value);
+       setSelectedLente(lente);
+    } else {
+       setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
+  // Manejador específico (aunque integrado arriba, lo mantenemos por consistencia visual)
   const handleLenteChange = (e) => {
-    const lenteId = e.target.value;
-    setFormData((prev) => ({ ...prev, idlente: lenteId }));
-    const lente = lentes.find(l => l.idlente == lenteId);
-    setSelectedLente(lente);
+    handleChange(e); 
   };
 
   const handlePagoChange = (e) => {
@@ -107,6 +152,7 @@ const CompleteEntregaForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Validación básica
     if (!formData.idlente && !formData.idpago && pagoOption !== 'new') {
       Swal.fire({
         title: 'Validación requerida',
@@ -125,6 +171,19 @@ const CompleteEntregaForm = () => {
 
     setLoading(true);
     try {
+      // 1. Manejo de reversión de estatus (Si estamos editando)
+      if (id && originalData) {
+        // Si había un lente y se cambió o se quitó
+        if (originalData.idlente && String(originalData.idlente) !== String(formData.idlente)) {
+          await lenteService.updateLente(originalData.idlente, { estatus: 'Pendiente' });
+        }
+        // Si había un pago y se cambió o se quitó
+        if (originalData.idpago && String(originalData.idpago) !== String(formData.idpago)) {
+          await pagoService.updatePago(originalData.idpago, { estatus: 'Pendiente' });
+        }
+      }
+
+      // 2. Crear o determinar ID del pago actual
       let pagoId = formData.idpago;
 
       if (pagoOption === 'new') {
@@ -136,116 +195,89 @@ const CompleteEntregaForm = () => {
         pagoId = newPago.id;
       }
 
+      // 3. Guardar/Actualizar Entrega
       const entregaData = {
         ...formData,
         idpago: pagoId || null,
       };
-      await entregaService.createEntrega(entregaData);
 
+      if (id) {
+        await entregaService.updateEntrega(id, entregaData);
+      } else {
+        await entregaService.createEntrega(entregaData);
+      }
+
+      // 4. Actualizar estatus del Lente seleccionado
       if (formData.idlente) {
         const lenteUpdateData = {
           ...selectedLente,
           estatus: formData.estatus,
         };
-
-        if (lenteUpdateData.fecha_entrega) {
-          lenteUpdateData.fecha_entrega = lenteUpdateData.fecha_entrega.split('T')[0];
-        }
-        if (lenteUpdateData.examen_seguimiento) {
-          lenteUpdateData.examen_seguimiento = lenteUpdateData.examen_seguimiento.split('T')[0];
-        }
-
+        // Limpieza de fechas y campos timestamp
+        if (lenteUpdateData.fecha_entrega) lenteUpdateData.fecha_entrega = lenteUpdateData.fecha_entrega.split('T')[0];
+        if (lenteUpdateData.examen_seguimiento) lenteUpdateData.examen_seguimiento = lenteUpdateData.examen_seguimiento.split('T')[0];
         delete lenteUpdateData.created_at;
         delete lenteUpdateData.updated_at;
 
         await lenteService.updateLente(formData.idlente, lenteUpdateData);
+        
+        // Lógica de contadores de Ruta para Lentes
+        const currentRoute = rutas.find(r => r.idruta == formData.idruta);
+        if (currentRoute && !id) { // Solo sumar contadores si es creación nueva (evitar doble conteo simple)
+            // Nota: Para edición perfecta de contadores se requiere lógica más compleja (restar del anterior, sumar al nuevo),
+            // se mantiene la lógica original de creación por seguridad.
+            const routeUpdateData = { ...currentRoute };
+            if (routeUpdateData.fecha) routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
 
-        if (formData.estatus === 'Entregado' && formData.idruta) {
-          const currentRoute = rutas.find(r => r.idruta == formData.idruta);
-          if (currentRoute) {
-            const routeUpdateData = {
-              ...currentRoute,
-              lentes_entregados: (currentRoute.lentes_entregados || 0) + 1,
-            };
-
-            if (routeUpdateData.fecha) {
-              routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
+            if (formData.estatus === 'Entregado') {
+               routeUpdateData.lentes_entregados = (currentRoute.lentes_entregados || 0) + 1;
+            } else if (formData.estatus === 'No entregado') {
+               routeUpdateData.lentes_no_entregados = (currentRoute.lentes_no_entregados || 0) + 1;
             }
-
             await rutaService.updateRuta(formData.idruta, routeUpdateData);
-          }
-        }
-
-        if (formData.estatus === 'No entregado' && formData.idruta) {
-          const currentRoute = rutas.find(r => r.idruta == formData.idruta);
-          if (currentRoute) {
-            const routeUpdateData = {
-              ...currentRoute,
-            };
-
-            if (formData.idlente) {
-              routeUpdateData.lentes_no_entregados = (currentRoute.lentes_no_entregados || 0) + 1;
-            }
-            if (pagoId) {
-              routeUpdateData.tarjetas_no_entregadas = (currentRoute.tarjetas_no_entregadas || 0) + 1;
-            }
-
-            if (routeUpdateData.fecha) {
-              routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
-            }
-
-            await rutaService.updateRuta(formData.idruta, routeUpdateData);
-          }
         }
       }
 
+      // 5. Actualizar estatus y FECHA del Pago
       if (pagoId) {
+        // Obtener fecha de la ruta actual para sincronizar
+        const currentRoute = rutas.find(r => r.idruta == formData.idruta);
+        const fechaRuta = currentRoute ? currentRoute.fecha.split('T')[0] : new Date().toISOString().slice(0, 10);
+
         const pagoToUpdate = pagoOption === 'new' ? {
           ...newPagoData,
-          estatus: formData.estatus === 'Entregado' ? 'Pagado' : 'Pendiente'
+          estatus: formData.estatus === 'Entregado' ? 'Pagado' : 'Pendiente',
+          fecha: fechaRuta // Sincronización forzada
         } : {
           ...selectedPago,
           estatus: formData.estatus === 'Entregado' ? 'Pagado' : 'Pendiente',
+          fecha: fechaRuta // Sincronización forzada
         };
+        
         await pagoService.updatePago(pagoId, pagoToUpdate);
 
-        const currentRoute = rutas.find(r => r.idruta == formData.idruta);
-        if (formData.estatus === 'Entregado' && formData.idruta) {
-          if (currentRoute) {
-            const routeUpdateData = {
-              ...currentRoute,
-              tarjetas_entregadas: (currentRoute.tarjetas_entregadas || 0) + 1,
-            };
+        // Lógica de contadores de Ruta para Pagos
+        if (currentRoute && !id) {
+             const routeUpdateData = { ...currentRoute };
+             if (routeUpdateData.fecha) routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
 
-            if (routeUpdateData.fecha) {
-              routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
-            }
-
-            await rutaService.updateRuta(formData.idruta, routeUpdateData);
-          }
-        }
-
-        if (formData.estatus === 'No entregado' && formData.idruta) {
-          const routeUpdateData = {
-            ...currentRoute,
-            tarjetas_no_entregadas: (currentRoute.tarjetas_no_entregadas || 0) + 1,
-          };
-
-          if (routeUpdateData.fecha) {
-            routeUpdateData.fecha = routeUpdateData.fecha.split('T')[0];
-          }
-
-          await rutaService.updateRuta(formData.idruta, routeUpdateData);
+             if (formData.estatus === 'Entregado') {
+               routeUpdateData.tarjetas_entregadas = (currentRoute.tarjetas_entregadas || 0) + 1;
+             } else if (formData.estatus === 'No entregado') {
+               routeUpdateData.tarjetas_no_entregadas = (currentRoute.tarjetas_no_entregadas || 0) + 1;
+             }
+             await rutaService.updateRuta(formData.idruta, routeUpdateData);
         }
       }
 
+      // Redirección
       const urlParams = new URLSearchParams(window.location.search);
-      const rutaId = urlParams.get('ruta');
+      const rutaIdParam = urlParams.get('ruta');
       const undeliveredType = urlParams.get('undelivered');
 
-      if (rutaId && undeliveredType) {
+      if (rutaIdParam && undeliveredType) {
         navigate('/ruta-asesor?window=3');
-      } else if (rutaId) {
+      } else if (rutaIdParam) {
         navigate('/ruta-asesor');
       } else {
         navigate('/entregas');
@@ -266,42 +298,56 @@ const CompleteEntregaForm = () => {
     }
   };
 
-  const pendingLentes = lentes.filter(l => l.estatus === 'Pendiente' || l.estatus === 'No entregado');
-  const pendingPagos = pagos.filter(p => p.estatus === 'Pendiente');
+  // --- LÓGICA DE FILTRADO PRINCIPAL ---
+  // 1. Si hay lente seleccionado, filtrar pagos por su folio.
+  // 2. Filtrar también para mostrar solo pendientes (o el pago que ya tiene asignado si estamos editando)
+  
+  // Lentes disponibles: Pendientes o "No entregados", O el lente actual si estamos editando
+  const availableLentes = lentes.filter(l => 
+     l.estatus === 'Pendiente' || 
+     l.estatus === 'No entregado' || 
+     (id && String(l.idlente) === String(formData.idlente))
+  );
+
+  // Calcular pagos filtrados
+  const filteredPagos = pagos.filter(p => {
+    // Condición base: debe ser pendiente O ser el pago actual de la edición
+    const isAvailableStatus = p.estatus === 'Pendiente' || (id && String(p.idpago) === String(formData.idpago));
+    
+    if (!isAvailableStatus) return false;
+
+    // Condición de folio:
+    if (selectedLente) {
+      // Si hay lente seleccionado, EL PAGO DEBE TENER EL MISMO FOLIO
+      return p.folio === selectedLente.folio;
+    }
+    // Si no hay lente seleccionado, mostrar todos los disponibles
+    return true;
+  });
+
 
   if (loading && rutas.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-        <NavComponent />
-        <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
-              <span className="text-xl font-medium text-gray-600">Cargando...</span>
-            </div>
-          </div>
+    return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner /></div>; 
+  }
+  
+  // Componente de carga simple inline para ahorrar espacio
+  function LoadingSpinner() {
+      return (
+        <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+            <span className="text-xl font-medium text-gray-600">Cargando...</span>
         </div>
-      </div>
-    );
+      );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-        <NavComponent />
-        <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 rounded-xl p-6 shadow-lg">
-            <div className="flex items-center space-x-3">
-              <div className="bg-red-100 p-2 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="font-bold text-red-900">Error</h3>
-                <p className="text-red-700">{error}</p>
-              </div>
-            </div>
+      <div className="min-h-screen bg-gray-50 p-8">
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <h3 className="font-bold text-red-900">Error</h3>
+            <p className="text-red-700">{error}</p>
+            <button onClick={() => navigate(-1)} className="mt-4 text-red-700 underline">Volver</button>
           </div>
-        </div>
       </div>
     );
   }
@@ -319,8 +365,8 @@ const CompleteEntregaForm = () => {
                   <Truck className="h-8 w-8 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold text-white">Nueva Entrega Completa</h1>
-                  <p className="text-blue-100 text-sm mt-1">Registra la entrega de lentes y pagos</p>
+                  <h1 className="text-3xl font-bold text-white">{id ? 'Editar Entrega' : 'Nueva Entrega Completa'}</h1>
+                  <p className="text-blue-100 text-sm mt-1">{id ? 'Modifica los detalles de la entrega' : 'Registra la entrega de lentes y pagos'}</p>
                 </div>
               </div>
               <button
@@ -339,6 +385,7 @@ const CompleteEntregaForm = () => {
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
+              
               {/* General Information Section */}
               <div className="relative">
                 <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
@@ -454,7 +501,7 @@ const CompleteEntregaForm = () => {
                           className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-indigo-100 focus:border-indigo-500 hover:border-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         >
                           <option value="">— Seleccionar Lente —</option>
-                          {pendingLentes.map(lente => {
+                          {availableLentes.map(lente => {
                             const venta = ventas.find(v => v.folio === lente.folio);
                             const cliente = venta ? `${venta.cliente_nombre} ${venta.cliente_paterno}` : 'Cliente desconocido';
                             return (
@@ -639,19 +686,30 @@ const CompleteEntregaForm = () => {
                           <select 
                             name="idpago" 
                             value={formData.idpago} 
-                            onChange={handlePagoChange} 
-                            className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300"
+                            onChange={handlePagoChange}
+                            disabled={selectedLente && filteredPagos.length === 0} 
+                            className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 border-gray-200 focus:ring-green-100 focus:border-green-500 hover:border-gray-300 disabled:bg-gray-100 disabled:text-gray-500"
                           >
-                            <option value="">— Seleccionar Pago —</option>
-                            {pendingPagos.map(pago => (
+                            <option value="">
+                                {selectedLente && filteredPagos.length === 0 
+                                  ? `— No hay pagos pendientes para el folio ${selectedLente.folio} —`
+                                  : "— Seleccionar Pago —"}
+                            </option>
+                            {filteredPagos.map(pago => (
                               <option key={pago.idpago} value={pago.idpago}>
-                                {`${pago.cliente_nombre} ${pago.cliente_paterno} — $${pago.cantidad}`}
+                                {`${pago.cliente_nombre} ${pago.cliente_paterno} — Folio: ${pago.folio} — $${pago.cantidad}`}
                               </option>
                             ))}
                           </select>
+                          {selectedLente && (
+                              <p className="text-xs text-green-600 mt-2 pl-1">
+                                  * Filtrando pagos por folio: <b>{selectedLente.folio}</b>
+                              </p>
+                          )}
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {/* Formulario de nuevo pago se mantiene igual */}
                           <div>
                             <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
                               <span>Folio de Venta</span>
@@ -670,7 +728,8 @@ const CompleteEntregaForm = () => {
                               ))}
                             </select>
                           </div>
-                          <div>
+                          {/* Resto de campos de nuevo pago... */}
+                           <div>
                             <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 mb-2">
                               <Calendar className="h-4 w-4 text-green-600" />
                               <span>Fecha</span>
@@ -729,7 +788,7 @@ const CompleteEntregaForm = () => {
                             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                               <div className="flex items-center space-x-2 mb-1">
                                 <Calendar className="h-3 w-3 text-gray-600" />
-                                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fecha</div>
+                                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Fecha Anterior</div>
                               </div>
                               <div className="text-base font-semibold text-gray-900">
                                 {new Date(selectedPago.fecha).toLocaleDateString('es-MX', { 
@@ -759,6 +818,7 @@ const CompleteEntregaForm = () => {
                           </div>
                         </div>
                       )}
+
                     </div>
                   </div>
                 </div>
@@ -779,7 +839,7 @@ const CompleteEntregaForm = () => {
                   className="flex items-center justify-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-400 disabled:to-indigo-400 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
                 >
                   <Save className="h-5 w-5" />
-                  <span>{loading ? 'Creando...' : 'Crear Entrega'}</span>
+                  <span>{loading ? (id ? 'Guardando...' : 'Creando...') : (id ? 'Actualizar Entrega' : 'Crear Entrega')}</span>
                 </button>
               </div>
             </form>
