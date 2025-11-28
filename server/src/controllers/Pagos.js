@@ -61,13 +61,15 @@ export const createPago = async (req, res) => {
     // Esto es opcional, pero recomendado
     const nuevoEstatusVenta = nuevoPagado >= parseFloat(venta.total) - 0.1 ? 'Pagado' : venta.estatus;
 
-    await Venta.update(folio, { 
+    await Venta.updateById(folio, { 
       pagado: nuevoPagado,
       estatus: nuevoEstatusVenta 
     });
 
     res.status(201).json(newPago);
   } catch (error) {
+    console.log(req.body);
+    console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -99,10 +101,12 @@ export const updatePago = async (req, res) => {
     const updatedPago = await Pago.update(id, req.body);
 
     // 4. Actualizar Venta
-    await Venta.update(venta.folio, { pagado: nuevoTotalPagadoVenta });
+    await Venta.updateById(venta.folio, { pagado: nuevoTotalPagadoVenta });
 
     res.json(updatedPago);
   } catch (error) {
+    console.log(req.body);
+    console.log(error.message);
     res.status(500).json({ message: error.message });
   }
 };
@@ -130,7 +134,7 @@ export const deletePago = async (req, res) => {
       }
 
       // Actualizamos la venta
-      await Venta.update(venta.folio, { 
+      await Venta.updateById(venta.folio, { 
         pagado: nuevoPagado,
         estatus: nuevoEstatus
       });

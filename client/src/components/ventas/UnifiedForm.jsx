@@ -32,6 +32,7 @@ const UnifiedForm = () => {
     institucion: '',
     tipo: 'Contado',
     inapam: 'No',
+    factura: 'No',
     enganche: '',
     total: '',
     observaciones: '',
@@ -310,14 +311,22 @@ const UnifiedForm = () => {
          }
        }
 
+       // Agregar monto del armazón
+       newTotal += parseFloat(formData.armazon_monto) || 0;
+
        // Aplicar descuento INAPAM si está activado
        if (formData.inapam === 'Si' && additives && additives.inapam_discount) {
          newTotal = newTotal * (1 - additives.inapam_discount / 100);
        }
 
-       setFormData((prev) => ({ ...prev, total: newTotal }));
+       // Aplicar IVA si factura está activado
+       if (formData.factura === 'Si') {
+         newTotal = newTotal * 1.16;
+       }
+
+       setFormData((prev) => ({ ...prev, total: parseFloat(newTotal.toFixed(2)) }));
      }
-   }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, formData.kit, formData.tinte_color, formData.inapam, priceCatalog, additives]);
+   }, [formData.material, formData.tipo_de_lente, formData.tratamiento, formData.subtipo, formData.procesado, formData.blend, formData.kit, formData.tinte_color, formData.inapam, formData.factura, formData.armazon_monto, priceCatalog, additives]);
 
   useEffect(() => {
     const errors = validateUnifiedForm(formData);
@@ -1011,7 +1020,7 @@ const handleSelectPatient = (e) => {
                         value={formData.paciente_parentesco} 
                         onChange={handleChange} 
                         onBlur={handleBlur} 
-                        placeholder="Ej. Hijo, Esposo, Tio"
+                        placeholder="Ej. Hijo, Sobrino, Primo"
                         className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${isPatientSelected ? 'bg-gray-100' : 'bg-white'}`}
                         disabled={isPatientSelected}
                       />
@@ -1107,19 +1116,36 @@ const handleSelectPatient = (e) => {
                       </p>
                     )}
                   </div>
-                  <div className="group">
+                  <div className="group md:col-span-2">
                     <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
                       Armazón
                       <span className="text-red-500 ml-1">*</span>
                     </label>
-                    <input type="text" name="armazon" value={formData.armazon} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
-                      fieldErrors.armazon
-                        ? 'border-red-500 focus:ring-red-100 bg-red-50'
-                        : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
-                    }`} />
+                    <div className="flex gap-4">
+                      <select name="armazon" value={formData.armazon} onChange={handleChange} onBlur={handleBlur} required className={`flex-1 px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                        fieldErrors.armazon
+                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                      }`}>
+                        <option value="">Seleccionar</option>
+                        <option value="Básico">Básico</option>
+                        <option value="Línea">Línea</option>
+                        <option value="Marca">Marca</option>
+                      </select>
+                      <input type="number" name="armazon_monto" value={formData.armazon_monto} onChange={handleChange} onBlur={handleBlur} placeholder="Monto" className={`w-32 px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
+                        fieldErrors.armazon_monto
+                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
+                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
+                      }`} />
+                    </div>
                     {fieldErrors.armazon && (
                       <p className="text-red-600 text-sm mt-2 flex items-center">
                         <span className="mr-1">⚠</span> {fieldErrors.armazon}
+                      </p>
+                    )}
+                    {fieldErrors.armazon_monto && (
+                      <p className="text-red-600 text-sm mt-2 flex items-center">
+                        <span className="mr-1">⚠</span> {fieldErrors.armazon_monto}
                       </p>
                     )}
                   </div>
@@ -1675,6 +1701,25 @@ const handleSelectPatient = (e) => {
                          />
                          <span className="ml-3 text-gray-600 font-medium select-none">
                            Aplicar descuento
+                         </span>
+                       </label>
+                     </div>
+                   </div>
+                   <div className="group">
+                     <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                         Factura
+                     </label>
+                     <div className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl flex items-center  hover:border-gray-300 transition-all duration-200">
+                       <label className="flex items-center w-full cursor-pointer">
+                         <input
+                           type="checkbox"
+                           name="factura"
+                           checked={formData.factura === 'Si'}
+                           onChange={(e) => setFormData(prev => ({ ...prev, factura: e.target.checked ? 'Si' : 'No' }))}
+                           className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 transition-colors"
+                         />
+                         <span className="ml-3 text-gray-600 font-medium select-none">
+                           Aplicar IVA (16%)
                          </span>
                        </label>
                      </div>

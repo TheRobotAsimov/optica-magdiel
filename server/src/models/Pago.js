@@ -52,14 +52,38 @@ const Pago = {
   },
 
   update: async (id, pago) => {
-    const { folio, fecha, cantidad, estatus } = pago;
+    const { fecha, cantidad, estatus } = pago;
     const cantidadNum = parseFloat(cantidad) || 0;
     // Format date to YYYY-MM-DD if it's a full ISO string
     const fechaFormatted = fecha && fecha.includes('T') ? fecha.split('T')[0] : fecha;
-    const [result] = await db.query(
-      'UPDATE pago SET folio = ?, fecha = ?, cantidad = ?, estatus = ? WHERE idpago = ?',
-      [folio, fechaFormatted, cantidadNum, estatus, id]
-    );
+
+    // Build dynamic update query to only update provided fields
+    let query = 'UPDATE pago SET ';
+    let params = [];
+    let updates = [];
+
+    if (fecha !== undefined && fecha !== null) {
+      updates.push('fecha = ?');
+      params.push(fechaFormatted);
+    }
+    if (cantidad !== undefined && cantidad !== null) {
+      updates.push('cantidad = ?');
+      params.push(cantidadNum);
+    }
+    if (estatus !== undefined && estatus !== null) {
+      updates.push('estatus = ?');
+      params.push(estatus);
+    }
+
+    if (updates.length === 0) {
+      // No fields to update, return as is
+      return { id, ...pago };
+    }
+
+    query += updates.join(', ') + ' WHERE idpago = ?';
+    params.push(id);
+
+    const [result] = await db.query(query, params);
     return { id, ...pago };
   },
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import lenteService from '../../service/lenteService';
+import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
@@ -42,12 +43,30 @@ const LenteList = () => {
 
   const handleDelete = async (lenteId) => {
     if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      // Mostrar modal para solicitar motivo
       Swal.fire({
-        title: 'No permitido',
-        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Entendido'
+        title: 'Solicitar Eliminación',
+        input: 'textarea',
+        inputLabel: 'Motivo de la solicitud',
+        inputPlaceholder: 'Describe por qué deseas eliminar este lente...',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debes proporcionar un motivo';
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Solicitud',
+        cancelButtonText: 'Cancelar'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const mensaje = `Solicitud de eliminación - Lente ID: ${lenteId}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
+            await notificacionService.create(mensaje);
+            Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
+          } catch {
+            Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
+          }
+        }
       });
       return;
     }
@@ -94,12 +113,30 @@ const LenteList = () => {
 
   const handleEdit = (lenteId) => {
     if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      // Mostrar modal para solicitar motivo
       Swal.fire({
-        title: 'No permitido',
-        text: 'No tienes permisos para realizar esta acción. Por favor, contacta a un usuario Matriz para solicitar el cambio.',
-        icon: 'warning',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Entendido'
+        title: 'Solicitar Edición',
+        input: 'textarea',
+        inputLabel: 'Motivo de la solicitud',
+        inputPlaceholder: 'Describe por qué deseas editar este lente...',
+        inputValidator: (value) => {
+          if (!value) {
+            return 'Debes proporcionar un motivo';
+          }
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Enviar Solicitud',
+        cancelButtonText: 'Cancelar'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            const mensaje = `Solicitud de edición - Lente ID: ${lenteId}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
+            await notificacionService.create(mensaje);
+            Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
+          } catch {
+            Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
+          }
+        }
       });
       return;
     }

@@ -6,7 +6,23 @@ import { Users, Briefcase, UserCheck, ShoppingCart, MapPin, DollarSign, Package,
 export const Dashboard = () => {
   const { user } = useAuth();
 
-  const menuSections = [
+  let menuSections;
+  if (user?.rol === 'Optometrista') {
+    menuSections = [
+      {
+        id: 'lentes',
+        title: 'LENTES',
+        color: 'blue',
+        gradientFrom: 'from-blue-600',
+        gradientTo: 'to-indigo-600',
+        borderColor: 'border-blue-500',
+        items: [
+          { title: 'Lentes', icon: Glasses, path: '/lentes', gradient: 'from-violet-500 to-purple-500' },
+        ]
+      }
+    ];
+  } else {
+    menuSections = [
     {
       id: 'gestiones',
       title: 'GESTIONES',
@@ -72,7 +88,7 @@ export const Dashboard = () => {
         { title: 'Base de Datos', icon: Database, path: '/admin/database', gradient: 'from-gray-500 to-zinc-500' },
       ]
     }] : []),
-  ];
+  ];}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">

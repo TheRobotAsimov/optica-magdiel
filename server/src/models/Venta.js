@@ -63,26 +63,74 @@ class Venta {
   }
 
   static async updateById(folio, venta) {
-    const {
-      idasesor,
-      idcliente,
-      fecha,
-      institucion,
-      tipo,
-      inapam,
-      enganche,
-      total,
-      pagado,
-      estatus,
-      cant_pagos,
-      observaciones,
-      imagen_contrato,
-      imagen_cobranza
-    } = venta;
-    const [result] = await pool.execute(
-      'UPDATE venta SET idasesor = ?, idcliente = ?, fecha = ?, institucion = ?, tipo = ?, inapam = ?, enganche = ?, total = ?, pagado = ?, estatus = ?, cant_pagos = ?, observaciones = ?, imagen_contrato = ?, imagen_cobranza = ? WHERE folio = ?',
-      [idasesor, idcliente, fecha, institucion, tipo, inapam, enganche, total, pagado, estatus, cant_pagos, observaciones, imagen_contrato, imagen_cobranza, folio]
-    );
+    const fields = [];
+    const values = [];
+
+    if (venta.idasesor !== undefined) {
+      fields.push('idasesor = ?');
+      values.push(venta.idasesor);
+    }
+    if (venta.idcliente !== undefined) {
+      fields.push('idcliente = ?');
+      values.push(venta.idcliente);
+    }
+    if (venta.fecha !== undefined) {
+      fields.push('fecha = ?');
+      values.push(venta.fecha);
+    }
+    if (venta.institucion !== undefined) {
+      fields.push('institucion = ?');
+      values.push(venta.institucion);
+    }
+    if (venta.tipo !== undefined) {
+      fields.push('tipo = ?');
+      values.push(venta.tipo);
+    }
+    if (venta.inapam !== undefined) {
+      fields.push('inapam = ?');
+      values.push(venta.inapam);
+    }
+    if (venta.enganche !== undefined) {
+      fields.push('enganche = ?');
+      values.push(venta.enganche);
+    }
+    if (venta.total !== undefined) {
+      fields.push('total = ?');
+      values.push(venta.total);
+    }
+    if (venta.pagado !== undefined) {
+      fields.push('pagado = ?');
+      values.push(venta.pagado);
+    }
+    if (venta.estatus !== undefined) {
+      fields.push('estatus = ?');
+      values.push(venta.estatus);
+    }
+    if (venta.cant_pagos !== undefined) {
+      fields.push('cant_pagos = ?');
+      values.push(venta.cant_pagos);
+    }
+    if (venta.observaciones !== undefined) {
+      fields.push('observaciones = ?');
+      values.push(venta.observaciones);
+    }
+    if (venta.imagen_contrato !== undefined) {
+      fields.push('imagen_contrato = ?');
+      values.push(venta.imagen_contrato);
+    }
+    if (venta.imagen_cobranza !== undefined) {
+      fields.push('imagen_cobranza = ?');
+      values.push(venta.imagen_cobranza);
+    }
+
+    if (fields.length === 0) {
+      throw new Error('No fields to update');
+    }
+
+    const query = `UPDATE venta SET ${fields.join(', ')} WHERE folio = ?`;
+    values.push(folio);
+
+    const [result] = await pool.execute(query, values);
     return result.affectedRows;
   }
 
@@ -115,6 +163,13 @@ class Venta {
     `, [idasesor, fechaInicio, fechaFin]);
     return rows[0] || { total_ventas: 0, numero_ventas: 0 };
   }
+
+  //Venta.findByFolio
+  static async findByFolio(folio) {
+    const [rows] = await pool.execute('SELECT * FROM venta WHERE folio = ?', [folio]);
+    return rows[0];
+  }
+
 }
 
 export default Venta;
