@@ -57,77 +57,77 @@ const PriceTable = ({ title, data, originalData, onChange }) => {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBaseChanged ? 'border-yellow-400' : 'border-gray-200'}`}>$</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBaseChanged ? 'border-yellow-400' : 'border-gray-200'} ${values.base === '' || isNaN(values.base) ? 'border-red-500' : ''}`}>$</span>
                       <input
                         type="number"
                         value={values.base}
                         onChange={(e) => onChange(tratamiento, 'base', e.target.value)}
                         className={`w-24 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                          isBaseChanged 
-                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                          isBaseChanged
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
-                        }`}
+                        } ${values.base === '' || isNaN(values.base) ? 'border-red-500' : ''}`}
                       />
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isProcesadoChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isProcesadoChanged ? 'border-yellow-400' : 'border-gray-200'} ${values.procesado === '' || isNaN(values.procesado) ? 'border-red-500' : ''}`}>+</span>
                       <input
                         type="number"
                         value={values.procesado}
                         onChange={(e) => onChange(tratamiento, 'procesado', e.target.value)}
                         className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                          isProcesadoChanged 
-                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                          isProcesadoChanged
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
-                        }`}
+                        } ${values.procesado === '' || isNaN(values.procesado) ? 'border-red-500' : ''}`}
                       />
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isPoliChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isPoliChanged ? 'border-yellow-400' : 'border-gray-200'} ${values.subtipo.Policarbonato === '' || isNaN(values.subtipo.Policarbonato) ? 'border-red-500' : ''}`}>+</span>
                       <input
                         type="number"
                         value={values.subtipo.Policarbonato}
                         onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Policarbonato')}
                         className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                          isPoliChanged 
-                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                          isPoliChanged
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
-                        }`}
+                        } ${values.subtipo.Policarbonato === '' || isNaN(values.subtipo.Policarbonato) ? 'border-red-500' : ''}`}
                       />
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
-                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isHaidChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
+                      <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isHaidChanged ? 'border-yellow-400' : 'border-gray-200'} ${values.subtipo['Haid index'] === '' || isNaN(values.subtipo['Haid index']) ? 'border-red-500' : ''}`}>+</span>
                       <input
                         type="number"
                         value={values.subtipo['Haid index']}
                         onChange={(e) => onChange(tratamiento, 'subtipo', e.target.value, 'Haid index')}
                         className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                          isHaidChanged 
-                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                          isHaidChanged
+                            ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                             : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
-                        }`}
+                        } ${values.subtipo['Haid index'] === '' || isNaN(values.subtipo['Haid index']) ? 'border-red-500' : ''}`}
                       />
                     </div>
                   </td>
                   {isBifocal && (
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBlendChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
+                        <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-gray-50 text-gray-600 font-semibold ${isBlendChanged ? 'border-yellow-400' : 'border-gray-200'} ${values.blend === '' || isNaN(values.blend) ? 'border-red-500' : ''}`}>+</span>
                         <input
                           type="number"
                           value={values.blend}
                           onChange={(e) => onChange(tratamiento, 'blend', e.target.value)}
                           className={`w-20 px-3 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                            isBlendChanged 
-                              ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                            isBlendChanged
+                              ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                               : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
-                          }`}
+                          } ${values.blend === '' || isNaN(values.blend) ? 'border-red-500' : ''}`}
                         />
                       </div>
                     </td>
@@ -165,16 +165,16 @@ const AdditivesEditor = ({ data, originalData, onChange }) => {
             <span>Kit</span>
           </label>
           <div className="flex items-center">
-            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isKitChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
+            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isKitChanged ? 'border-yellow-400' : 'border-gray-200'} ${data.kit === '' || isNaN(data.kit) ? 'border-red-500' : ''}`}>+</span>
             <input
               type="number"
               value={data.kit}
               onChange={(e) => onChange('kit', e.target.value)}
               className={`w-full px-4 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                isKitChanged 
-                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                isKitChanged
+                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                   : 'border-gray-200 focus:ring-yellow-200 focus:border-yellow-400'
-              }`}
+              } ${data.kit === '' || isNaN(data.kit) ? 'border-red-500' : ''}`}
             />
           </div>
         </div>
@@ -186,16 +186,16 @@ const AdditivesEditor = ({ data, originalData, onChange }) => {
             <span>Tinte</span>
           </label>
           <div className="flex items-center">
-            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isTinteChanged ? 'border-yellow-400' : 'border-gray-200'}`}>+</span>
+            <span className={`px-3 py-2.5 border-2 rounded-l-xl bg-white text-gray-600 font-semibold ${isTinteChanged ? 'border-yellow-400' : 'border-gray-200'} ${data.tinte === '' || isNaN(data.tinte) ? 'border-red-500' : ''}`}>+</span>
             <input
               type="number"
               value={data.tinte}
               onChange={(e) => onChange('tinte', e.target.value)}
               className={`w-full px-4 py-2.5 border-2 border-l-0 rounded-r-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                isTinteChanged 
-                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+                isTinteChanged
+                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                   : 'border-gray-200 focus:ring-amber-200 focus:border-amber-400'
-              }`}
+              } ${data.tinte === '' || isNaN(data.tinte) ? 'border-red-500' : ''}`}
             />
           </div>
         </div>
@@ -211,13 +211,13 @@ const AdditivesEditor = ({ data, originalData, onChange }) => {
               type="number"
               value={data.inapam_discount}
               onChange={(e) => onChange('inapam_discount', e.target.value)}
-              className={`w-full px-4 py-2.5 border-2 rounded-l-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${
-                isInapamChanged 
-                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200' 
+              className={`w-full px-4 py-2.5 border-2 rounded-l-xl focus:outline-none focus:ring-2 transition-all duration-200 font-medium ${data.inapam_discount === '' || isNaN(data.inapam_discount) ? 'border-red-500' : ''} ${
+                isInapamChanged
+                  ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-200'
                   : 'border-gray-200 focus:ring-blue-200 focus:border-blue-400'
-              }`}
+              } `}
             />
-            <span className={`px-3 py-2.5 border-2 border-l-0 rounded-r-xl bg-white text-gray-600 font-semibold ${isInapamChanged ? 'border-yellow-400' : 'border-gray-200'}`}>%</span>
+            <span className={`px-3 py-2.5 border-2 border-l-0 rounded-r-xl bg-white text-gray-600 font-semibold ${isInapamChanged ? 'border-yellow-400' : 'border-gray-200'} ${data.inapam_discount === '' || isNaN(data.inapam_discount) ? 'border-red-500' : ''}`}>%</span>
           </div>
         </div>
 
@@ -261,13 +261,15 @@ const PriceCatalogEditor = () => {
       newCatalog.priceCatalog[material][tipo] = { ...prev.priceCatalog[material][tipo] };
       newCatalog.priceCatalog[material][tipo][tratamiento] = { ...prev.priceCatalog[material][tipo][tratamiento] };
 
+      const parsedValue = value === '' ? '' : parseFloat(value);
+
       if (subField) {
         newCatalog.priceCatalog[material][tipo][tratamiento][field] = {
           ...prev.priceCatalog[material][tipo][tratamiento][field],
-          [subField]: parseFloat(value),
+          [subField]: parsedValue,
         };
       } else {
-        newCatalog.priceCatalog[material][tipo][tratamiento][field] = parseFloat(value);
+        newCatalog.priceCatalog[material][tipo][tratamiento][field] = parsedValue;
       }
 
       return newCatalog;
@@ -277,9 +279,31 @@ const PriceCatalogEditor = () => {
   const handleAdditiveChange = (field, value) => {
     setCatalog((prev) => {
       const newCatalog = { ...prev };
-      newCatalog.additives[field] = parseFloat(value);
+      newCatalog.additives[field] = value === '' ? '' : parseFloat(value);
       return newCatalog;
     });
+  };
+
+  const isValid = () => {
+    if (!catalog) return false;
+    // check all price fields
+    for (const material in catalog.priceCatalog) {
+      for (const tipo in catalog.priceCatalog[material]) {
+        for (const tratamiento in catalog.priceCatalog[material][tipo]) {
+          const vals = catalog.priceCatalog[material][tipo][tratamiento];
+          if (vals.base === '' || isNaN(vals.base)) return false;
+          if (vals.procesado === '' || isNaN(vals.procesado)) return false;
+          if (vals.subtipo.Policarbonato === '' || isNaN(vals.subtipo.Policarbonato)) return false;
+          if (vals.subtipo['Haid index'] === '' || isNaN(vals.subtipo['Haid index'])) return false;
+          if (vals.blend !== undefined && (vals.blend === '' || isNaN(vals.blend))) return false;
+        }
+      }
+    }
+    // check additives
+    if (catalog.additives.kit === '' || isNaN(catalog.additives.kit)) return false;
+    if (catalog.additives.tinte === '' || isNaN(catalog.additives.tinte)) return false;
+    if (catalog.additives.inapam_discount === '' || isNaN(catalog.additives.inapam_discount)) return false;
+    return true;
   };
 
   const handleSaveChanges = async () => {
@@ -361,7 +385,7 @@ const PriceCatalogEditor = () => {
               </div>
               <button
                 onClick={handleSaveChanges}
-                disabled={loading}
+                disabled={loading || !isValid()}
                 className="flex items-center justify-center space-x-2 px-8 py-3 bg-white text-blue-600 hover:bg-blue-50 disabled:bg-gray-200 disabled:text-gray-400 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
               >
                 <Save className="h-5 w-5" />

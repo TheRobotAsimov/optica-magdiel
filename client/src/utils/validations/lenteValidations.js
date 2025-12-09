@@ -53,7 +53,7 @@ export const validateLenteForm = (formData) => {
   const entregaError = validateRequired(formData.fecha_entrega, 'Fecha de entrega');
   if (entregaError) errors.fecha_entrega = entregaError;
   else {
-    const dateError = validateDate(formData.fecha_entrega, 'Fecha de entrega', { future: true });
+    const dateError = validateDate(formData.fecha_entrega, 'Fecha de entrega');
     if (dateError) errors.fecha_entrega = dateError;
   }
 

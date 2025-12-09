@@ -246,6 +246,7 @@ const LenteForm = () => {
     const errors = validateLenteForm(lente);
     const hasErrors = Object.values(errors).some((err) => err);
     setIsFormValid(!hasErrors);
+    //console.log(errors);
   }, [lente, fieldErrors]);
 
   const handleSymptomChange = (e) => {

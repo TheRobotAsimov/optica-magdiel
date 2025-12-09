@@ -44,7 +44,7 @@
       "Progresivo": {
         "AR": {
           "base": 2600,
-          "procesado": 300,
+          "procesado": 499,
           "subtipo": {
             "Policarbonato": 700,
             "Haid index": 300
@@ -81,7 +81,7 @@
       },
       "Bifocal": {
         "AR": {
-          "base": 2500,
+          "base": 1200,
           "procesado": 200,
           "blend": 300,
           "subtipo": {
