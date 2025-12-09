@@ -1,6 +1,10 @@
+// Modelo de Pago para interactuar con la base de datos
+// Maneja operaciones CRUD de pagos
+
 import db from '../config/db.js';
 
 const Pago = {
+  // Obtener todos los pagos con información de cliente
   getAll: async () => {
     const [rows] = await db.query(`
       SELECT
@@ -18,6 +22,7 @@ const Pago = {
     return rows;
   },
 
+  // Obtener pagos pendientes con información de cliente
   getPending: async () => {
     const [rows] = await db.query(`
       SELECT
@@ -36,11 +41,13 @@ const Pago = {
     return rows;
   },
 
+  // Buscar pago por ID
   findById: async (id) => {
     const [rows] = await db.query('SELECT * FROM pago WHERE idpago = ?', [id]);
     return rows[0];
   },
 
+  // Crear un nuevo pago
   create: async (pago) => {
     const { folio, fecha, cantidad, estatus } = pago;
     const cantidadNum = parseFloat(cantidad) || 0;
@@ -51,6 +58,7 @@ const Pago = {
     return { id: result.insertId, ...pago };
   },
 
+  // Actualizar pago por ID con campos dinámicos
   update: async (id, pago) => {
     const { fecha, cantidad, estatus } = pago;
     const cantidadNum = parseFloat(cantidad) || 0;
@@ -87,6 +95,7 @@ const Pago = {
     return { id, ...pago };
   },
 
+  // Eliminar pago por ID
   remove: async (id) => {
     await db.query('DELETE FROM pago WHERE idpago = ?', [id]);
     return { id };

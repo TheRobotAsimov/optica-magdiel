@@ -1,3 +1,6 @@
+// Componente para generar reportes de desempeño de asesores
+// Incluye gráficos, tablas y exportación a PDF con datos de ventas y gastos
+
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
@@ -11,22 +14,23 @@ import NavComponent from '../common/NavBar';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+// Función para formatear fechas en español
 const formatDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('es-MX', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+  return date.toLocaleDateString('es-MX', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
   });
 };
 
-// Safe number conversion utility
+// Función segura para convertir valores a números
 const toNumber = (value) => {
   const num = parseFloat(value);
   return isNaN(num) ? 0 : num;
 };
 
-// Format currency with commas for thousands
+// Función para formatear moneda en pesos mexicanos
 const formatCurrency = (value) => {
   const num = toNumber(value);
   return num.toLocaleString('es-MX', {
@@ -35,7 +39,7 @@ const formatCurrency = (value) => {
   });
 };
 
-// Calculate date range based on selected period
+// Función para calcular rango de fechas basado en período seleccionado
 const getDateRange = (period) => {
   const today = new Date();
   const startDate = new Date();
@@ -70,6 +74,7 @@ const getDateRange = (period) => {
 };
 
 const DesempenoAsesorReport = () => {
+  // Estados para manejar filtros, datos del reporte y UI
   const [asesores, setAsesores] = useState([]);
   const [selectedAsesor, setSelectedAsesor] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('');
@@ -79,6 +84,7 @@ const DesempenoAsesorReport = () => {
   const [loading, setLoading] = useState(false);
   const chartRef = useRef(null);
 
+  // Efecto para cargar lista de asesores al montar componente
   useEffect(() => {
     const fetchAsesores = async () => {
       try {
@@ -91,6 +97,7 @@ const DesempenoAsesorReport = () => {
     fetchAsesores();
   }, []);
 
+  // Efecto para actualizar fechas cuando cambia el período seleccionado
   useEffect(() => {
     if (selectedPeriod) {
       const { start, end } = getDateRange(selectedPeriod);
@@ -99,6 +106,7 @@ const DesempenoAsesorReport = () => {
     }
   }, [selectedPeriod]);
 
+  // Función para generar el reporte de desempeño
   const handleGenerateReport = async () => {
     if (!selectedAsesor || !fechaInicio || !fechaFin) return;
 
@@ -113,16 +121,19 @@ const DesempenoAsesorReport = () => {
     }
   };
 
+  // Memoización para combinar y procesar datos de ventas y gastos diarios
   const mergedData = useMemo(() => {
     if (!reportData) return null;
 
     const dataMap = {};
-    
+
+    // Agregar ventas al mapa de fechas
     reportData.ventasDiarias.forEach(v => {
       const date = v.fecha.split('T')[0];
       dataMap[date] = { ventas: toNumber(v.total_ventas), gastos: 0 };
     });
 
+    // Agregar gastos al mapa de fechas
     reportData.gastosDiarios.forEach(g => {
       const date = g.fecha.split('T')[0];
       if (dataMap[date]) {
@@ -133,7 +144,7 @@ const DesempenoAsesorReport = () => {
     });
 
     const sortedDates = Object.keys(dataMap).sort();
-    
+
     return {
       labels: sortedDates,
       ventas: sortedDates.map(date => dataMap[date].ventas),
@@ -148,6 +159,7 @@ const DesempenoAsesorReport = () => {
     };
   }, [reportData]);
 
+  // Función para preparar datos del gráfico de barras
   const prepareChartData = () => {
     if (!mergedData) return null;
 
@@ -174,11 +186,12 @@ const DesempenoAsesorReport = () => {
     };
   };
 
+  // Configuración de opciones del gráfico
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { 
+      legend: {
         position: 'top',
         labels: {
           font: { size: 13, weight: '600' },
@@ -222,6 +235,7 @@ const DesempenoAsesorReport = () => {
     }
   };
 
+  // Función para descargar el reporte en formato PDF
   const downloadPDF = async () => {
     if (!reportData || !mergedData) return;
 

@@ -1,3 +1,6 @@
+// Componente de barra de navegación principal
+// Incluye logo, información de usuario, notificaciones en tiempo real, menú de navegación y logout
+
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext'
 import { Link } from 'react-router';
@@ -7,6 +10,7 @@ import notificacionService from '../../service/notificacionService';
 import useSocket from '../../hooks/useSocket';
 
 const NavComponent = () => {
+    // Estados para manejar notificaciones, menús y referencias
     const { user, logout } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
@@ -15,6 +19,7 @@ const NavComponent = () => {
     const socket = useSocket();
     const notificationRef = useRef(null);
 
+    // Efecto para cargar notificaciones iniciales si el usuario es Matriz
     useEffect(() => {
         if (user && user.rol === 'Matriz') {
             fetchUnreadCount();
@@ -22,6 +27,7 @@ const NavComponent = () => {
         }
     }, [user]);
 
+    // Efecto para escuchar nuevas notificaciones en tiempo real via socket
     useEffect(() => {
         if (socket && user && user.rol === 'Matriz') {
             socket.on('nueva_notificacion', (data) => {
@@ -31,7 +37,7 @@ const NavComponent = () => {
         }
     }, [socket, user]);
 
-    // Handle clicks outside notification dropdown
+    // Efecto para cerrar dropdown de notificaciones al hacer click fuera
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (notificationRef.current && !notificationRef.current.contains(event.target)) {
@@ -48,7 +54,7 @@ const NavComponent = () => {
         };
     }, [showNotifications]);
 
-    // Handle clicks outside mobile menu
+    // Efecto para cerrar menú móvil al hacer click fuera
     useEffect(() => {
         const handleClickOutside = (event) => {
             // Close mobile menu if clicking outside
@@ -66,6 +72,7 @@ const NavComponent = () => {
         };
     }, [showMobileMenu]);
 
+    // Función para obtener el conteo de notificaciones no leídas
     const fetchUnreadCount = async () => {
         try {
             const response = await notificacionService.getUnreadCount();
@@ -75,6 +82,7 @@ const NavComponent = () => {
         }
     };
 
+    // Función para obtener todas las notificaciones
     const fetchNotificaciones = async () => {
         try {
             const data = await notificacionService.getAll();
@@ -84,6 +92,7 @@ const NavComponent = () => {
         }
     };
 
+    // Función para marcar una notificación como leída
     const handleMarkAsRead = async (id) => {
         try {
             await notificacionService.markAsRead(id);
@@ -98,14 +107,16 @@ const NavComponent = () => {
         }
     };
 
+    // Función para manejar el logout del usuario
     const handleLogout = async () => {
         await logout();
     };
   
   return (
-    <nav className="bg-gradient-to-r from-blue-400 to-indigo-800 shadow-lg" style={{ backgroundColor: '#1A37A5' }}>
-      {/* Header section with logo, user info, and logout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   // Barra de navegación principal
+   <nav className="bg-gradient-to-r from-blue-400 to-indigo-800 shadow-lg" style={{ backgroundColor: '#1A37A5' }}>
+     {/* Header section with logo, user info, and logout */}
+     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center transition-all duration-200 transform hover:scale-105">
@@ -261,6 +272,7 @@ const NavComponent = () => {
       </div>
 
       {/* White navigation section */}
+      {/* Sección blanca con menú de navegación */}
       <div className="bg-white border-t border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Desktop navigation */}

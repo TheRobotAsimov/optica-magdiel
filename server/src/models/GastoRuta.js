@@ -1,6 +1,10 @@
+// Modelo de GastoRuta para interactuar con la base de datos
+// Maneja operaciones CRUD de gastos de ruta
+
 import db from '../config/db.js';
 
 const GastoRuta = {
+  // Obtener todos los gastos de ruta con información de ruta y asesor
   getAll: async () => {
     const [rows] = await db.query(`
       SELECT
@@ -18,11 +22,13 @@ const GastoRuta = {
     return rows;
   },
 
+  // Buscar gasto de ruta por ID
   findById: async (id) => {
     const [rows] = await db.query('SELECT * FROM gasto_ruta WHERE idgasto_ruta = ?', [id]);
     return rows[0];
   },
 
+  // Crear un nuevo gasto de ruta
   create: async (gastoRuta) => {
     const { idruta, cantidad, motivo } = gastoRuta;
     const [result] = await db.query(
@@ -32,6 +38,7 @@ const GastoRuta = {
     return { id: result.insertId, ...gastoRuta };
   },
 
+  // Actualizar gasto de ruta por ID
   update: async (id, gastoRuta) => {
     const { idruta, cantidad, motivo } = gastoRuta;
     await db.query(
@@ -41,11 +48,13 @@ const GastoRuta = {
     return { id, ...gastoRuta };
   },
 
+  // Eliminar gasto de ruta por ID
   remove: async (id) => {
     await db.query('DELETE FROM gasto_ruta WHERE idgasto_ruta = ?', [id]);
     return { id };
   },
 
+  // Obtener gastos agregados por asesor y rango de fechas (diarios)
   getGastosAggregatedByAsesorAndDateRange: async (idasesor, fechaInicio, fechaFin) => {
     const [rows] = await db.query(`
       SELECT
@@ -60,6 +69,7 @@ const GastoRuta = {
     return rows;
   },
 
+  // Obtener totales de gastos por asesor y rango de fechas
   getTotalGastosByAsesorAndDateRange: async (idasesor, fechaInicio, fechaFin) => {
     const [rows] = await db.query(`
       SELECT SUM(g.cantidad) as total_gastos

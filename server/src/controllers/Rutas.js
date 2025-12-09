@@ -1,5 +1,9 @@
+// Controlador para las rutas de gestión de rutas de asesores
+// Maneja operaciones CRUD de rutas
+
 import Ruta from '../models/Ruta.js';
 
+// Obtener todas las rutas
 export const getRutas = async (req, res) => {
   try {
     const rutas = await Ruta.getAll();
@@ -9,6 +13,7 @@ export const getRutas = async (req, res) => {
   }
 };
 
+// Obtener una ruta específica por ID
 export const getRuta = async (req, res) => {
   try {
     const ruta = await Ruta.findById(req.params.id);
@@ -20,6 +25,7 @@ export const getRuta = async (req, res) => {
   }
 };
 
+// Crear una nueva ruta
 export const createRuta = async (req, res) => {
   try {
     const newRuta = await Ruta.create(req.body);
@@ -31,6 +37,7 @@ export const createRuta = async (req, res) => {
   }
 };
 
+// Actualizar una ruta existente
 export const updateRuta = async (req, res) => {
   try {
     const updatedRuta = await Ruta.update(req.params.id, req.body);
@@ -42,6 +49,7 @@ export const updateRuta = async (req, res) => {
   }
 };
 
+// Eliminar una ruta
 export const deleteRuta = async (req, res) => {
   try {
     await Ruta.remove(req.params.id);

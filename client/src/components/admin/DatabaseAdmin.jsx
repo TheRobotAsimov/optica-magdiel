@@ -1,15 +1,20 @@
 
+// Componente para la administración de la base de datos
+// Permite descargar backups y restaurar la base de datos desde archivos SQL
+
 import { useState } from 'react';
 import { getDbDump, restoreDb } from '../../service/databaseService';
 import NavComponent from '../common/NavBar';
 import { Database, Download, Upload, Shield, AlertTriangle, CheckCircle, XCircle, FileText, Clock } from 'lucide-react';
 
 const DatabaseAdmin = () => {
+    // Estados para manejar el archivo seleccionado, mensajes de éxito/error y estado de procesamiento
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
 
+    // Función para manejar la descarga del backup de la base de datos
     const handleDownload = async () => {
         try {
             setError('');
@@ -35,10 +40,12 @@ const DatabaseAdmin = () => {
         }
     };
 
+    // Función para manejar el cambio de archivo seleccionado
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
 
+    // Función para manejar la restauración de la base de datos desde un archivo
     const handleRestore = async (e) => {
         e.preventDefault();
         if (!file) {
@@ -61,6 +68,7 @@ const DatabaseAdmin = () => {
     };
 
     return (
+        // Contenedor principal con fondo degradado
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
             <NavComponent />
             <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -85,6 +93,7 @@ const DatabaseAdmin = () => {
             </div>
             
             {/* Alert Messages */}
+            {/* Mensaje de éxito si existe */}
             {message && (
                 <div className="mb-6 animate-in fade-in duration-300">
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 p-4 rounded-xl shadow-md">
@@ -96,6 +105,7 @@ const DatabaseAdmin = () => {
                 </div>
             )}
 
+            {/* Mensaje de error si existe */}
             {error && (
                 <div className="mb-6 animate-in fade-in duration-300">
                     <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-500 p-4 rounded-xl shadow-md">
@@ -108,9 +118,11 @@ const DatabaseAdmin = () => {
             )}
 
             {/* Main Content Grid */}
+            {/* Grid principal con dos columnas para backup y restauración */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
                 {/* Backup Section */}
+                {/* Sección para descargar backup */}
                     <div className="relative">
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full">
                             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 border-b border-blue-100">
@@ -163,6 +175,7 @@ const DatabaseAdmin = () => {
                     </div>
 
                 {/* Restore Section */}
+                {/* Sección para restaurar base de datos */}
                     <div className="relative">
                         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 h-full">
                             <div className="bg-gradient-to-br from-orange-50 to-red-50 p-6 border-b border-orange-100">

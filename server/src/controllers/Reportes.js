@@ -5,6 +5,7 @@ import Empleado from '../models/Empleado.js';
 import Pago from '../models/Pago.js';
 import Entrega from '../models/Entrega.js';
 
+// Generar reporte de desempeño de un asesor específico
 export const getDesempenoAsesor = async (req, res) => {
   try {
     const { idasesor, fechaInicio, fechaFin } = req.query;
@@ -55,6 +56,7 @@ export const getDesempenoAsesor = async (req, res) => {
   }
 };
 
+// Generar reporte de pagos de clientes con análisis de morosidad
 export const getPagosClientes = async (req, res) => {
   try {
     const { fechaInicio, fechaFin } = req.query;
@@ -199,188 +201,190 @@ export const getPagosClientes = async (req, res) => {
   }
 };
 
+// Generar reporte de rutas y actividades de asesores para una fecha específica
 export const getRutasReport = async (req, res) => {
- try {
-   const { fecha } = req.query;
+  try {
+    const { fecha } = req.query;
 
-   if (!fecha) {
-     return res.status(400).json({ message: 'Fecha es requerida' });
-   }
+    if (!fecha) {
+      return res.status(400).json({ message: 'Fecha es requerida' });
+    }
 
-   // Obtener todos los asesores
-   const asesores = await Empleado.getByPuesto('Asesor');
+    // Obtener todos los asesores
+    const asesores = await Empleado.getByPuesto('Asesor');
 
-   const reportData = [];
+    const reportData = [];
 
-   // Para cada asesor, calcular estadísticas del día
-   for (const asesor of asesores) {
-     // Ventas del día
-     const ventasDia = await pool.execute(`
-       SELECT COUNT(*) as cantidad_ventas, SUM(total) as monto_ventas
-       FROM venta
-       WHERE idasesor = ? AND DATE(fecha) = ?
-     `, [asesor.idempleado, fecha]);
+    // Para cada asesor, calcular estadísticas del día
+    for (const asesor of asesores) {
+      // Ventas del día
+      const ventasDia = await pool.execute(`
+        SELECT COUNT(*) as cantidad_ventas, SUM(total) as monto_ventas
+        FROM venta
+        WHERE idasesor = ? AND DATE(fecha) = ?
+      `, [asesor.idempleado, fecha]);
 
-     // Gastos del día (a través de rutas)
-     const gastosDia = await pool.execute(`
-       SELECT SUM(g.cantidad) as monto_gastos, COUNT(*) as cantidad_gastos
-       FROM gasto_ruta g
-       JOIN ruta r ON g.idruta = r.idruta
-       WHERE r.idasesor = ? AND DATE(r.fecha) = ?
-     `, [asesor.idempleado, fecha]);
+      // Gastos del día (a través de rutas)
+      const gastosDia = await pool.execute(`
+        SELECT SUM(g.cantidad) as monto_gastos, COUNT(*) as cantidad_gastos
+        FROM gasto_ruta g
+        JOIN ruta r ON g.idruta = r.idruta
+        WHERE r.idasesor = ? AND DATE(r.fecha) = ?
+      `, [asesor.idempleado, fecha]);
 
-     // Entregas del día
-     const entregasDia = await pool.execute(`
-       SELECT
-         SUM(CASE WHEN e.estatus = 'Entregado' THEN 1 ELSE 0 END) as entregas_completadas,
-         SUM(CASE WHEN e.estatus != 'Entregado' THEN 1 ELSE 0 END) as entregas_pendientes
-       FROM entrega e
-       JOIN ruta r ON e.idruta = r.idruta
-       WHERE r.idasesor = ? AND DATE(r.fecha) = ?
-     `, [asesor.idempleado, fecha]);
+      // Entregas del día
+      const entregasDia = await pool.execute(`
+        SELECT
+          SUM(CASE WHEN e.estatus = 'Entregado' THEN 1 ELSE 0 END) as entregas_completadas,
+          SUM(CASE WHEN e.estatus != 'Entregado' THEN 1 ELSE 0 END) as entregas_pendientes
+        FROM entrega e
+        JOIN ruta r ON e.idruta = r.idruta
+        WHERE r.idasesor = ? AND DATE(r.fecha) = ?
+      `, [asesor.idempleado, fecha]);
 
-     // Pagos recibidos del día
-     const pagosDia = await pool.execute(`
-       SELECT SUM(p.cantidad) as monto_pagos
-       FROM pago p
-       JOIN venta v ON p.folio = v.folio
-       WHERE v.idasesor = ? AND DATE(p.fecha) = ? AND p.estatus = 'Pagado'
-     `, [asesor.idempleado, fecha]);
+      // Pagos recibidos del día
+      const pagosDia = await pool.execute(`
+        SELECT SUM(p.cantidad) as monto_pagos
+        FROM pago p
+        JOIN venta v ON p.folio = v.folio
+        WHERE v.idasesor = ? AND DATE(p.fecha) = ? AND p.estatus = 'Pagado'
+      `, [asesor.idempleado, fecha]);
 
-     const asesorData = {
-       idasesor: asesor.idempleado,
-       nombre: `${asesor.nombre} ${asesor.paterno} ${asesor.materno || ''}`.trim(),
-       ventas: {
-         cantidad: parseInt(ventasDia[0][0].cantidad_ventas) || 0,
-         monto: parseFloat(ventasDia[0][0].monto_ventas) || 0
-       },
-       gastos: {
-         cantidad: parseInt(gastosDia[0][0].cantidad_gastos) || 0,
-         monto: parseFloat(gastosDia[0][0].monto_gastos) || 0
-       },
-       entregas: {
-         completadas: parseInt(entregasDia[0][0].entregas_completadas) || 0,
-         pendientes: parseInt(entregasDia[0][0].entregas_pendientes) || 0
-       },
-       pagos: {
-         monto: parseFloat(pagosDia[0][0].monto_pagos) || 0
-       }
-     };
+      const asesorData = {
+        idasesor: asesor.idempleado,
+        nombre: `${asesor.nombre} ${asesor.paterno} ${asesor.materno || ''}`.trim(),
+        ventas: {
+          cantidad: parseInt(ventasDia[0][0].cantidad_ventas) || 0,
+          monto: parseFloat(ventasDia[0][0].monto_ventas) || 0
+        },
+        gastos: {
+          cantidad: parseInt(gastosDia[0][0].cantidad_gastos) || 0,
+          monto: parseFloat(gastosDia[0][0].monto_gastos) || 0
+        },
+        entregas: {
+          completadas: parseInt(entregasDia[0][0].entregas_completadas) || 0,
+          pendientes: parseInt(entregasDia[0][0].entregas_pendientes) || 0
+        },
+        pagos: {
+          monto: parseFloat(pagosDia[0][0].monto_pagos) || 0
+        }
+      };
 
-     reportData.push(asesorData);
-   }
+      reportData.push(asesorData);
+    }
 
-   // Calcular totales generales para el gráfico circular
-   const totalesGenerales = {
-     pagos_total: reportData.reduce((sum, asesor) => sum + asesor.pagos.monto, 0),
-     gastos_total: reportData.reduce((sum, asesor) => sum + asesor.gastos.monto, 0)
-   };
+    // Calcular totales generales para el gráfico circular
+    const totalesGenerales = {
+      pagos_total: reportData.reduce((sum, asesor) => sum + asesor.pagos.monto, 0),
+      gastos_total: reportData.reduce((sum, asesor) => sum + asesor.gastos.monto, 0)
+    };
 
-   res.json({
-     fecha,
-     asesores: reportData,
-     totales_generales: totalesGenerales
-   });
+    res.json({
+      fecha,
+      asesores: reportData,
+      totales_generales: totalesGenerales
+    });
 
- } catch (error) {
-   console.error('Error en getRutasReport:', error);
-   res.status(500).json({ error: error.message });
- }
+  } catch (error) {
+    console.error('Error en getRutasReport:', error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
+// Generar reporte de balance general (ingresos vs egresos) por rango de fechas
 export const getBalanceReport = async (req, res) => {
- try {
-   const { fechaInicio, fechaFin } = req.query;
+  try {
+    const { fechaInicio, fechaFin } = req.query;
 
-   if (!fechaInicio || !fechaFin) {
-     return res.status(400).json({ message: 'Fecha inicio y fecha fin son requeridas' });
-   }
+    if (!fechaInicio || !fechaFin) {
+      return res.status(400).json({ message: 'Fecha inicio y fecha fin son requeridas' });
+    }
 
-   // Obtener ingresos diarios (pagos con estatus 'Pagado')
-   const ingresosDiarios = await pool.execute(`
-     SELECT
-       DATE(p.fecha) as fecha,
-       SUM(p.cantidad) as total_ingresos
-     FROM pago p
-     WHERE p.fecha BETWEEN ? AND ?
-       AND p.estatus = 'Pagado'
-     GROUP BY DATE(p.fecha)
-     ORDER BY DATE(p.fecha)
-   `, [fechaInicio, fechaFin]);
+    // Obtener ingresos diarios (pagos con estatus 'Pagado')
+    const ingresosDiarios = await pool.execute(`
+      SELECT
+        DATE(p.fecha) as fecha,
+        SUM(p.cantidad) as total_ingresos
+      FROM pago p
+      WHERE p.fecha BETWEEN ? AND ?
+        AND p.estatus = 'Pagado'
+      GROUP BY DATE(p.fecha)
+      ORDER BY DATE(p.fecha)
+    `, [fechaInicio, fechaFin]);
 
-   // Obtener egresos diarios (gastos de ruta)
-   const egresosDiarios = await pool.execute(`
-     SELECT
-       DATE(r.fecha) as fecha,
-       SUM(g.cantidad) as total_egresos
-     FROM gasto_ruta g
-     JOIN ruta r ON g.idruta = r.idruta
-     WHERE r.fecha BETWEEN ? AND ?
-     GROUP BY DATE(r.fecha)
-     ORDER BY DATE(r.fecha)
-   `, [fechaInicio, fechaFin]);
+    // Obtener egresos diarios (gastos de ruta)
+    const egresosDiarios = await pool.execute(`
+      SELECT
+        DATE(r.fecha) as fecha,
+        SUM(g.cantidad) as total_egresos
+      FROM gasto_ruta g
+      JOIN ruta r ON g.idruta = r.idruta
+      WHERE r.fecha BETWEEN ? AND ?
+      GROUP BY DATE(r.fecha)
+      ORDER BY DATE(r.fecha)
+    `, [fechaInicio, fechaFin]);
 
-   // Calcular totales
-   const totalIngresos = ingresosDiarios[0].reduce((sum, row) => sum + parseFloat(row.total_ingresos), 0);
-   const totalEgresos = egresosDiarios[0].reduce((sum, row) => sum + parseFloat(row.total_egresos), 0);
+    // Calcular totales
+    const totalIngresos = ingresosDiarios[0].reduce((sum, row) => sum + parseFloat(row.total_ingresos), 0);
+    const totalEgresos = egresosDiarios[0].reduce((sum, row) => sum + parseFloat(row.total_egresos), 0);
 
-   // Crear mapa de fechas para combinar ingresos y egresos
-   const fechaMap = new Map();
+    // Crear mapa de fechas para combinar ingresos y egresos
+    const fechaMap = new Map();
 
-   // Función para normalizar fechas
-   const normalizeDate = (date) => {
-     if (date instanceof Date) {
-       return date.toISOString().split('T')[0];
-     }
-     if (typeof date === 'string' && date.includes('T')) {
-       return date.split('T')[0];
-     }
-     return date;
-   };
+    // Función para normalizar fechas
+    const normalizeDate = (date) => {
+      if (date instanceof Date) {
+        return date.toISOString().split('T')[0];
+      }
+      if (typeof date === 'string' && date.includes('T')) {
+        return date.split('T')[0];
+      }
+      return date;
+    };
 
-   // Agregar ingresos al mapa
-   ingresosDiarios[0].forEach(row => {
-     const fecha = normalizeDate(row.fecha);
-     fechaMap.set(fecha, {
-       fecha,
-       ingresos: parseFloat(row.total_ingresos) || 0,
-       egresos: 0
-     });
-   });
+    // Agregar ingresos al mapa
+    ingresosDiarios[0].forEach(row => {
+      const fecha = normalizeDate(row.fecha);
+      fechaMap.set(fecha, {
+        fecha,
+        ingresos: parseFloat(row.total_ingresos) || 0,
+        egresos: 0
+      });
+    });
 
-   // Agregar egresos al mapa
-   egresosDiarios[0].forEach(row => {
-     const fecha = normalizeDate(row.fecha);
-     if (fechaMap.has(fecha)) {
-       fechaMap.get(fecha).egresos = parseFloat(row.total_egresos) || 0;
-     } else {
-       fechaMap.set(fecha, {
-         fecha,
-         ingresos: 0,
-         egresos: parseFloat(row.total_egresos) || 0
-       });
-     }
-   });
+    // Agregar egresos al mapa
+    egresosDiarios[0].forEach(row => {
+      const fecha = normalizeDate(row.fecha);
+      if (fechaMap.has(fecha)) {
+        fechaMap.get(fecha).egresos = parseFloat(row.total_egresos) || 0;
+      } else {
+        fechaMap.set(fecha, {
+          fecha,
+          ingresos: 0,
+          egresos: parseFloat(row.total_egresos) || 0
+        });
+      }
+    });
 
-   // Convertir mapa a array ordenado
-   const datosDiarios = Array.from(fechaMap.values()).sort((a, b) => {
-     const fechaA = typeof a.fecha === 'string' ? a.fecha : a.fecha.toISOString().split('T')[0];
-     const fechaB = typeof b.fecha === 'string' ? b.fecha : b.fecha.toISOString().split('T')[0];
-     return fechaA.localeCompare(fechaB);
-   });
+    // Convertir mapa a array ordenado
+    const datosDiarios = Array.from(fechaMap.values()).sort((a, b) => {
+      const fechaA = typeof a.fecha === 'string' ? a.fecha : a.fecha.toISOString().split('T')[0];
+      const fechaB = typeof b.fecha === 'string' ? b.fecha : b.fecha.toISOString().split('T')[0];
+      return fechaA.localeCompare(fechaB);
+    });
 
-   res.json({
-     rangoFechas: { inicio: fechaInicio, fin: fechaFin },
-     totales: {
-       ingresos: totalIngresos,
-       egresos: totalEgresos,
-       balance: totalIngresos - totalEgresos
-     },
-     datosDiarios
-   });
+    res.json({
+      rangoFechas: { inicio: fechaInicio, fin: fechaFin },
+      totales: {
+        ingresos: totalIngresos,
+        egresos: totalEgresos,
+        balance: totalIngresos - totalEgresos
+      },
+      datosDiarios
+    });
 
- } catch (error) {
-   console.error('Error en getBalanceReport:', error);
-   res.status(500).json({ error: error.message });
- }
+  } catch (error) {
+    console.error('Error en getBalanceReport:', error);
+    res.status(500).json({ error: error.message });
+  }
 };

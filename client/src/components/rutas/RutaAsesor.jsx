@@ -1,3 +1,6 @@
+// Componente para la gestión de rutas de asesores
+// Permite iniciar, gestionar y finalizar rutas con entregas, gastos y ventas
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
@@ -8,7 +11,8 @@ import { Save, ArrowLeft, Package, DollarSign, ShoppingCart, CheckCircle, Edit }
 import Swal from 'sweetalert2';
 
 const RutaAsesor = () => {
-  const [currentWindow, setCurrentWindow] = useState(1);
+  // Estados para manejar las diferentes ventanas/pasos de la ruta
+  const [currentWindow, setCurrentWindow] = useState(1); // 1: iniciar, 2: en ruta, 3: finalizar
   const [currentRouteId, setCurrentRouteId] = useState(null);
   const [routeData, setRouteData] = useState(null);
   const [formData, setFormData] = useState({
@@ -19,109 +23,113 @@ const RutaAsesor = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Check access control
-  useEffect(() => {
-    if (user && user.puesto !== 'Asesor') {
-      navigate('/dashboard');
-      return;
-    }
-  }, [user, navigate]);
+  // Control de acceso: solo asesores pueden acceder
+    useEffect(() => {
+      if (user && user.puesto !== 'Asesor') {
+        navigate('/dashboard');
+        return;
+      }
+    }, [user, navigate]);
 
   
 
-  // Load active route on mount and when navigating back
-  useEffect(() => {
-    const loadActiveRoute = async () => {
-      if (!user || user.puesto !== 'Asesor') return;
-
-      // Check URL parameters for window navigation
-      const urlParams = new URLSearchParams(window.location.search);
-      const targetWindow = urlParams.get('window');
-
-      const savedRouteId = localStorage.getItem('activeRouteId');
-      const savedWindow = localStorage.getItem('currentWindow');
-
-      if (savedRouteId && savedWindow === '2') {
-        try {
-          const rutas = await rutaService.getAllRutas();
-          const restoredRoute = rutas.find(r => r.idruta === parseInt(savedRouteId));
-
-          if (restoredRoute && restoredRoute.estatus === 'Activa') {
-            setCurrentRouteId(restoredRoute.idruta);
-            setRouteData(restoredRoute);
-            setCurrentWindow(targetWindow === '3' ? 3 : 2);
-            return;
-          } else {
-            localStorage.removeItem('activeRouteId');
-            localStorage.removeItem('currentWindow');
+  // Cargar ruta activa al montar el componente y restaurar estado si existe
+    useEffect(() => {
+      const loadActiveRoute = async () => {
+        if (!user || user.puesto !== 'Asesor') return;
+  
+        // Verificar parámetros de URL para navegación de ventanas
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetWindow = urlParams.get('window');
+  
+        const savedRouteId = localStorage.getItem('activeRouteId');
+        const savedWindow = localStorage.getItem('currentWindow');
+  
+        // Intentar restaurar ruta guardada en localStorage
+        if (savedRouteId && savedWindow === '2') {
+          try {
+            const rutas = await rutaService.getAllRutas();
+            const restoredRoute = rutas.find(r => r.idruta === parseInt(savedRouteId));
+  
+            if (restoredRoute && restoredRoute.estatus === 'Activa') {
+              setCurrentRouteId(restoredRoute.idruta);
+              setRouteData(restoredRoute);
+              setCurrentWindow(targetWindow === '3' ? 3 : 2);
+              return;
+            } else {
+              localStorage.removeItem('activeRouteId');
+              localStorage.removeItem('currentWindow');
+            }
+          } catch (err) {
+            console.error('Error restoring saved route:', err);
           }
-        } catch (err) {
-          console.error('Error restoring saved route:', err);
-        }
-      } else {
-        try {
-          const rutas = await rutaService.getAllRutas();
-          const restoredRoute = rutas.find(r => r.idasesor === user.idempleado && r.estatus === 'Activa');
-          if (restoredRoute) {
-            setCurrentRouteId(restoredRoute.idruta);
-            setRouteData(restoredRoute);
-            setCurrentWindow(targetWindow === '3' ? 3 : 2);
-            return;
-          }
-        } catch (err) {
-          console.error('Error checking for existing active route:', err);
-
-        }
-      }
-
-      try {
-        const rutas = await rutaService.getAllRutas();
-        const activeRoute = rutas.find(r =>
-          r.idasesor === user.idempleado &&
-          r.estatus === 'Activa' &&
-          r.fecha === new Date().toISOString().slice(0, 10)
-        );
-
-        if (activeRoute) {
-          setCurrentRouteId(activeRoute.idruta);
-          setRouteData(activeRoute);
-          setCurrentWindow(targetWindow === '3' ? 3 : 2);
         } else {
-          setCurrentWindow(1);
-        }
-      } catch (err) {
-        console.error('Error loading active route:', err);
-      }
-    };
-
-    loadActiveRoute();
-  }, [user]);
-
+          // Buscar ruta activa del asesor actual
+          try {
+            const rutas = await rutaService.getAllRutas();
+            const restoredRoute = rutas.find(r => r.idasesor === user.idempleado && r.estatus === 'Activa');
+            if (restoredRoute) {
+              setCurrentRouteId(restoredRoute.idruta);
+              setRouteData(restoredRoute);
+              setCurrentWindow(targetWindow === '3' ? 3 : 2);
+              return;
+            }
+          } catch (err) {
+            console.error('Error checking for existing active route:', err);
   
-
-  // Reload route data when component becomes visible (e.g., after navigation)
-  useEffect(() => {
-    if (currentRouteId && user && user.puesto === 'Asesor') {
-      const refreshRouteData = async () => {
+          }
+        }
+  
+        // Buscar ruta activa para hoy
         try {
           const rutas = await rutaService.getAllRutas();
-          const currentRoute = rutas.find(r => r.idruta === currentRouteId);
-          if (currentRoute) {
-            setRouteData(currentRoute);
+          const activeRoute = rutas.find(r =>
+            r.idasesor === user.idempleado &&
+            r.estatus === 'Activa' &&
+            r.fecha === new Date().toISOString().slice(0, 10)
+          );
+  
+          if (activeRoute) {
+            setCurrentRouteId(activeRoute.idruta);
+            setRouteData(activeRoute);
+            setCurrentWindow(targetWindow === '3' ? 3 : 2);
+          } else {
+            setCurrentWindow(1);
           }
         } catch (err) {
-          console.error('Error refreshing route data:', err);
+          console.error('Error loading active route:', err);
         }
       };
+  
+      loadActiveRoute();
+    }, [user]);
 
-      // Refresh immediately and set up interval for continuous updates
-      refreshRouteData();
-      const interval = setInterval(refreshRouteData, 2000); // Refresh every 2 seconds
+  
 
-      return () => clearInterval(interval); // Cleanup on unmount
-    }
-  }, [currentRouteId, user]);
+  // Recargar datos de la ruta periódicamente para mantener actualizado
+    useEffect(() => {
+      if (currentRouteId && user && user.puesto === 'Asesor') {
+        const refreshRouteData = async () => {
+          try {
+            const rutas = await rutaService.getAllRutas();
+            const currentRoute = rutas.find(r => r.idruta === currentRouteId);
+            if (currentRoute) {
+              setRouteData(currentRoute);
+            }
+          } catch (err) {
+            console.error('Error refreshing route data:', err);
+          }
+        };
+  
+        // Actualizar inmediatamente y configurar intervalo para actualizaciones continuas
+        refreshRouteData();
+        const interval = setInterval(refreshRouteData, 2000); // Actualizar cada 2 segundos
+  
+        return () => clearInterval(interval); // Limpiar al desmontar
+      }
+    }, [currentRouteId, user]);
 
+  // Guardar estado de la ruta en localStorage para persistencia
   useEffect(() => {
     if (currentRouteId && currentWindow === 2) {
       localStorage.setItem('activeRouteId', currentRouteId);
@@ -136,12 +144,14 @@ const RutaAsesor = () => {
   }, [currentWindow, currentRouteId]);
 
 
+  // Manejador de cambios en los inputs del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
 
+  // Función para iniciar una nueva ruta
   const startRoute = async (e) => {
     e.preventDefault();
 
@@ -199,6 +209,7 @@ const RutaAsesor = () => {
     }
   };
 
+  // Funciones de navegación para diferentes acciones de la ruta
   const registerDelivery = () => {
     navigate(`/entregas/complete?ruta=${currentRouteId}`);
   };
@@ -223,6 +234,7 @@ const RutaAsesor = () => {
     navigate(`/entregas/complete?ruta=${currentRouteId}&undelivered=pago`);
   };
 
+  // Función para solicitar edición de la ruta al administrador
   const handleEditRequest = () => {
     Swal.fire({
       title: 'Solicitar edición',
@@ -250,6 +262,7 @@ const RutaAsesor = () => {
     });
   };
 
+  // Función para finalizar la ruta definitivamente
   const finalizeRoute = async () => {
     const remainingLentes = routeData.lentes_recibidos - routeData.lentes_entregados - (routeData.lentes_no_entregados || 0);
     const remainingTarjetas = routeData.tarjetas_recibidas - routeData.tarjetas_entregadas - (routeData.tarjetas_no_entregadas || 0);
@@ -311,11 +324,13 @@ const RutaAsesor = () => {
     }
   };
 
+  // Verificación de acceso: solo asesores pueden ver el componente
   if (user && user.puesto !== 'Asesor') {
-    return null; // Access denied
+    return null; // Acceso denegado
   }
 
   return (
+    // Contenedor principal del componente
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -330,6 +345,7 @@ const RutaAsesor = () => {
           </div>
 
           <div className="px-6 py-6">
+            {/* Ventana 1: Iniciar ruta */}
             {currentWindow === 1 && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Iniciar Ruta</h2>
@@ -378,6 +394,7 @@ const RutaAsesor = () => {
               </div>
             )}
 
+            {/* Ventana 2: Gestión de ruta activa */}
             {currentWindow === 2 && routeData && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">En Ruta</h2>
@@ -444,6 +461,7 @@ const RutaAsesor = () => {
               </div>
             )}
 
+            {/* Ventana 3: Finalización de ruta */}
             {currentWindow === 3 && routeData && (
               <div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-6">Fin de Ruta</h2>

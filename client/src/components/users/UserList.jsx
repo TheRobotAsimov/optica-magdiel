@@ -1,3 +1,5 @@
+// Componente para listar usuarios con funcionalidades de búsqueda, edición y eliminación
+
 import { useEffect, useState } from 'react';
 import userService from '../../service/userService';
 import Loading from '../common/Loading';
@@ -8,12 +10,14 @@ import { Link, useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 
 const UserList = () => {
+  // Estados para manejar la lista de usuarios y la búsqueda
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
 
+  // Efecto para cargar la lista de usuarios al montar el componente
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -60,20 +64,24 @@ const UserList = () => {
     })
   };
 
+  // Función para navegar a la página de edición de un usuario
   const handleEdit = (userId) => {
     navigate(`/users/${userId}/edit`);
   };
 
+  // Mostrar componente de carga mientras se obtienen los usuarios
   if (loading) {
     return (
       <Loading />
     );
   }
 
+  // Mostrar componente de error si hay un error
   if (error) {
     return <Error message={error} />;
   }
 
+  // Función para obtener las clases CSS del badge según el rol
   const getRolBadge = (rol) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
     switch (rol) {
@@ -89,6 +97,7 @@ const UserList = () => {
   };
 
   return (
+    // Contenedor principal de la lista de usuarios
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -112,10 +121,11 @@ const UserList = () => {
 
       <div className="px-4 py-6 sm:px-0">
           <div className="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
-        
+
               {/* Header */}
               <div className="mb-8">
                 {/* Search and Action Bar */}
+                {/* Barra de búsqueda y acciones */}
                 <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6">
                   {/* Grupo: Search + Botón Aplicar filtro */}
                   <div className="flex items-center gap-4 flex-1 max-w-md">
@@ -145,6 +155,7 @@ const UserList = () => {
               </div>
 
               {/* Table Container */}
+              {/* Contenedor de la tabla de usuarios */}
 <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
                 <div className="overflow-x-auto">
                   <table className="w-full">

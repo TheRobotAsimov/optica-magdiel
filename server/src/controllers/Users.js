@@ -1,5 +1,9 @@
+// Controlador para las rutas de usuarios
+// Maneja las operaciones CRUD de usuarios
+
 import User from '../models/User.js';
 
+// Obtener todos los usuarios
 export const getAllUsers = async (req, res) => {
     try {
         const users = await User.getAll();
@@ -10,6 +14,7 @@ export const getAllUsers = async (req, res) => {
     }
 };
 
+// Obtener un usuario por ID
 export const getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
@@ -23,6 +28,7 @@ export const getUserById = async (req, res) => {
     }
 };
 
+// Crear un nuevo usuario
 export const createUser = async (req, res) => {
     try {
         const userId = await User.create(req.body);
@@ -33,6 +39,7 @@ export const createUser = async (req, res) => {
     }
 };
 
+// Actualizar un usuario existente
 export const updateUser = async (req, res) => {
     try {
         await User.update(req.params.id, req.body);
@@ -43,6 +50,7 @@ export const updateUser = async (req, res) => {
     }
 };
 
+// Eliminar un usuario
 export const deleteUser = async (req, res) => {
     try {
         await User.delete(req.params.id);
@@ -53,6 +61,7 @@ export const deleteUser = async (req, res) => {
     }
 };
 
+// Obtener usuarios que no tienen empleado asociado
 export const getUsersWithoutEmployee = async (req, res) => {
     try {
         const users = await User.getUsersWithoutEmployee();

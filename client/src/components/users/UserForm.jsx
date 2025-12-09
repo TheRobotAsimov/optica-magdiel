@@ -1,3 +1,6 @@
+// Componente para crear o editar usuarios
+// Maneja formularios con validación en tiempo real y envío de datos
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import userService from '../../service/userService';
@@ -8,25 +11,28 @@ import { Save, ArrowLeft, User } from 'lucide-react';
 import { validateUserForm, validateUserField } from '../../utils/validations/index.js';
 
 const UserForm = () => {
-  const [user, setUser] = useState({
-    correo: '',
-    contrasena: '',
-    rol: 'Optometrista'
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [isFormValid, setIsFormValid] = useState(false);
+   // Estados para manejar el formulario de usuario
+   const [user, setUser] = useState({
+     correo: '',
+     contrasena: '',
+     rol: 'Optometrista'
+   });
+   const [loading, setLoading] = useState(false);
+   const [error, setError] = useState(null);
+   const [fieldErrors, setFieldErrors] = useState({});
+   const [touched, setTouched] = useState({});
+   const { id } = useParams();
+   const navigate = useNavigate();
+   const [isFormValid, setIsFormValid] = useState(false);
 
+  // Efecto para validar el formulario completo
   useEffect(() => {
     const errors = validateUserForm(user);
     const hasErrors = Object.values(errors).some((err) => err);
     setIsFormValid(!hasErrors);
   }, [user, fieldErrors]);
 
+  // Efecto para cargar datos del usuario si estamos editando
   useEffect(() => {
     if (id) {
       const fetchUser = async () => {
@@ -44,6 +50,7 @@ const UserForm = () => {
     }
   }, [id]);
 
+  // Manejador de cambios en los inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prevUser) => ({ ...prevUser, [name]: value }));
@@ -55,6 +62,7 @@ const UserForm = () => {
     }
   };
 
+  // Manejador de pérdida de foco para marcar campos como tocados
   const handleBlur = (e) => {
     const { name, value } = e.target;
     setTouched(prev => ({ ...prev, [name]: true }));
@@ -63,6 +71,7 @@ const UserForm = () => {
     setFieldErrors(prev => ({ ...prev, [name]: error }));
   };
 
+  // Manejador del envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -89,12 +98,14 @@ const UserForm = () => {
     }
   };
 
+  // Mostrar componente de carga mientras se obtienen datos
   if (loading) {
     return (
       <Loading />
     );
   }
 
+  // Mostrar componente de error si hay un error general
   if (error) {
     return (
       <Error message={error} />
@@ -102,6 +113,7 @@ const UserForm = () => {
   }
 
   return (
+    // Contenedor principal del formulario
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -139,6 +151,7 @@ const UserForm = () => {
             <form onSubmit={handleSubmit} className="space-y-8">
 
               {/* Account Information Section */}
+              {/* Sección de información de cuenta */}
               <div className="relative">
                 <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 border border-blue-100">
@@ -231,6 +244,7 @@ const UserForm = () => {
               </div>
 
               {/* Action Buttons */}
+              {/* Botones de acción del formulario */}
               <div className="flex flex-col sm:flex-row gap-4 justify-end pt-8 border-t-2 border-gray-200">
                 <button
                   type="button"

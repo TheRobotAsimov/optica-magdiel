@@ -1,6 +1,10 @@
+// Modelo de Venta para interactuar con la base de datos
+// Maneja operaciones CRUD de ventas
+
 import pool from '../config/db.js';
 
 class Venta {
+  // Crear una nueva venta en la base de datos
   static async create(newVenta) {
     const {
       folio,
@@ -26,6 +30,7 @@ class Venta {
     return result.insertId;
   }
 
+  // Obtener todas las ventas con información de cliente y asesor
   static async getAll() {
     const [rows] = await pool.execute(`
       SELECT
@@ -41,11 +46,13 @@ class Venta {
     return rows;
   }
 
+  // Obtener ventas por asesor específico
   static async getByAsesor(idasesor) {
     const [rows] = await pool.execute('SELECT * FROM venta WHERE idasesor = ?', [idasesor]);
     return rows;
   }
 
+  // Buscar venta por folio con información completa
   static async findById(folio) {
     const [rows] = await pool.execute(`
       SELECT
@@ -62,6 +69,7 @@ class Venta {
     return rows[0];
   }
 
+  // Actualizar venta por folio con campos dinámicos
   static async updateById(folio, venta) {
     const fields = [];
     const values = [];
@@ -134,11 +142,13 @@ class Venta {
     return result.affectedRows;
   }
 
+  // Eliminar venta por folio
   static async remove(folio) {
     const [result] = await pool.execute('DELETE FROM venta WHERE folio = ?', [folio]);
     return result.affectedRows;
   }
 
+  // Obtener ventas agregadas por asesor y rango de fechas (diarias)
   static async getVentasAggregatedByAsesorAndDateRange(idasesor, fechaInicio, fechaFin) {
     const [rows] = await pool.execute(`
       SELECT
@@ -153,6 +163,7 @@ class Venta {
     return rows;
   }
 
+  // Obtener totales de ventas por asesor y rango de fechas
   static async getTotalVentasByAsesorAndDateRange(idasesor, fechaInicio, fechaFin) {
     const [rows] = await pool.execute(`
       SELECT
@@ -164,7 +175,7 @@ class Venta {
     return rows[0] || { total_ventas: 0, numero_ventas: 0 };
   }
 
-  //Venta.findByFolio
+  // Buscar venta por folio (método alternativo)
   static async findByFolio(folio) {
     const [rows] = await pool.execute('SELECT * FROM venta WHERE folio = ?', [folio]);
     return rows[0];

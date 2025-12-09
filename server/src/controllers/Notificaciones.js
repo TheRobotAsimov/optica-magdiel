@@ -1,3 +1,6 @@
+// Controlador para las rutas de notificaciones
+// Maneja operaciones de creación, obtención y marcado de notificaciones
+
 import Notificacion from '../models/Notificacion.js';
 import User from '../models/User.js';
 
@@ -9,7 +12,7 @@ export const createNotificacion = async (req, res) => {
 
         const insertId = await Notificacion.create(mensaje, idRemitente);
 
-        // Emitir evento a todos los usuarios Matriz conectados
+        // Emitir evento a todos los usuarios Matriz conectados via Socket.IO
         if (global.io) {
             const matrizUsers = await User.getByRole('Matriz');
 
@@ -37,9 +40,11 @@ export const getNotificaciones = async (req, res) => {
     try {
         let notificaciones;
 
+        // Usuarios Matriz ven todas las notificaciones de no-Matriz
         if (req.user.rol === 'Matriz') {
             notificaciones = await Notificacion.getAllForMatriz();
         } else {
+            // Otros usuarios ven solo sus propias notificaciones
             notificaciones = await Notificacion.getByUser(req.user.id);
         }
 
@@ -54,6 +59,7 @@ export const getUnreadCount = async (req, res) => {
     try {
         let count = 0;
 
+        // Solo usuarios Matriz tienen acceso al conteo global
         if (req.user.rol === 'Matriz') {
             count = await Notificacion.getUnreadCountForMatriz();
         }
