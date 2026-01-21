@@ -1,243 +1,143 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import gastoRutaService from '../../service/gastoRutaService';
 import rutaService from '../../service/rutaService';
 import NavComponent from '../common/NavBar';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
-import { Save, ArrowLeft, User } from 'lucide-react';
+import { DollarSign, MapPin, Hash } from 'lucide-react';
 import { validateGastoRutaForm, validateGastoRutaField } from '../../utils/validations/index.js';
+import { useFormManager } from '../../hooks/useFormManager';
+import FormHeader from '../common/form/FormHeader';
+import FormSection from '../common/form/FormSection';
+import FormField from '../common/form/FormField';
+import FormActions from '../common/form/FormActions';
 
 const GastoRutaForm = () => {
-  const [formData, setFormData] = useState({
-    idruta: '',
-    cantidad: '',
-    motivo: '',
-  });
-  const [rutas, setRutas] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [isFormValid, setIsFormValid] = useState(false);
-  const navigate = useNavigate();
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [rutas, setRutas] = useState([]);
+  const urlParams = new URLSearchParams(window.location.search);
+  const queryRutaId = urlParams.get('idruta');
 
+  // Fetch rutas separately
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
+    const fetchRutas = async () => {
       try {
-        const rutasData = await rutaService.getAllRutas();
-        setRutas(rutasData);
-
-        if (id) {
-          const gastoRutaData = await gastoRutaService.getGastoRutaById(id);
-          setFormData(gastoRutaData);
-        } else {
-          // Pre-select route if coming from ruta-asesor
-          const urlParams = new URLSearchParams(window.location.search);
-          const rutaId = urlParams.get('idruta');
-          if (rutaId) {
-            setFormData(prev => ({ ...prev, idruta: rutaId }));
-          }
-        }
+        const data = await rutaService.getAllRutas();
+        setRutas(data);
       } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching rutas:', err);
       }
     };
-    fetchData();
-  }, [id]);
+    fetchRutas();
+  }, []);
 
-  useEffect(() => {
-    const errors = validateGastoRutaForm(formData);
-    const hasErrors = Object.values(errors).some((err) => err);
-    setIsFormValid(!hasErrors);
-  }, [formData, fieldErrors]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Validación en tiempo real
-    if (touched[name]) {
-      const error = validateGastoRutaField(name, value);
-      setFieldErrors(prev => ({ ...prev, [name]: error }));
-    }
-  };
-
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched(prev => ({ ...prev, [name]: true }));
-
-    const error = validateGastoRutaField(name, value);
-    setFieldErrors(prev => ({ ...prev, [name]: error }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Validación completa del formulario
-    const errors = validateGastoRutaForm(formData);
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setError('Por favor corrige los errores en el formulario');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const dataToSubmit = {
-        ...formData,
-        cantidad: parseFloat(formData.cantidad) || 0,
-      };
-
-      if (id) {
-        await gastoRutaService.updateGastoRuta(id, dataToSubmit);
-      } else {
-        await gastoRutaService.createGastoRuta(dataToSubmit);
+  const {
+    values: formData,
+    loading,
+    error,
+    fieldErrors,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    isFormValid,
+    isEdit
+  } = useFormManager({
+    initialValues: {
+      idruta: queryRutaId || '',
+      cantidad: '',
+      motivo: '',
+    },
+    validateField: validateGastoRutaField,
+    validateForm: validateGastoRutaForm,
+    service: gastoRutaService,
+    createMethod: 'createGastoRuta',
+    updateMethod: 'updateGastoRuta',
+    getByIdMethod: 'getGastoRutaById',
+    id,
+    redirectPath: queryRutaId ? '/ruta-asesor' : '/gasto-rutas',
+    transformData: (data, mode) => {
+      if (mode === 'submit') {
+        return {
+          ...data,
+          cantidad: parseFloat(data.cantidad) || 0,
+        };
       }
-
-      // Navigate back to ruta asesor if coming from there, otherwise to gasto-rutas
-      const urlParams = new URLSearchParams(window.location.search);
-      const rutaId = urlParams.get('idruta');
-      if (rutaId) {
-        navigate('/ruta-asesor');
-      } else {
-        navigate('/gasto-rutas');
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+      return data;
     }
-  };
+  });
 
-  if (loading && !id) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return <Error message={error} />;
-  }
+  if (loading && !isEdit) return <Loading />;
+  if (error) return <Error message={error} />;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Header Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
-                  <User className="h-8 w-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-white">
-                    {id ? 'Editar Gasto de Ruta' : 'Nuevo Gasto de Ruta'}
-                  </h1>
-                  <p className="text-blue-100 text-sm mt-1">
-                    {id ? 'Actualiza la información del gasto de ruta' : 'Completa los datos del nuevo gasto de ruta'}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => navigate('/gasto-rutas')}
-                className="flex items-center space-x-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 rounded-xl transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Volver</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <FormHeader
+          title={isEdit ? 'Editar Gasto de Ruta' : 'Nuevo Gasto de Ruta'}
+          subtitle={isEdit ? 'Actualiza la información del gasto de ruta' : 'Completa los datos del nuevo gasto de ruta'}
+          icon={DollarSign}
+          backPath={queryRutaId ? '/ruta-asesor' : '/gasto-rutas'}
+        />
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Route Expense Information Section */}
-              <div className="relative">
-                <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-8 border border-blue-100">
-                  <div className="flex items-center space-x-3 mb-6">
-                    <div className="bg-blue-600 p-2 rounded-lg">
-                      <User className="h-5 w-5 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">Información de Gasto de Ruta</h3>
-                  </div>
+              <FormSection title="Información de Gasto de Ruta" icon={DollarSign} colorClass="purple">
+                <FormField label="Ruta" name="idruta" error={fieldErrors.idruta} required icon={MapPin}>
+                  <select
+                    name="idruta"
+                    value={formData.idruta}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    disabled={queryRutaId !== null}
+                    required
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 ${fieldErrors.idruta ? 'border-red-500 focus:ring-red-100 bg-red-50' : 'border-gray-200 focus:ring-purple-100 focus:border-purple-500 hover:border-gray-300'
+                      }`}
+                  >
+                    <option value="">Seleccionar Ruta</option>
+                    {rutas.map(ruta => (
+                      <option key={ruta.idruta} value={ruta.idruta}>{`Ruta ${ruta.idruta} - ${new Date(ruta.fecha).toLocaleDateString()}`}</option>
+                    ))}
+                  </select>
+                </FormField>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="group">
-                      <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                        Ruta
-                        <span className="text-red-500 ml-1">*</span>
-                      </label>
-                      <select name="idruta" value={formData.idruta} onChange={handleChange} onBlur={handleBlur} disabled={new URLSearchParams(window.location.search).get('idruta') !== null} required className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 disabled:bg-gray-100 disabled:cursor-not-allowed transition-all duration-200 ${
-                        fieldErrors.idruta
-                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
-                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
-                      }`}>
-                        <option value="">Seleccionar Ruta</option>
-                        {rutas.map(ruta => (
-                          <option key={ruta.idruta} value={ruta.idruta}>{`Ruta ${ruta.idruta} - ${new Date(ruta.fecha).toLocaleDateString()}`}</option>
-                        ))}
-                      </select>
-                      {fieldErrors.idruta && (
-                        <p className="text-red-600 text-sm mt-2 flex items-center">
-                          <span className="mr-1">⚠</span> {fieldErrors.idruta}
-                        </p>
-                      )}
-                    </div>
-                    <div className="group">
-                      <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                        Cantidad
-                        <span className="text-red-500 ml-1">*</span>
-                      </label>
-                      <input type="number" step="0.01" name="cantidad" value={formData.cantidad} onChange={handleChange} onBlur={handleBlur} required className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
-                        fieldErrors.cantidad
-                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
-                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
-                      }`} />
-                      {fieldErrors.cantidad && (
-                        <p className="text-red-600 text-sm mt-2 flex items-center">
-                          <span className="mr-1">⚠</span> {fieldErrors.cantidad}
-                        </p>
-                      )}
-                    </div>
-                    <div className="group md:col-span-2">
-                      <label className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
-                        Motivo
-                        <span className="text-red-500 ml-1">*</span>
-                      </label>
-                      <textarea name="motivo" value={formData.motivo} onChange={handleChange} onBlur={handleBlur} required rows="3" className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${
-                        fieldErrors.motivo
-                          ? 'border-red-500 focus:ring-red-100 bg-red-50'
-                          : 'border-gray-200 focus:ring-blue-100 focus:border-blue-500 hover:border-gray-300'
-                      }`}></textarea>
-                      {fieldErrors.motivo && (
-                        <p className="text-red-600 text-sm mt-2 flex items-center">
-                          <span className="mr-1">⚠</span> {fieldErrors.motivo}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+                <FormField label="Cantidad" name="cantidad" error={fieldErrors.cantidad} required icon={DollarSign}>
+                  <input
+                    type="number"
+                    step="0.01"
+                    name="cantidad"
+                    value={formData.cantidad}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    required
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${fieldErrors.cantidad ? 'border-red-500 focus:ring-red-100 bg-red-50' : 'border-gray-200 focus:ring-purple-100 focus:border-purple-500 hover:border-gray-300'
+                      }`}
+                  />
+                </FormField>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-end pt-8 border-t-2 border-gray-200">
-                <button
-                  type="submit"
-                  disabled={!isFormValid || loading}
-                  className="flex items-center justify-center space-x-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-blue-400 disabled:to-indigo-400 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
-                >
-                  <Save className="h-5 w-5" />
-                  <span>{loading ? 'Guardando...' : (id ? 'Actualizar Gasto de Ruta' : 'Crear Gasto de Ruta')}</span>
-                </button>
-              </div>
+                <FormField label="Motivo" name="motivo" error={fieldErrors.motivo} required icon={Hash}>
+                  <textarea
+                    name="motivo"
+                    value={formData.motivo}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    required
+                    rows="3"
+                    className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-4 transition-all duration-200 ${fieldErrors.motivo ? 'border-red-500 focus:ring-red-100 bg-red-50' : 'border-gray-200 focus:ring-purple-100 focus:border-purple-500 hover:border-gray-300'
+                      }`}
+                  ></textarea>
+                </FormField>
+              </FormSection>
+
+              <FormActions
+                onCancel={queryRutaId ? '/ruta-asesor' : '/gasto-rutas'}
+                loading={loading}
+                isFormValid={isFormValid}
+                isEdit={isEdit}
+              />
             </form>
           </div>
         </div>
