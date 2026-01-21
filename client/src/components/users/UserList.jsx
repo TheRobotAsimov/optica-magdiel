@@ -33,6 +33,7 @@ const UserList = () => {
     fetchUsers();
   }, []);
 
+  // Función para manejar la eliminación de un usuario
   const handleDelete = async (userId) => {
     Swal.fire({
       title: '¿Estás seguro?',

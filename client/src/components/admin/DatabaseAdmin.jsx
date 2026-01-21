@@ -22,13 +22,13 @@ const DatabaseAdmin = () => {
             setIsProcessing(true);
             const blob = await getDbDump();
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
+            const archive = document.createElement('a');
+            archive.href = url;
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            a.download = `backup-optica-magdiel-${timestamp}.sql`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
+            archive.download = `backup-optica-magdiel-${timestamp}.sql`;
+            document.body.appendChild(archive);
+            archive.click();
+            archive.remove();
             window.URL.revokeObjectURL(url);
             setMessage('Backup descargado exitosamente.');
         } catch (err) {
