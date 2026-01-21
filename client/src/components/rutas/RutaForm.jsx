@@ -23,8 +23,9 @@ const RutaForm = () => {
   useEffect(() => {
     const fetchAsesores = async () => {
       try {
-        const empleadosData = await empleadoService.getAllEmpleados();
-        const asesoresList = user.rol === 'Matriz' ? empleadosData.filter(emp => emp.puesto === 'Asesor') : empleadosData;
+        const res = await empleadoService.getAllEmpleados({ limit: 1000 });
+        const allEmpleados = res.items || [];
+        const asesoresList = user.rol === 'Matriz' ? allEmpleados.filter(emp => emp.puesto === 'Asesor') : allEmpleados;
         setAsesores(asesoresList);
       } catch (err) {
         console.error('Error fetching asesores:', err);

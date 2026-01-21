@@ -4,10 +4,35 @@
 import pool from '../config/db.js';
 
 class Empleado {
-  // Obtener todos los empleados
-  static async getAll() {
-    const [rows] = await pool.execute('SELECT * FROM empleado');
+  // Obtener todos los empleados (con soporte para paginación)
+  static async getAll(page = 1, limit = 10, search = '') {
+    const offset = (page - 1) * limit;
+    let query = 'SELECT * FROM empleado WHERE 1=1';
+    const params = [];
+
+    if (search) {
+      query += ' AND (nombre LIKE ? OR paterno LIKE ? OR materno LIKE ? OR puesto LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY idempleado DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await pool.query(query, params);
     return rows;
+  }
+
+  static async count(search = '') {
+    let query = 'SELECT COUNT(*) as total FROM empleado WHERE 1=1';
+    const params = [];
+
+    if (search) {
+      query += ' AND (nombre LIKE ? OR paterno LIKE ? OR materno LIKE ? OR puesto LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await pool.query(query, params);
+    return rows[0].total;
   }
 
   // Obtener empleado por ID

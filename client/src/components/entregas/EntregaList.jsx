@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import entregaService from '../../service/entregaService';
 import notificacionService from '../../service/notificacionService';
@@ -11,7 +11,7 @@ import rutaService from '../../service/rutaService';
 import NavComponent from '../common/NavBar';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
-import { Eye, X, Truck, ShoppingCart, User, MapPin, Edit, Trash2 } from 'lucide-react';
+import { Eye, X, Truck, ShoppingCart, User, Edit, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../context/AuthContext';
 import { useListManager } from '../../hooks/useListManager';
@@ -29,17 +29,18 @@ const EntregaList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
     handleDelete: baseHandleDelete
-  } = useListManager(entregaService, 'deleteEntrega', 'identrega');
+  } = useListManager(entregaService, 'deleteEntrega', 'identrega', 'getAllEntregas');
 
   const [showModal, setShowModal] = useState(false);
   const [entregaDetails, setEntregaDetails] = useState(null);
   const [associatedData, setAssociatedData] = useState(null);
-
-  useEffect(() => {
-    fetchData('getAllEntregas');
-  }, []);
 
   const getBadgeType = (estatus) => {
     switch (estatus) {
@@ -127,11 +128,6 @@ const EntregaList = () => {
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
 
-  const filteredEntregas = entregas.filter(entrega =>
-    String(entrega.idruta).includes(searchTerm) ||
-    entrega.estatus.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
@@ -148,14 +144,24 @@ const EntregaList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar por ruta o estatus..."
+              placeholder="Buscar por folio o estatus..."
               newItemLabel="Nueva Entrega"
               newItemLink="/entregas/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Ruta', 'Fecha de Ruta', 'Estatus', 'Hora', 'Acciones']}>
-              {filteredEntregas.map((entrega) => (
+            <ListTable
+              headers={['ID', 'Ruta', 'Fecha de Ruta', 'Estatus', 'Hora', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {entregas.map((entrega) => (
                 <tr
                   key={entrega.identrega}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"

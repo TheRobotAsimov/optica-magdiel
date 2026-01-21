@@ -25,18 +25,21 @@ const VentaList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
     handleDelete: baseHandleDelete
-  } = useListManager(ventaService, 'deleteVenta', 'folio');
+  } = useListManager(ventaService, 'deleteVenta', 'folio', 'getAllVentas');
 
   const [showModal, setShowModal] = useState(false);
   const [ventaDetails, setVentaDetails] = useState(null);
   const [pagos, setPagos] = useState([]);
   const [lentes, setLentes] = useState([]);
 
-  useEffect(() => {
-    fetchData('getAllVentas');
-  }, [user]);
+  // fetchData is handled by useListManager automatically when pagination/search changes
 
   const getBadgeType = (estatus) => {
     switch (estatus) {
@@ -94,11 +97,15 @@ const VentaList = () => {
 
   const handleView = async (folio) => {
     try {
-      const [venta, allPagos, allLentes] = await Promise.all([
+      const [venta, pagosRes, lentesRes] = await Promise.all([
         ventaService.getVentaByFolio(folio),
-        pagoService.getAllPagos(),
-        lenteService.getAllLentes()
+        pagoService.getAllPagos({ limit: 1000 }),
+        lenteService.getAllLentes({ limit: 1000 })
       ]);
+
+      const allPagos = pagosRes.items || [];
+      const allLentes = lentesRes.items || [];
+
       setVentaDetails(venta);
       setPagos(allPagos.filter(p => p.folio === folio));
       setLentes(allLentes.filter(l => l.folio === folio));
@@ -111,12 +118,6 @@ const VentaList = () => {
 
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
-
-  const filteredVentas = ventas.filter(venta =>
-    venta.folio.toString().includes(searchTerm) ||
-    `${venta.asesor_nombre} ${venta.asesor_paterno}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    `${venta.cliente_nombre} ${venta.cliente_paterno}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -134,14 +135,24 @@ const VentaList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar Venta"
+              placeholder="Buscar por folio, cliente o asesor..."
               newItemLabel="Nueva Venta"
               newItemLink="/ventas/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['Folio', 'Asesor', 'Cliente', 'Fecha', 'Total', 'Estatus', 'Acciones']}>
-              {filteredVentas.map((venta) => (
+            <ListTable
+              headers={['Folio', 'Asesor', 'Cliente', 'Fecha', 'Total', 'Estatus', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {ventas.map((venta) => (
                 <tr
                   key={venta.folio}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"

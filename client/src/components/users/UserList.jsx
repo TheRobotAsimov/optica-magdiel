@@ -1,6 +1,5 @@
 // Componente para listar usuarios con funcionalidades de búsqueda, edición y eliminación
 
-import { useEffect } from 'react';
 import userService from '../../service/userService';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
@@ -21,16 +20,24 @@ const UserList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
-    handleDelete
-  } = useListManager(userService, 'deleteUser', 'id');
-
-  useEffect(() => {
-    fetchData('getAllUsers');
-  }, []);
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
+    handleDelete: baseHandleDelete
+  } = useListManager(userService, 'deleteUser', 'id', 'getAllUsers');
 
   const handleEdit = (userId) => {
     navigate(`/users/${userId}/edit`);
+  };
+
+  const handleDelete = (userId) => {
+    baseHandleDelete(userId, {
+      successText: 'El usuario ha sido eliminado.',
+      errorText: 'No se pudo eliminar el usuario.'
+    });
   };
 
   if (loading) return <Loading />;
@@ -44,11 +51,6 @@ const UserList = () => {
       default: return 'default';
     }
   };
-
-  const filteredUsers = users.filter(user =>
-    user.correo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.rol.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -66,14 +68,24 @@ const UserList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar Usuario"
+              placeholder="Buscar por correo o rol..."
               newItemLabel="Nuevo Usuario"
               newItemLink="/users/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Correo', 'Rol', 'Acciones']}>
-              {filteredUsers.map((user) => (
+            <ListTable
+              headers={['ID', 'Correo', 'Rol', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {users.map((user) => (
                 <tr
                   key={user.id}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"
@@ -99,10 +111,7 @@ const UserList = () => {
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(user.id, {
-                          successText: 'El usuario ha sido eliminado.',
-                          errorText: 'No se pudo eliminar el usuario.'
-                        })}
+                        onClick={() => handleDelete(user.id)}
                         className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110"
                         title="Eliminar"
                       >

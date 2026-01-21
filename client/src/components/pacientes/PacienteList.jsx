@@ -21,19 +21,23 @@ const PacienteList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
-    handleDelete
-  } = useListManager(pacienteService, 'deletePaciente', 'idpaciente');
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
+    handleDelete: baseHandleDelete
+  } = useListManager(pacienteService, 'deletePaciente', 'idpaciente', 'getAllPacientes');
 
   const [clients, setClients] = useState([]);
 
   useEffect(() => {
-    fetchData('getAllPacientes');
-
     const fetchClients = async () => {
       try {
-        const clientsData = await clientService.getAllClients();
-        setClients(clientsData);
+        // Fetch more clients for mapping purposes
+        const clientsData = await clientService.getAllClients({ limit: 1000 });
+        setClients(clientsData.items || (Array.isArray(clientsData) ? clientsData : []));
       } catch (err) {
         console.error('Error fetching clients for mapping:', err);
       }
@@ -41,26 +45,28 @@ const PacienteList = () => {
     fetchClients();
   }, []);
 
-  const clientMap = clients.reduce((map, client) => {
+  const clientMap = (clients || []).reduce((map, client) => {
     map[client.idcliente] = `${client.nombre} ${client.paterno}`;
     return map;
   }, {});
 
+  const handleDelete = (id) => {
+    baseHandleDelete(id, {
+      successText: 'El paciente ha sido eliminado.',
+      errorText: 'No se pudo eliminar el paciente.'
+    });
+  };
+
   const getSexoBadgeType = (sexo) => {
     switch (sexo) {
       case 'M': return 'info';
-      case 'F': return 'danger'; // Using danger for pink-ish/red-ish as default is gray
+      case 'F': return 'danger';
       default: return 'default';
     }
   };
 
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
-
-  const filteredPacientes = pacientes.filter(paciente =>
-    `${paciente.nombre} ${paciente.paterno} ${paciente.materno}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    paciente.idpaciente.toString().includes(searchTerm)
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,14 +84,24 @@ const PacienteList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar Paciente"
+              placeholder="Buscar por nombre o ID..."
               newItemLabel="Nuevo Paciente"
               newItemLink="/pacientes/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Nombre del Paciente', 'Cliente', 'Parentesco', 'Sexo', 'Edad', 'Acciones']}>
-              {filteredPacientes.map((paciente) => (
+            <ListTable
+              headers={['ID', 'Nombre del Paciente', 'Cliente', 'Parentesco', 'Sexo', 'Edad', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {pacientes.map((paciente) => (
                 <tr
                   key={paciente.idpaciente}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"

@@ -3,12 +3,27 @@
 
 import Ruta from '../models/Ruta.js';
 
-// Obtener todas las rutas
+// Obtener todas las rutas (con soporte para paginación)
 export const getRutas = async (req, res) => {
   try {
-    const rutas = await Ruta.getAll();
-    res.json(rutas);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const idasesor = req.query.idasesor || null;
+
+    const totalItems = await Ruta.count(search, idasesor);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await Ruta.getAll(page, limit, search, idasesor);
+
+    res.json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
+    console.error('Error in getRutas:', error);
     res.status(500).json({ message: error.message });
   }
 };

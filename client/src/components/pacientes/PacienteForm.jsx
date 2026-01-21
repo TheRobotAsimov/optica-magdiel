@@ -21,8 +21,8 @@ const PacienteForm = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const data = await clientService.getAllClients();
-        setClients(data);
+        const res = await clientService.getAllClients({ limit: 1000 });
+        setClients(res.items || []);
       } catch (err) {
         console.error('Error fetching clients:', err);
       }

@@ -24,12 +24,12 @@ const VentaForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [asesoresData, clientesData] = await Promise.all([
-          empleadoService.getAllEmpleados(),
-          clientService.getAllClients(),
+        const [asesoresRes, clientesRes] = await Promise.all([
+          empleadoService.getAllEmpleados({ limit: 1000 }),
+          clientService.getAllClients({ limit: 1000 }),
         ]);
-        setAsesores(asesoresData);
-        setClientes(clientesData);
+        setAsesores(asesoresRes.items || []);
+        setClientes(clientesRes.items || []);
       } catch (err) {
         console.error('Error fetching asesores/clientes:', err);
       }

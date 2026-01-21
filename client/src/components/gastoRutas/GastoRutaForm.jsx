@@ -24,8 +24,8 @@ const GastoRutaForm = () => {
   useEffect(() => {
     const fetchRutas = async () => {
       try {
-        const data = await rutaService.getAllRutas();
-        setRutas(data);
+        const res = await rutaService.getAllRutas({ limit: 1000 });
+        setRutas(res.items || []);
       } catch (err) {
         console.error('Error fetching rutas:', err);
       }

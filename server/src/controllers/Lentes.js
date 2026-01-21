@@ -2,10 +2,24 @@ import Lente from '../models/Lente.js';
 
 export const getAllLentes = async (req, res) => {
   try {
-    const lentes = await Lente.getAll();
-    res.status(200).json(lentes);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const totalItems = await Lente.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await Lente.getAll(page, limit, search);
+
+    res.status(200).json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los lentes', error });
+    console.error('Error in getAllLentes:', error);
+    res.status(500).json({ message: 'Error al obtener los lentes', error: error.message });
   }
 };
 

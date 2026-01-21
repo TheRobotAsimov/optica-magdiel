@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import empleadoService from '../../service/empleadoService';
 import NavComponent from '../common/NavBar';
 import { Edit, Trash2 } from 'lucide-react';
@@ -20,16 +19,24 @@ const EmpleadoList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
-    handleDelete
-  } = useListManager(empleadoService, 'deleteEmpleado', 'idempleado');
-
-  useEffect(() => {
-    fetchData('getAllEmpleados');
-  }, []);
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
+    handleDelete: baseHandleDelete
+  } = useListManager(empleadoService, 'deleteEmpleado', 'idempleado', 'getAllEmpleados');
 
   const handleEdit = (empleadoId) => {
     navigate(`/empleados/${empleadoId}/edit`);
+  };
+
+  const handleDelete = (empleadoId) => {
+    baseHandleDelete(empleadoId, {
+      successText: 'El empleado ha sido eliminado.',
+      errorText: 'No se pudo eliminar el empleado.'
+    });
   };
 
   if (loading) return <Loading />;
@@ -52,12 +59,6 @@ const EmpleadoList = () => {
     }
   };
 
-  const filteredEmpleados = empleados.filter(emp =>
-    `${emp.nombre} ${emp.paterno} ${emp.materno}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.puesto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.idempleado.toString().includes(searchTerm)
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
@@ -74,14 +75,24 @@ const EmpleadoList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar Empleado"
+              placeholder="Buscar por nombre, puesto o ID..."
               newItemLabel="Nuevo Empleado"
               newItemLink="/empleados/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Nombre', 'Puesto', 'Teléfono', 'Estado', 'Acciones']}>
-              {filteredEmpleados.map((empleado) => (
+            <ListTable
+              headers={['ID', 'Nombre', 'Puesto', 'Teléfono', 'Estado', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {empleados.map((empleado) => (
                 <tr
                   key={empleado.idempleado}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"
@@ -130,10 +141,7 @@ const EmpleadoList = () => {
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(empleado.idempleado, {
-                          successText: 'El empleado ha sido eliminado.',
-                          errorText: 'No se pudo eliminar el empleado.'
-                        })}
+                        onClick={() => handleDelete(empleado.idempleado)}
                         className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110"
                         title="Eliminar"
                       >

@@ -2,10 +2,24 @@ import Empleado from '../models/Empleado.js';
 
 export const getAllEmpleados = async (req, res) => {
   try {
-    const empleados = await Empleado.getAll();
-    res.status(200).json(empleados);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const totalItems = await Empleado.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await Empleado.getAll(page, limit, search);
+
+    res.status(200).json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los empleados', error });
+    console.error('Error in getAllEmpleados:', error);
+    res.status(500).json({ message: 'Error al obtener los empleados', error: error.message });
   }
 };
 

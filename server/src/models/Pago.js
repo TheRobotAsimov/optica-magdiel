@@ -4,9 +4,10 @@
 import db from '../config/db.js';
 
 const Pago = {
-  // Obtener todos los pagos con información de cliente
-  getAll: async () => {
-    const [rows] = await db.query(`
+  // Obtener todos los pagos con información de cliente (con soporte para paginación)
+  getAll: async (page = 1, limit = 10, search = '') => {
+    const offset = (page - 1) * limit;
+    let query = `
       SELECT
         p.idpago,
         p.folio,
@@ -18,8 +19,39 @@ const Pago = {
       FROM pago p
       JOIN venta v ON p.folio = v.folio
       JOIN cliente c ON v.idcliente = c.idcliente
-    `);
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (c.nombre LIKE ? OR c.paterno LIKE ? OR p.folio LIKE ? OR p.estatus LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY p.idpago DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await db.query(query, params);
     return rows;
+  },
+
+  count: async (search = '') => {
+    let query = `
+      SELECT COUNT(*) as total
+      FROM pago p
+      JOIN venta v ON p.folio = v.folio
+      JOIN cliente c ON v.idcliente = c.idcliente
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (c.nombre LIKE ? OR c.paterno LIKE ? OR p.folio LIKE ? OR p.estatus LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await db.query(query, params);
+    return rows[0].total;
   },
 
   // Obtener pagos pendientes con información de cliente

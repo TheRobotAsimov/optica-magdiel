@@ -27,9 +27,14 @@ const ClientList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
     handleDelete: baseHandleDelete
-  } = useListManager(clientService, 'deleteClient', 'idcliente');
+  } = useListManager(clientService, 'deleteClient', 'idcliente', 'getAllClients');
 
   const [showModal, setShowModal] = useState(false);
   const [clientDetails, setClientDetails] = useState(null);
@@ -46,16 +51,18 @@ const ClientList = () => {
   };
 
   useEffect(() => {
-    fetchData('getAllClients');
-
+    // We only fetch the pending data once, as it involves multi-service fetching
     const fetchPendingData = async () => {
       try {
-        const [allVentas, allPagos, allLentes] = await Promise.all([
-          ventaService.getAllVentas(),
-          pagoService.getAllPagos(),
-          lenteService.getAllLentes()
+        const [ventasData, pagosData, lentesData] = await Promise.all([
+          ventaService.getAllVentas({ limit: 1000 }),
+          pagoService.getAllPagos({ limit: 1000 }),
+          lenteService.getAllLentes({ limit: 1000 })
         ]);
 
+        const allVentas = ventasData.items || [];
+        const allPagos = pagosData.items || [];
+        const allLentes = lentesData.items || [];
         const pendingClients = new Set();
 
         allPagos.forEach(p => {
@@ -130,12 +137,17 @@ const ClientList = () => {
       const client = await clientService.getClientById(clientId);
       setClientDetails(client);
 
-      const [allVentas, allPagos, allLentes, allPacientes] = await Promise.all([
-        ventaService.getAllVentas(),
-        pagoService.getAllPagos(),
-        lenteService.getAllLentes(),
-        pacienteService.getAllPacientes()
+      const [ventasRes, pagosRes, lentesRes, pacientesRes] = await Promise.all([
+        ventaService.getAllVentas({ limit: 1000 }),
+        pagoService.getAllPagos({ limit: 1000 }),
+        lenteService.getAllLentes({ limit: 1000 }),
+        pacienteService.getAllPacientes({ limit: 1000 })
       ]);
+
+      const allVentas = ventasRes.items || [];
+      const allPagos = pagosRes.items || [];
+      const allLentes = lentesRes.items || [];
+      const allPacientes = pacientesRes.items || [];
 
       const clientVentas = allVentas.filter(v => v.idcliente === clientId);
       setVentas(clientVentas);
@@ -153,12 +165,6 @@ const ClientList = () => {
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
 
-  const filteredClients = clients.filter(client =>
-    `${client.nombre} ${client.paterno} ${client.materno}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.idcliente.toString().includes(searchTerm) ||
-    client.telefono1.includes(searchTerm)
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
@@ -175,14 +181,24 @@ const ClientList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar Cliente"
+              placeholder="Buscar por nombre, apellido o teléfono..."
               newItemLabel="Nuevo Cliente"
               newItemLink="/clients/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Nombre', 'Teléfono 1', 'Domicilio 1', 'Acciones']}>
-              {filteredClients.map((client) => (
+            <ListTable
+              headers={['ID', 'Nombre', 'Teléfono 1', 'Domicilio 1', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {clients.map((client) => (
                 <tr
                   key={client.idcliente}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"
@@ -219,7 +235,7 @@ const ClientList = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {client.domicilio1}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center justify-center space-x-3">
                       <button
                         onClick={() => handleView(client.idcliente)}

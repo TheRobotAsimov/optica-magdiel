@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
 import gastoRutaService from '../../service/gastoRutaService';
 import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
 import { Edit, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../context/AuthContext';
 import { useListManager } from '../../hooks/useListManager';
@@ -22,13 +21,14 @@ const GastoRutaList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
     handleDelete: baseHandleDelete
-  } = useListManager(gastoRutaService, 'deleteGastoRuta', 'idgasto_ruta');
-
-  useEffect(() => {
-    fetchData('getAllGastoRutas');
-  }, []);
+  } = useListManager(gastoRutaService, 'deleteGastoRuta', 'idgasto_ruta', 'getAllGastoRutas');
 
   const handleRequestAction = (action, id) => {
     Swal.fire({
@@ -77,11 +77,6 @@ const GastoRutaList = () => {
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
 
-  const filteredGastoRutas = gastoRutas.filter(gastoRuta =>
-    String(gastoRuta.idruta).includes(searchTerm) ||
-    gastoRuta.motivo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
@@ -98,14 +93,24 @@ const GastoRutaList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar por ruta o motivo..."
-              newItemLabel="Nuevo Gasto de Ruta"
+              placeholder="Buscar por asesor o motivo..."
+              newItemLabel="Nuevo Gasto"
               newItemLink="/gasto-rutas/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Ruta', 'Fecha de Ruta', 'Asesor', 'Cantidad', 'Motivo', 'Acciones']}>
-              {filteredGastoRutas.map((gastoRuta) => (
+            <ListTable
+              headers={['ID', 'Ruta', 'Fecha de Ruta', 'Asesor', 'Cantidad', 'Motivo', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {gastoRutas.map((gastoRuta) => (
                 <tr
                   key={gastoRuta.idgasto_ruta}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"

@@ -2,15 +2,30 @@ import Client from '../models/Client.js';
 
 // Controlador para la gestión de clientes
 
-// Metodo para obtener todos los clientes
+// Metodo para obtener todos los clientes (con soporte para paginación)
 export const getAllClients = async (req, res) => {
   try {
-    // Llamar al modelo para obtener todos los clientes
-    const clients = await Client.getAll();
-    // Enviar la lista de clientes como respuesta JSON
-    res.json(clients);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    // Obtener total de items para calcular páginas
+    const totalItems = await Client.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    // Llamar al modelo para obtener los clientes de la página actual
+    const items = await Client.getAll(page, limit, search);
+
+    // Enviar la respuesta paginada
+    res.json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (err) {
     // Manejo de errores
+    console.error('Error in getAllClients:', err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -37,8 +52,8 @@ export const createClient = async (req, res) => {
     const insertId = await Client.create(req.body);
     res.status(201).json({ message: 'Client created successfully', id: insertId });
   } catch (err) {
-      console.log(req.body);
-      console.log(err);
+    console.log(req.body);
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
@@ -68,6 +83,7 @@ export const deleteClient = async (req, res) => {
   }
 };
 
+// searchClients ya no es necesario si usamos getAllClients con ?search=...
 export const searchClients = async (req, res) => {
   try {
     const { nombre, paterno } = req.query;

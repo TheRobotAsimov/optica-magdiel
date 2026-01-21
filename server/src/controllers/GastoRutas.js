@@ -2,9 +2,23 @@ import GastoRuta from '../models/GastoRuta.js';
 
 export const getGastoRutas = async (req, res) => {
   try {
-    const gastoRutas = await GastoRuta.getAll();
-    res.json(gastoRutas);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const totalItems = await GastoRuta.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await GastoRuta.getAll(page, limit, search);
+
+    res.json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
+    console.error('Error in getGastoRutas:', error);
     res.status(500).json({ message: error.message });
   }
 };

@@ -25,14 +25,14 @@ const EntregaForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [rutasData, lentesData, pagosData] = await Promise.all([
-          rutaService.getAllRutas(),
-          lenteService.getAllLentes(),
-          pagoService.getAllPagos(),
+        const [rutasRes, lentesRes, pagosRes] = await Promise.all([
+          rutaService.getAllRutas({ limit: 1000 }),
+          lenteService.getAllLentes({ limit: 1000 }),
+          pagoService.getAllPagos({ limit: 1000 }),
         ]);
-        setRutas(rutasData);
-        setLentes(lentesData);
-        setPagos(pagosData);
+        setRutas(rutasRes.items || []);
+        setLentes(lentesRes.items || []);
+        setPagos(pagosRes.items || []);
       } catch (err) {
         console.error('Error fetching delivery data:', err);
       }

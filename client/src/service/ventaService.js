@@ -4,8 +4,8 @@ const API_URL = 'http://localhost:1234/api/ventas';
 axios.defaults.withCredentials = true;
 
 const ventaService = {
-  getAllVentas: async () => {
-    const response = await axios.get(API_URL + '/');
+  getAllVentas: async (params = {}) => {
+    const response = await axios.get(API_URL + '/', { params });
     return response.data;
   },
 

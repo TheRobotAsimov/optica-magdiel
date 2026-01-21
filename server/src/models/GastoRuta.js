@@ -4,9 +4,10 @@
 import db from '../config/db.js';
 
 const GastoRuta = {
-  // Obtener todos los gastos de ruta con información de ruta y asesor
-  getAll: async () => {
-    const [rows] = await db.query(`
+  // Obtener todos los gastos de ruta con información de ruta y asesor (con soporte para paginación)
+  getAll: async (page = 1, limit = 10, search = '') => {
+    const offset = (page - 1) * limit;
+    let query = `
       SELECT
         g.idgasto_ruta,
         g.idruta,
@@ -18,8 +19,39 @@ const GastoRuta = {
       FROM gasto_ruta g
       JOIN ruta r ON g.idruta = r.idruta
       JOIN empleado e ON r.idasesor = e.idempleado
-    `);
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (e.nombre LIKE ? OR e.paterno LIKE ? OR g.motivo LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY g.idgasto_ruta DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await db.query(query, params);
     return rows;
+  },
+
+  count: async (search = '') => {
+    let query = `
+      SELECT COUNT(*) as total
+      FROM gasto_ruta g
+      JOIN ruta r ON g.idruta = r.idruta
+      JOIN empleado e ON r.idasesor = e.idempleado
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (e.nombre LIKE ? OR e.paterno LIKE ? OR g.motivo LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await db.query(query, params);
+    return rows[0].total;
   },
 
   // Buscar gasto de ruta por ID

@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
 import pagoService from '../../service/pagoService';
 import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
 import { Edit, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../context/AuthContext';
 import { useListManager } from '../../hooks/useListManager';
@@ -23,13 +22,14 @@ const PagoList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
     handleDelete: baseHandleDelete
-  } = useListManager(pagoService, 'deletePago', 'idpago');
-
-  useEffect(() => {
-    fetchData('getAllPagos');
-  }, []);
+  } = useListManager(pagoService, 'deletePago', 'idpago', 'getAllPagos');
 
   const getBadgeType = (estatus) => {
     switch (estatus) {
@@ -87,11 +87,6 @@ const PagoList = () => {
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
 
-  const filteredPagos = pagos.filter(pago =>
-    pago.folio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    `${pago.cliente_nombre} ${pago.cliente_paterno}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
@@ -114,8 +109,18 @@ const PagoList = () => {
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Folio', 'Cliente', 'Fecha', 'Cantidad', 'Estatus', 'Acciones']}>
-              {filteredPagos.map((pago) => (
+            <ListTable
+              headers={['ID', 'Folio', 'Cliente', 'Fecha', 'Cantidad', 'Estatus', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {pagos.map((pago) => (
                 <tr
                   key={pago.idpago}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"

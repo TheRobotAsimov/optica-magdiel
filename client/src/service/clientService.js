@@ -4,8 +4,8 @@ const API_URL = 'http://localhost:1234/api/clients';
 axios.defaults.withCredentials = true;
 
 const clientService = {
-  getAllClients: async () => {
-    const response = await axios.get(API_URL + '/');
+  getAllClients: async (params = {}) => {
+    const response = await axios.get(API_URL + '/', { params });
     return response.data;
   },
 

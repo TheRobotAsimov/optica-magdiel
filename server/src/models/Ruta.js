@@ -4,10 +4,55 @@
 import db from '../config/db.js';
 
 const Ruta = {
-  // Obtener todas las rutas con información del asesor
-  getAll: async () => {
-    const [rows] = await db.query('SELECT r.*, e.nombre as asesor_nombre, e.paterno as asesor_paterno FROM ruta r JOIN empleado e ON r.idasesor = e.idempleado');
+  // Obtener todas las rutas con información del asesor (con soporte para paginación)
+  getAll: async (page = 1, limit = 10, search = '', idasesor = null) => {
+    const offset = (page - 1) * limit;
+    let query = `
+      SELECT r.*, e.nombre as asesor_nombre, e.paterno as asesor_paterno 
+      FROM ruta r 
+      JOIN empleado e ON r.idasesor = e.idempleado
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (idasesor) {
+      query += ' AND r.idasesor = ?';
+      params.push(idasesor);
+    }
+
+    if (search) {
+      query += ' AND (e.nombre LIKE ? OR e.paterno LIKE ? OR r.estatus LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY r.idruta DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await db.query(query, params);
     return rows;
+  },
+
+  count: async (search = '', idasesor = null) => {
+    let query = `
+      SELECT COUNT(*) as total 
+      FROM ruta r 
+      JOIN empleado e ON r.idasesor = e.idempleado
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (idasesor) {
+      query += ' AND r.idasesor = ?';
+      params.push(idasesor);
+    }
+
+    if (search) {
+      query += ' AND (e.nombre LIKE ? OR e.paterno LIKE ? OR r.estatus LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await db.query(query, params);
+    return rows[0].total;
   },
 
   // Buscar ruta por ID con información del asesor

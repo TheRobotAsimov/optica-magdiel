@@ -1,38 +1,33 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:1234/api/gasto-rutas';
-
-const getAllGastoRutas = async () => {
-  const res = await axios.get(API_URL);
-  return res.data;
-};
-
-const getGastoRutaById = async (id) => {
-  const res = await axios.get(`${API_URL}/${id}`);
-  return res.data;
-};
-
-const createGastoRuta = async (gastoRuta) => {
-  const res = await axios.post(API_URL, gastoRuta);
-  return res.data;
-};
-
-const updateGastoRuta = async (id, gastoRuta) => {
-  const res = await axios.put(`${API_URL}/${id}`, gastoRuta);
-  return res.data;
-};
-
-const deleteGastoRuta = async (id) => {
-  const res = await axios.delete(`${API_URL}/${id}`);
-  return res.data;
-};
+axios.defaults.withCredentials = true;
 
 const gastoRutaService = {
-  getAllGastoRutas,
-  getGastoRutaById,
-  createGastoRuta,
-  updateGastoRuta,
-  deleteGastoRuta,
+  getAllGastoRutas: async (params = {}) => {
+    const response = await axios.get(API_URL + '/', { params });
+    return response.data;
+  },
+
+  getGastoRutaById: async (id) => {
+    const response = await axios.get(API_URL + `/${id}`);
+    return response.data;
+  },
+
+  createGastoRuta: async (gastoRutaData) => {
+    const response = await axios.post(API_URL + '/', gastoRutaData);
+    return response.data;
+  },
+
+  updateGastoRuta: async (id, gastoRutaData) => {
+    const response = await axios.put(API_URL + `/${id}`, gastoRutaData);
+    return response.data;
+  },
+
+  deleteGastoRuta: async (id) => {
+    const response = await axios.delete(API_URL + `/${id}`);
+    return response.data;
+  },
 };
 
 export default gastoRutaService;

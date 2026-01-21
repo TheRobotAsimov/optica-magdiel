@@ -92,10 +92,35 @@ class User {
         return await bcrypt.compare(plainPassword, hashedPassword);
     }
 
-    // Obtener todos los usuarios (solo campos básicos)
-    static async getAll() {
-        const [rows] = await pool.execute('SELECT id, correo, rol FROM usuario');
+    // Obtener todos los usuarios (con soporte para paginación)
+    static async getAll(page = 1, limit = 10, search = '') {
+        const offset = (page - 1) * limit;
+        let query = 'SELECT id, correo, rol FROM usuario WHERE 1=1';
+        const params = [];
+
+        if (search) {
+            query += ' AND (correo LIKE ? OR rol LIKE ?)';
+            params.push(`%${search}%`, `%${search}%`);
+        }
+
+        query += ' ORDER BY id DESC LIMIT ? OFFSET ?';
+        params.push(limit, offset);
+
+        const [rows] = await pool.query(query, params);
         return rows;
+    }
+
+    static async count(search = '') {
+        let query = 'SELECT COUNT(*) as total FROM usuario WHERE 1=1';
+        const params = [];
+
+        if (search) {
+            query += ' AND (correo LIKE ? OR rol LIKE ?)';
+            params.push(`%${search}%`, `%${search}%`);
+        }
+
+        const [rows] = await pool.query(query, params);
+        return rows[0].total;
     }
 
     // Obtener usuarios por rol específico

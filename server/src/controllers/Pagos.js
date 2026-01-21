@@ -1,11 +1,26 @@
 import Pago from '../models/Pago.js';
 import Venta from '../models/Venta.js';
 
+// Obtener todos los pagos (con soporte para paginación)
 export const getPagos = async (req, res) => {
   try {
-    const pagos = await Pago.getAll();
-    res.json(pagos);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const totalItems = await Pago.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await Pago.getAll(page, limit, search);
+
+    res.json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
+    console.error('Error in getPagos:', error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -37,7 +52,7 @@ export const createPago = async (req, res) => {
     // 1. Obtener la venta para validar
     // Asumimos que Venta.findById o getVentaByFolio existe
     const venta = await Venta.findByFolio(folio); // O findById según tu modelo
-    
+
     if (!venta) {
       return res.status(404).json({ message: 'Venta no encontrada' });
     }
@@ -46,8 +61,8 @@ export const createPago = async (req, res) => {
 
     // 2. Validar que no pague de más (permitimos un pequeño margen por decimales)
     if (montoPago > porPagar + 0.1) {
-      return res.status(400).json({ 
-        message: `El monto excede el adeudo. Restan: $${porPagar.toFixed(2)}` 
+      return res.status(400).json({
+        message: `El monto excede el adeudo. Restan: $${porPagar.toFixed(2)}`
       });
     }
 
@@ -56,14 +71,14 @@ export const createPago = async (req, res) => {
 
     // 4. Actualizar la venta sumando el nuevo pago
     const nuevoPagado = parseFloat(venta.pagado || 0) + montoPago;
-    
+
     // Determinar si actualizar estatus de venta a 'Pagado' o 'Pendiente'
     // Esto es opcional, pero recomendado
     const nuevoEstatusVenta = nuevoPagado >= parseFloat(venta.total) - 0.1 ? 'Pagado' : venta.estatus;
 
-    await Venta.updateById(folio, { 
+    await Venta.updateById(folio, {
       pagado: nuevoPagado,
-      estatus: nuevoEstatusVenta 
+      estatus: nuevoEstatusVenta
     });
 
     res.status(201).json(newPago);
@@ -85,15 +100,15 @@ export const updatePago = async (req, res) => {
     if (!pagoAnterior) return res.status(404).json({ message: 'Pago no encontrado' });
 
     const venta = await Venta.findByFolio(pagoAnterior.folio);
-    
+
     // Calcular la diferencia: Si antes pagó 100 y ahora 150, diferencia es +50
     const diferencia = nuevoMonto - parseFloat(pagoAnterior.cantidad);
     const nuevoTotalPagadoVenta = parseFloat(venta.pagado) + diferencia;
 
     // 2. Validar que la modificación no exceda el total de la venta
     if (nuevoTotalPagadoVenta > parseFloat(venta.total) + 0.1) {
-       return res.status(400).json({ 
-        message: `La modificación excede el total de la venta.` 
+      return res.status(400).json({
+        message: `La modificación excede el total de la venta.`
       });
     }
 
@@ -130,11 +145,11 @@ export const deletePago = async (req, res) => {
       // 4. Si la venta estaba "Pagada" pero ahora debe dinero, la regresamos a "Pendiente"
       let nuevoEstatus = venta.estatus;
       if (nuevoPagado < parseFloat(venta.total) - 0.1) {
-        nuevoEstatus = 'Pendiente'; 
+        nuevoEstatus = 'Pendiente';
       }
 
       // Actualizamos la venta
-      await Venta.updateById(venta.folio, { 
+      await Venta.updateById(venta.folio, {
         pagado: nuevoPagado,
         estatus: nuevoEstatus
       });

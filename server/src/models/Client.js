@@ -1,9 +1,34 @@
 import pool from '../config/db.js';
 
 class Client {
-  static async getAll() {
-    const [rows] = await pool.execute('SELECT * FROM cliente');
+  static async getAll(page = 1, limit = 10, search = '') {
+    const offset = (page - 1) * limit;
+    let query = 'SELECT * FROM cliente WHERE 1=1';
+    const params = [];
+
+    if (search) {
+      query += ' AND (nombre LIKE ? OR paterno LIKE ? OR materno LIKE ? OR telefono1 LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY idcliente DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await pool.query(query, params);
     return rows;
+  }
+
+  static async count(search = '') {
+    let query = 'SELECT COUNT(*) as total FROM cliente WHERE 1=1';
+    const params = [];
+
+    if (search) {
+      query += ' AND (nombre LIKE ? OR paterno LIKE ? OR materno LIKE ? OR telefono1 LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await pool.query(query, params);
+    return rows[0].total;
   }
 
   static async getById(id) {
@@ -63,6 +88,8 @@ class Client {
     return result.affectedRows;
   }
 
+  // search method is now redundant but keeping it for backward compatibility if needed, 
+  // though we should migrate to the new getAll with search param
   static async search(nombre, paterno) {
     let query = 'SELECT * FROM cliente WHERE 1=1';
     const params = [];

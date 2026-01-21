@@ -24,110 +24,110 @@ const RutaAsesor = () => {
   const { user } = useAuth();
 
   // Control de acceso: solo asesores pueden acceder
-    useEffect(() => {
-      if (user && user.puesto !== 'Asesor') {
-        navigate('/dashboard');
-        return;
-      }
-    }, [user, navigate]);
+  useEffect(() => {
+    if (user && user.puesto !== 'Asesor') {
+      navigate('/dashboard');
+      return;
+    }
+  }, [user, navigate]);
 
-  
+
 
   // Cargar ruta activa al montar el componente y restaurar estado si existe
-    useEffect(() => {
-      const loadActiveRoute = async () => {
-        if (!user || user.puesto !== 'Asesor') return;
-  
-        // Verificar parámetros de URL para navegación de ventanas
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetWindow = urlParams.get('window');
-  
-        const savedRouteId = localStorage.getItem('activeRouteId');
-        const savedWindow = localStorage.getItem('currentWindow');
-  
-        // Intentar restaurar ruta guardada en localStorage
-        if (savedRouteId && savedWindow === '2') {
-          try {
-            const rutas = await rutaService.getAllRutas();
-            const restoredRoute = rutas.find(r => r.idruta === parseInt(savedRouteId));
-  
-            if (restoredRoute && restoredRoute.estatus === 'Activa') {
-              setCurrentRouteId(restoredRoute.idruta);
-              setRouteData(restoredRoute);
-              setCurrentWindow(targetWindow === '3' ? 3 : 2);
-              return;
-            } else {
-              localStorage.removeItem('activeRouteId');
-              localStorage.removeItem('currentWindow');
-            }
-          } catch (err) {
-            console.error('Error restoring saved route:', err);
-          }
-        } else {
-          // Buscar ruta activa del asesor actual
-          try {
-            const rutas = await rutaService.getAllRutas();
-            const restoredRoute = rutas.find(r => r.idasesor === user.idempleado && r.estatus === 'Activa');
-            if (restoredRoute) {
-              setCurrentRouteId(restoredRoute.idruta);
-              setRouteData(restoredRoute);
-              setCurrentWindow(targetWindow === '3' ? 3 : 2);
-              return;
-            }
-          } catch (err) {
-            console.error('Error checking for existing active route:', err);
-  
-          }
-        }
-  
-        // Buscar ruta activa para hoy
+  useEffect(() => {
+    const loadActiveRoute = async () => {
+      if (!user || user.puesto !== 'Asesor') return;
+
+      // Verificar parámetros de URL para navegación de ventanas
+      const urlParams = new URLSearchParams(window.location.search);
+      const targetWindow = urlParams.get('window');
+
+      const savedRouteId = localStorage.getItem('activeRouteId');
+      const savedWindow = localStorage.getItem('currentWindow');
+
+      // Intentar restaurar ruta guardada en localStorage
+      if (savedRouteId && savedWindow === '2') {
         try {
           const rutas = await rutaService.getAllRutas();
-          const activeRoute = rutas.find(r =>
-            r.idasesor === user.idempleado &&
-            r.estatus === 'Activa' &&
-            r.fecha === new Date().toISOString().slice(0, 10)
-          );
-  
-          if (activeRoute) {
-            setCurrentRouteId(activeRoute.idruta);
-            setRouteData(activeRoute);
+          const restoredRoute = rutas.find(r => r.idruta === parseInt(savedRouteId));
+
+          if (restoredRoute && restoredRoute.estatus === 'Activa') {
+            setCurrentRouteId(restoredRoute.idruta);
+            setRouteData(restoredRoute);
             setCurrentWindow(targetWindow === '3' ? 3 : 2);
+            return;
           } else {
-            setCurrentWindow(1);
+            localStorage.removeItem('activeRouteId');
+            localStorage.removeItem('currentWindow');
           }
         } catch (err) {
-          console.error('Error loading active route:', err);
+          console.error('Error restoring saved route:', err);
         }
-      };
-  
-      loadActiveRoute();
-    }, [user]);
+      } else {
+        // Buscar ruta activa del asesor actual
+        try {
+          const rutas = await rutaService.getAllRutas();
+          const restoredRoute = rutas.find(r => r.idasesor === user.idempleado && r.estatus === 'Activa');
+          if (restoredRoute) {
+            setCurrentRouteId(restoredRoute.idruta);
+            setRouteData(restoredRoute);
+            setCurrentWindow(targetWindow === '3' ? 3 : 2);
+            return;
+          }
+        } catch (err) {
+          console.error('Error checking for existing active route:', err);
 
-  
+        }
+      }
+
+      // Buscar ruta activa para hoy
+      try {
+        const rutas = await rutaService.getAllRutas();
+        const activeRoute = rutas.find(r =>
+          r.idasesor === user.idempleado &&
+          r.estatus === 'Activa' &&
+          r.fecha === new Date().toISOString().slice(0, 10)
+        );
+
+        if (activeRoute) {
+          setCurrentRouteId(activeRoute.idruta);
+          setRouteData(activeRoute);
+          setCurrentWindow(targetWindow === '3' ? 3 : 2);
+        } else {
+          setCurrentWindow(1);
+        }
+      } catch (err) {
+        console.error('Error loading active route:', err);
+      }
+    };
+
+    loadActiveRoute();
+  }, [user]);
+
+
 
   // Recargar datos de la ruta periódicamente para mantener actualizado
-    useEffect(() => {
-      if (currentRouteId && user && user.puesto === 'Asesor') {
-        const refreshRouteData = async () => {
-          try {
-            const rutas = await rutaService.getAllRutas();
-            const currentRoute = rutas.find(r => r.idruta === currentRouteId);
-            if (currentRoute) {
-              setRouteData(currentRoute);
-            }
-          } catch (err) {
-            console.error('Error refreshing route data:', err);
+  useEffect(() => {
+    if (currentRouteId && user && user.puesto === 'Asesor') {
+      const refreshRouteData = async () => {
+        try {
+          const rutas = await rutaService.getAllRutas();
+          const currentRoute = rutas.find(r => r.idruta === currentRouteId);
+          if (currentRoute) {
+            setRouteData(currentRoute);
           }
-        };
-  
-        // Actualizar inmediatamente y configurar intervalo para actualizaciones continuas
-        refreshRouteData();
-        const interval = setInterval(refreshRouteData, 2000); // Actualizar cada 2 segundos
-  
-        return () => clearInterval(interval); // Limpiar al desmontar
-      }
-    }, [currentRouteId, user]);
+        } catch (err) {
+          console.error('Error refreshing route data:', err);
+        }
+      };
+
+      // Actualizar inmediatamente y configurar intervalo para actualizaciones continuas
+      refreshRouteData();
+      const interval = setInterval(refreshRouteData, 2000); // Actualizar cada 2 segundos
+
+      return () => clearInterval(interval); // Limpiar al desmontar
+    }
+  }, [currentRouteId, user]);
 
   // Guardar estado de la ruta en localStorage para persistencia
   useEffect(() => {
@@ -504,24 +504,24 @@ const RutaAsesor = () => {
                     <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
                       <h3 className="text-lg font-medium text-yellow-800 mb-4">Registrar Artículos No Entregados</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      { remainingLentes > 0 && (
-                        <button
-                          onClick={registerUndeliveredLente}
-                          className="flex items-center justify-center space-x-2 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-                        >
-                          <Package className="h-5 w-5" />
-                          <span>Registrar Lente No Entregado</span>
-                        </button>
-                      )}
-                      { remainingTarjetas > 0 && (
-                        <button
-                          onClick={registerUndeliveredPago}
-                          className="flex items-center justify-center space-x-2 px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
-                        >
-                          <DollarSign className="h-5 w-5" />
-                          <span>Registrar Pago No Entregado</span>
-                        </button>
-                      )}
+                        {remainingLentes > 0 && (
+                          <button
+                            onClick={registerUndeliveredLente}
+                            className="flex items-center justify-center space-x-2 px-6 py-4 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                          >
+                            <Package className="h-5 w-5" />
+                            <span>Registrar Lente No Entregado</span>
+                          </button>
+                        )}
+                        {remainingTarjetas > 0 && (
+                          <button
+                            onClick={registerUndeliveredPago}
+                            className="flex items-center justify-center space-x-2 px-6 py-4 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition-colors"
+                          >
+                            <DollarSign className="h-5 w-5" />
+                            <span>Registrar Pago No Entregado</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   ) : (

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import rutaService from '../../service/rutaService';
 import notificacionService from '../../service/notificacionService';
@@ -19,36 +19,30 @@ import ListBadge from '../common/list/ListBadge';
 const RutaList = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  const extraParams = useMemo(() => ({
+    idasesor: user.rol === 'Asesor' ? user.idempleado : null
+  }), [user]);
+
   const {
     items: rutas,
     loading,
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
     handleDelete: baseHandleDelete
-  } = useListManager(rutaService, 'deleteRuta', 'idruta');
+  } = useListManager(rutaService, 'deleteRuta', 'idruta', 'getAllRutas', extraParams);
 
   const [showModal, setShowModal] = useState(false);
   const [rutaDetails, setRutaDetails] = useState(null);
   const [entregas, setEntregas] = useState([]);
   const [ventas, setVentas] = useState([]);
-
-  useEffect(() => {
-    const loadRutas = async () => {
-      try {
-        await fetchData('getAllRutas', (data) => {
-          if (user.rol === 'Asesor') {
-            return data.filter(ruta => ruta.idasesor === user.idempleado);
-          }
-          return data;
-        });
-      } catch (err) {
-        console.error("Error loading routes", err);
-      }
-    };
-    loadRutas();
-  }, [user]);
 
   const getBadgeType = (estatus) => {
     switch (estatus) {
@@ -109,10 +103,13 @@ const RutaList = () => {
       const ruta = await rutaService.getRutaById(rutaId);
       setRutaDetails(ruta);
 
-      const allEntregas = await entregaService.getAllEntregas();
+      // Background fetch for related details should have large limit
+      const entregasRes = await entregaService.getAllEntregas({ limit: 1000 });
+      const allEntregas = entregasRes.items || [];
       setEntregas(allEntregas.filter(e => e.idruta === rutaId));
 
-      const allVentas = await ventaService.getAllVentas();
+      const ventasRes = await ventaService.getAllVentas({ limit: 1000 });
+      const allVentas = ventasRes.items || [];
       setVentas(allVentas.filter(v => v.idasesor === ruta.idasesor && v.fecha === ruta.fecha));
 
       setShowModal(true);
@@ -124,11 +121,6 @@ const RutaList = () => {
 
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
-
-  const filteredRutas = rutas.filter(ruta =>
-    ruta.idruta.toString().includes(searchTerm) ||
-    `${ruta.asesor_nombre} ${ruta.asesor_paterno}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -146,14 +138,24 @@ const RutaList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar ruta..."
+              placeholder="Buscar por ID o estatus..."
               newItemLabel="Nueva Ruta"
               newItemLink="/rutas/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Asesor', 'Fecha', 'Hora Inicio', 'Hora Fin', 'Estatus', 'Acciones']}>
-              {filteredRutas.map((ruta) => (
+            <ListTable
+              headers={['ID', 'Asesor', 'Fecha', 'Hora Inicio', 'Hora Fin', 'Estatus', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {rutas.map((ruta) => (
                 <tr
                   key={ruta.idruta}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"

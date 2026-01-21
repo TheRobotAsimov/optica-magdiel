@@ -1,44 +1,38 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:1234/api/pagos';
-
-const getAllPagos = async () => {
-  const res = await axios.get(API_URL);
-  return res.data;
-};
-
-const getPendingPagos = async () => {
-  const res = await axios.get(API_URL + '/pending');
-  return res.data;
-};
-
-const getPagoById = async (id) => {
-  const res = await axios.get(`${API_URL}/${id}`);
-  return res.data;
-};
-
-const createPago = async (pago) => {
-  const res = await axios.post(API_URL, pago);
-  return res.data;
-};
-
-const updatePago = async (id, pago) => {
-  const res = await axios.put(`${API_URL}/${id}`, pago);
-  return res.data;
-};
-
-const deletePago = async (id) => {
-  const res = await axios.delete(`${API_URL}/${id}`);
-  return res.data;
-};
+axios.defaults.withCredentials = true;
 
 const pagoService = {
-  getAllPagos,
-  getPendingPagos,
-  getPagoById,
-  createPago,
-  updatePago,
-  deletePago,
+  getAllPagos: async (params = {}) => {
+    const response = await axios.get(API_URL + '/', { params });
+    return response.data;
+  },
+
+  getPendingPagos: async () => {
+    const response = await axios.get(API_URL + '/pending');
+    return response.data;
+  },
+
+  getPagoById: async (id) => {
+    const response = await axios.get(API_URL + `/${id}`);
+    return response.data;
+  },
+
+  createPago: async (pagoData) => {
+    const response = await axios.post(API_URL + '/', pagoData);
+    return response.data;
+  },
+
+  updatePago: async (id, pagoData) => {
+    const response = await axios.put(API_URL + `/${id}`, pagoData);
+    return response.data;
+  },
+
+  deletePago: async (id) => {
+    const response = await axios.delete(API_URL + `/${id}`);
+    return response.data;
+  },
 };
 
 export default pagoService;

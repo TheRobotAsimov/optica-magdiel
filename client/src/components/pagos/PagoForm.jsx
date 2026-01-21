@@ -24,8 +24,8 @@ const PagoForm = () => {
   useEffect(() => {
     const fetchVentas = async () => {
       try {
-        const data = await ventaService.getAllVentas();
-        setVentas(data);
+        const res = await ventaService.getAllVentas({ limit: 1000 });
+        setVentas(res.items || []);
       } catch (err) {
         console.error('Error fetching ventas:', err);
       }

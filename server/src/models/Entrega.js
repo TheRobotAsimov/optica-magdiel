@@ -1,8 +1,9 @@
 import db from '../config/db.js';
 
 const Entrega = {
-  getAll: async () => {
-    const [rows] = await db.query(`
+  getAll: async (page = 1, limit = 10, search = '') => {
+    const offset = (page - 1) * limit;
+    let query = `
       SELECT
         e.identrega,
         e.idruta,
@@ -17,8 +18,40 @@ const Entrega = {
       JOIN ruta r ON e.idruta = r.idruta
       LEFT JOIN lente l ON e.idlente = l.idlente
       LEFT JOIN pago p ON e.idpago = p.idpago
-    `);
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (l.folio LIKE ? OR p.folio LIKE ? OR e.motivo LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY e.identrega DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await db.query(query, params);
     return rows;
+  },
+
+  count: async (search = '') => {
+    let query = `
+      SELECT COUNT(*) as total
+      FROM entrega e
+      JOIN ruta r ON e.idruta = r.idruta
+      LEFT JOIN lente l ON e.idlente = l.idlente
+      LEFT JOIN pago p ON e.idpago = p.idpago
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (l.folio LIKE ? OR p.folio LIKE ? OR e.motivo LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await db.query(query, params);
+    return rows[0].total;
   },
 
   findById: async (id) => {

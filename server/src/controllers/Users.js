@@ -3,13 +3,26 @@
 
 import User from '../models/User.js';
 
-// Obtener todos los usuarios
+// Obtener todos los usuarios (con soporte para paginación)
 export const getAllUsers = async (req, res) => {
     try {
-        const users = await User.getAll();
-        res.json(users);
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
+
+        const totalItems = await User.count(search);
+        const totalPages = Math.ceil(totalItems / limit);
+
+        const items = await User.getAll(page, limit, search);
+
+        res.json({
+            items,
+            totalItems,
+            totalPages,
+            currentPage: page
+        });
     } catch (error) {
-        console.error('Error getting users:', error);
+        console.error('Error in getAllUsers:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };

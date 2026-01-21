@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import lenteService from '../../service/lenteService';
 import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
@@ -23,16 +23,17 @@ const LenteList = () => {
     error,
     searchTerm,
     setSearchTerm,
-    fetchData,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+    totalItems,
+    totalPages,
     handleDelete: baseHandleDelete
-  } = useListManager(lenteService, 'deleteLente', 'idlente');
+  } = useListManager(lenteService, 'deleteLente', 'idlente', 'getAllLentes');
 
   const [showModal, setShowModal] = useState(false);
   const [lenteDetails, setLenteDetails] = useState(null);
-
-  useEffect(() => {
-    fetchData('getAllLentes');
-  }, []);
 
   const getBadgeType = (estatus) => {
     switch (estatus) {
@@ -101,12 +102,6 @@ const LenteList = () => {
   if (loading) return <Loading />;
   if (error) return <Error message={error} />;
 
-  const filteredLentes = lentes.filter(lente =>
-    lente.folio.toString().includes(searchTerm) ||
-    `${lente.optometrista_nombre} ${lente.optometrista_paterno}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    `${lente.cliente_nombre} ${lente.cliente_paterno}`.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
@@ -123,14 +118,24 @@ const LenteList = () => {
             <ListActions
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              placeholder="Buscar Lente"
+              placeholder="Buscar por folio, cliente u optometrista..."
               newItemLabel="Nuevo Lente"
               newItemLink="/lentes/new"
               onApplyFilter={() => { }}
             />
 
-            <ListTable headers={['ID', 'Folio', 'Optometrista', 'Cliente', 'Fecha de Entrega', 'Estatus', 'Acciones']}>
-              {filteredLentes.map((lente) => (
+            <ListTable
+              headers={['ID', 'Folio', 'Optometrista', 'Cliente', 'Fecha de Entrega', 'Estatus', 'Acciones']}
+              pagination={{
+                currentPage,
+                totalPages,
+                totalItems,
+                itemsPerPage,
+                onPageChange: setCurrentPage,
+                onItemsPerPageChange: setItemsPerPage
+              }}
+            >
+              {lentes.map((lente) => (
                 <tr
                   key={lente.idlente}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"

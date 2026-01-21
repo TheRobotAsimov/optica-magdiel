@@ -2,11 +2,23 @@ import Entrega from '../models/Entrega.js';
 
 export const getEntregas = async (req, res) => {
   try {
-    const entregas = await Entrega.getAll();
-    res.json(entregas);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const totalItems = await Entrega.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await Entrega.getAll(page, limit, search);
+
+    res.json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
-    console.log(req.body);
-    console.log('Error getting entregas:', error);
+    console.error('Error in getEntregas:', error);
     res.status(500).json({ message: error.message });
   }
 };

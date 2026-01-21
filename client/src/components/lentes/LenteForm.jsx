@@ -36,12 +36,13 @@ const LenteForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [optometristasData, ventasData] = await Promise.all([
-          empleadoService.getAllEmpleados(),
-          ventaService.getAllVentas(),
+        const [optometristasRes, ventasRes] = await Promise.all([
+          empleadoService.getAllEmpleados({ limit: 1000 }),
+          ventaService.getAllVentas({ limit: 1000 }),
         ]);
-        setOptometristas(optometristasData.filter(emp => emp.puesto === 'Optometrista'));
-        setVentas(ventasData);
+        const allOpto = optometristasRes.items || [];
+        setOptometristas(allOpto.filter(emp => emp.puesto === 'Optometrista'));
+        setVentas(ventasRes.items || []);
       } catch (err) {
         console.error('Error fetching data:', err);
       }

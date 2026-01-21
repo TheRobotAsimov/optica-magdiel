@@ -1,12 +1,11 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:1234/api/users';
-//axios.defaults.baseURL = API_URL;
 axios.defaults.withCredentials = true;
 
 const userService = {
-  getAllUsers: async () => {
-    const response = await axios.get(API_URL + '/');
+  getAllUsers: async (params = {}) => {
+    const response = await axios.get(API_URL + '/', { params });
     return response.data;
   },
 
@@ -33,7 +32,7 @@ const userService = {
   getUsersWithoutEmployee: async () => {
     const response = await axios.get(API_URL + '/without-employee');
     return response.data;
-  },
+  }
 };
 
 export default userService;

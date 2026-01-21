@@ -2,12 +2,26 @@ import Paciente from '../models/Paciente.js';
 
 // Controlador para la gestión de pacientes
 
-// Método para obtener todos los pacientes
+// Método para obtener todos los pacientes (con soporte para paginación)
 export const getAllPacientes = async (req, res) => {
   try {
-    const pacientes = await Paciente.getAll();
-    res.json(pacientes);  
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const totalItems = await Paciente.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await Paciente.getAll(page, limit, search);
+
+    res.json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
+    console.error('Error in getAllPacientes:', error);
     res.status(500).json({ error: error.message });
   }
 };

@@ -1,8 +1,9 @@
 import pool from '../config/db.js';
 
 class Lente {
-  static async getAll() {
-    const [rows] = await pool.execute(`
+  static async getAll(page = 1, limit = 10, search = '') {
+    const offset = (page - 1) * limit;
+    let query = `
       SELECT
         l.*,
         v.folio,
@@ -15,8 +16,40 @@ class Lente {
       JOIN venta v ON l.folio = v.folio
       JOIN cliente c ON v.idcliente = c.idcliente
       JOIN empleado e ON l.idoptometrista = e.idempleado
-    `);
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (c.nombre LIKE ? OR c.paterno LIKE ? OR l.folio LIKE ? OR e.nombre LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY l.idlente DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await pool.query(query, params);
     return rows;
+  }
+
+  static async count(search = '') {
+    let query = `
+      SELECT COUNT(*) as total
+      FROM lente l
+      JOIN venta v ON l.folio = v.folio
+      JOIN cliente c ON v.idcliente = c.idcliente
+      JOIN empleado e ON l.idoptometrista = e.idempleado
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ' AND (c.nombre LIKE ? OR c.paterno LIKE ? OR l.folio LIKE ? OR e.nombre LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await pool.query(query, params);
+    return rows[0].total;
   }
 
   static async getPending() {
@@ -89,11 +122,11 @@ class Lente {
       kit
     } = data;
 
-        const [result] = await pool.execute(
-          `INSERT INTO lente (idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, kit)
+    const [result] = await pool.execute(
+      `INSERT INTO lente (idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, kit)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) `,
-          [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, kit]
-        );    return result.insertId;
+      [idoptometrista, folio, sintomas, uso_de_lente, armazon, material, tratamiento, tipo_de_lente, tinte_color, tono, desvanecido, fecha_entrega, examen_seguimiento, estatus, od_esf, od_cil, od_eje, od_add, od_av, oi_esf, oi_cil, oi_eje, oi_add, oi_av, subtipo, blend, procesado, kit]
+    ); return result.insertId;
   }
 
   static async update(id, data) {

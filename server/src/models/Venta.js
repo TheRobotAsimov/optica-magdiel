@@ -30,9 +30,10 @@ class Venta {
     return result.insertId;
   }
 
-  // Obtener todas las ventas con información de cliente y asesor
-  static async getAll() {
-    const [rows] = await pool.execute(`
+  // Obtener todas las ventas con información de cliente y asesor (con soporte para paginación)
+  static async getAll(page = 1, limit = 10, search = '') {
+    const offset = (page - 1) * limit;
+    let query = `
       SELECT
         v.*,
         c.nombre as cliente_nombre,
@@ -42,8 +43,43 @@ class Venta {
       FROM venta v
       JOIN cliente c ON v.idcliente = c.idcliente
       JOIN empleado e ON v.idasesor = e.idempleado
-    `);
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ` AND (v.folio LIKE ? 
+                 OR c.nombre LIKE ? OR c.paterno LIKE ? 
+                 OR e.nombre LIKE ? OR e.paterno LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY v.folio DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await pool.query(query, params);
     return rows;
+  }
+
+  static async count(search = '') {
+    let query = `
+      SELECT COUNT(*) as total 
+      FROM venta v
+      JOIN cliente c ON v.idcliente = c.idcliente
+      JOIN empleado e ON v.idasesor = e.idempleado
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (search) {
+      query += ` AND (v.folio LIKE ? 
+                 OR c.nombre LIKE ? OR c.paterno LIKE ? 
+                 OR e.nombre LIKE ? OR e.paterno LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    const [rows] = await pool.query(query, params);
+    return rows[0].total;
   }
 
   // Obtener ventas por asesor específico

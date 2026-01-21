@@ -13,9 +13,23 @@ export const createVenta = async (req, res) => {
 
 export const getVentas = async (req, res) => {
   try {
-    const ventas = await Venta.getAll();
-    res.json(ventas);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const totalItems = await Venta.count(search);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const items = await Venta.getAll(page, limit, search);
+
+    res.json({
+      items,
+      totalItems,
+      totalPages,
+      currentPage: page
+    });
   } catch (error) {
+    console.error('Error in getVentas:', error);
     res.status(500).json({ error: error.message });
   }
 };

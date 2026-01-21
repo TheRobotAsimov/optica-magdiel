@@ -1,23 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Swal from 'sweetalert2';
 
-export const useListManager = (service, deleteMethodName, idFieldName) => {
+export const useListManager = (service, deleteMethodName, idFieldName, fetchMethodName = null, extraParams = {}) => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
-    const fetchData = async (fetchMethodName) => {
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [totalItems, setTotalItems] = useState(0);
+    const [totalPages, setTotalPages] = useState(0);
+
+    const extraParamsString = JSON.stringify(extraParams);
+
+    const fetchData = useCallback(async (methodNameOverride = null) => {
+        const method = methodNameOverride || fetchMethodName;
+        if (!method) return;
+
         setLoading(true);
         try {
-            const data = await service[fetchMethodName]();
-            setItems(data);
+            const params = {
+                page: currentPage,
+                limit: itemsPerPage,
+                search: debouncedSearchTerm,
+                ...JSON.parse(extraParamsString)
+            };
+
+            const response = await service[method](params);
+
+            if (response && response.items) {
+                setItems(response.items);
+                setTotalItems(response.totalItems || 0);
+                setTotalPages(response.totalPages || 0);
+            } else {
+                setItems(Array.isArray(response) ? response : []);
+                setTotalItems(Array.isArray(response) ? response.length : 0);
+                setTotalPages(1);
+            }
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
         }
-    };
+    }, [service, fetchMethodName, currentPage, itemsPerPage, debouncedSearchTerm, extraParamsString]);
 
     const handleDelete = async (id, deleteConfig = {}) => {
         const {
@@ -42,7 +70,8 @@ export const useListManager = (service, deleteMethodName, idFieldName) => {
             if (result.isConfirmed) {
                 try {
                     await service[deleteMethodName](id);
-                    setItems(items.filter((item) => item[idFieldName] !== id));
+                    // Instead of local filter, re-fetch to maintain correct pagination slice
+                    fetchData();
                     Swal.fire(successTitle, successText, 'success');
                 } catch {
                     Swal.fire(errorTitle, errorText, 'error');
@@ -51,6 +80,26 @@ export const useListManager = (service, deleteMethodName, idFieldName) => {
         });
     };
 
+    // Debounce search term
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    // Reset to page 1 when search or extraParams changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [debouncedSearchTerm, extraParamsString]);
+
+    // Auto-fetch when pagination changes
+    useEffect(() => {
+        if (fetchMethodName) {
+            fetchData();
+        }
+    }, [fetchData, fetchMethodName, currentPage, itemsPerPage, debouncedSearchTerm, extraParamsString]);
+
     return {
         items,
         setItems,
@@ -58,6 +107,12 @@ export const useListManager = (service, deleteMethodName, idFieldName) => {
         error,
         searchTerm,
         setSearchTerm,
+        currentPage,
+        setCurrentPage,
+        itemsPerPage,
+        setItemsPerPage,
+        totalItems,
+        totalPages,
         fetchData,
         handleDelete
     };
