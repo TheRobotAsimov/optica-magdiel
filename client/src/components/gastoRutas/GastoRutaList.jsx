@@ -5,252 +5,128 @@ import notificacionService from '../../service/notificacionService';
 import NavComponent from '../common/NavBar';
 import Loading from '../common/Loading';
 import Error from '../common/Error';
-import { Search, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../context/AuthContext';
+import { useListManager } from '../../hooks/useListManager';
+import ListHeader from '../common/list/ListHeader';
+import ListActions from '../common/list/ListActions';
+import ListTable from '../common/list/ListTable';
 
 const GastoRutaList = () => {
   const { user } = useAuth();
-  const [gastoRutas, setGastoRutas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
+  const {
+    items: gastoRutas,
+    loading,
+    error,
+    searchTerm,
+    setSearchTerm,
+    fetchData,
+    handleDelete: baseHandleDelete
+  } = useListManager(gastoRutaService, 'deleteGastoRuta', 'idgasto_ruta');
 
   useEffect(() => {
-    const fetchGastoRutas = async () => {
-      try {
-        const data = await gastoRutaService.getAllGastoRutas();
-        setGastoRutas(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchGastoRutas();
+    fetchData('getAllGastoRutas');
   }, []);
 
-  const handleDelete = async (id) => {
-    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
-      // Mostrar modal para solicitar motivo
-      Swal.fire({
-        title: 'Solicitar Eliminación',
-        input: 'textarea',
-        inputLabel: 'Motivo de la solicitud',
-        inputPlaceholder: 'Describe por qué deseas eliminar este gasto de ruta...',
-        inputValidator: (value) => {
-          if (!value) {
-            return 'Debes proporcionar un motivo';
-          }
-        },
-        showCancelButton: true,
-        confirmButtonText: 'Enviar Solicitud',
-        cancelButtonText: 'Cancelar'
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            const mensaje = `Solicitud de eliminación - Gasto de Ruta ID: ${id}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
-            await notificacionService.create(mensaje);
-            Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
-          } catch {
-            Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
-          }
+  const handleRequestAction = (action, id) => {
+    Swal.fire({
+      title: `Solicitar ${action === 'delete' ? 'Eliminación' : 'Edición'}`,
+      input: 'textarea',
+      inputLabel: 'Motivo de la solicitud',
+      inputPlaceholder: `Describe por qué deseas ${action === 'delete' ? 'eliminar' : 'editar'} este gasto de ruta...`,
+      inputValidator: (value) => {
+        if (!value) return 'Debes proporcionar un motivo';
+      },
+      showCancelButton: true,
+      confirmButtonText: 'Enviar Solicitud',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const mensaje = `Solicitud de ${action === 'delete' ? 'eliminación' : 'edición'} - Gasto de Ruta ID: ${id}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
+          await notificacionService.create(mensaje);
+          Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
+        } catch {
+          Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
         }
-      });
+      }
+    });
+  };
+
+  const handleDelete = (id) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      handleRequestAction('delete', id);
       return;
     }
-
-    // Lógica original para usuarios Matriz
-    const result = await Swal.fire({
-      title: '¿Estás seguro?',
-      text: "¡No podrás revertir esto!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, ¡bórralo!',
-      cancelButtonText: 'Cancelar'
+    baseHandleDelete(id, {
+      successText: 'El gasto de ruta ha sido eliminado.',
+      errorText: 'Hubo un problema al eliminar el gasto de ruta.'
     });
-
-    if (result.isConfirmed) {
-      try {
-        await gastoRutaService.deleteGastoRuta(id);
-        setGastoRutas(gastoRutas.filter(g => g.idgasto_ruta !== id));
-        Swal.fire(
-          '¡Borrado!',
-          'El gasto de ruta ha sido eliminado.',
-          'success'
-        )
-      } catch (err) {
-        setError(err.message);
-        Swal.fire(
-          'Error',
-          'Hubo un problema al eliminar el gasto de ruta.',
-          'error'
-        )
-      }
-    }
   };
+
+  const handleEdit = (id) => {
+    if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
+      handleRequestAction('edit', id);
+      return;
+    }
+    navigate(`/gasto-rutas/${id}/edit`);
+  };
+
+  if (loading) return <Loading />;
+  if (error) return <Error message={error} />;
 
   const filteredGastoRutas = gastoRutas.filter(gastoRuta =>
     String(gastoRuta.idruta).includes(searchTerm) ||
     gastoRuta.motivo.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (error) {
-    return <Error message={error} />;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <NavComponent />
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
 
-        <div className="bg-white rounded-4xl shadow-xl overflow-hidden mb-6">
-          <div className="bg-gradient-to-r from-blue-400 to-indigo-800 px-8 py-6">
-            <div className="flex items-center justify-center">
-              <div className="flex items-center space-x-4">
-                <div>
-                  <h1 className="text-4xl font-bold text-white text-center">
-                    GASTOS DE RUTA
-                  </h1>
-                  <p className="text-blue-100 text-sm mt-1">
-                    Listado de gastos de ruta registrados en el sistema
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ListHeader
+          title="GASTOS DE RUTA"
+          subtitle="Listado de gastos de ruta registrados en el sistema"
+        />
 
         <div className="px-4 py-6 sm:px-0">
           <div className="bg-white overflow-hidden shadow rounded-lg px-4 py-5 sm:p-6">
-        
-            <div className="mb-8">
-              {/* Search and Action Bar */}
-              <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6">
-                {/* Grupo: Search + Botón Aplicar filtro */}
-                <div className="flex items-center gap-4 flex-1 max-w-md">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="text"
-                      placeholder="Buscar por ruta o motivo..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-gray-200 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
-                    />
-                  </div>
-                  <button className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
-                    Aplicar filtro
-                  </button>
-                </div>
 
-                {/* Botón Nuevo Gasto de Ruta (separado) */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => navigate('/gasto-rutas/new')}
-                    className="flex items-center space-x-2 px-8 py-2 bg-gradient-to-r from-purple-500 to-purple-800 hover:from-purple-700 hover:to-purple-900 disabled:from-purple-300 disabled:to-purple-400 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
-                  >
-                    <PlusCircle className="h-5 w-5" />
-                    <span>Nuevo Gasto de Ruta</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ListActions
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              placeholder="Buscar por ruta o motivo..."
+              newItemLabel="Nuevo Gasto de Ruta"
+              newItemLink="/gasto-rutas/new"
+              onApplyFilter={() => { }}
+            />
 
-            {/* Table Container */}
-<div className="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-100">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruta</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Ruta</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asesor</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motivo</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                    
-                  </tr>
-                </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
-                    {filteredGastoRutas.map((gastoRuta) => (
-                      <tr
-                        key={gastoRuta.idgasto_ruta}
-                        className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">
-                              {gastoRuta.idgasto_ruta}
-                            </span>
-                          </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{gastoRuta.idruta}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(gastoRuta.ruta_fecha).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.nombre} {gastoRuta.paterno}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${parseFloat(gastoRuta.cantidad).toLocaleString('es-MX')}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.motivo}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center justify-center space-x-3">
-                          <button
-                            onClick={() => {
-                              if (user.rol === 'Asesor' || user.rol === 'Optometrista') {
-                                // Mostrar modal para solicitar motivo
-                                Swal.fire({
-                                  title: 'Solicitar Edición',
-                                  input: 'textarea',
-                                  inputLabel: 'Motivo de la solicitud',
-                                  inputPlaceholder: 'Describe por qué deseas editar este gasto de ruta...',
-                                  inputValidator: (value) => {
-                                    if (!value) {
-                                      return 'Debes proporcionar un motivo';
-                                    }
-                                  },
-                                  showCancelButton: true,
-                                  confirmButtonText: 'Enviar Solicitud',
-                                  cancelButtonText: 'Cancelar'
-                                }).then(async (result) => {
-                                  if (result.isConfirmed) {
-                                    try {
-                                      const mensaje = `Solicitud de edición - Gasto de Ruta ID: ${gastoRuta.idgasto_ruta}, Motivo: ${result.value} - Solicitado por: ${user.nombre} ${user.paterno}`;
-                                      await notificacionService.create(mensaje);
-                                      Swal.fire('Solicitud enviada', 'Tu solicitud ha sido enviada al administrador.', 'success');
-                                    } catch {
-                                      Swal.fire('Error', 'No se pudo enviar la solicitud.', 'error');
-                                    }
-                                  }
-                                });
-                              } else {
-                                navigate(`/gasto-rutas/${gastoRuta.idgasto_ruta}/edit`);
-                              }
-                            }}
-                            className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110"
-                            title="Editar"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(gastoRuta.idgasto_ruta)}
-                            className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            <ListTable headers={['ID', 'Ruta', 'Fecha de Ruta', 'Asesor', 'Cantidad', 'Motivo', 'Acciones']}>
+              {filteredGastoRutas.map((gastoRuta) => (
+                <tr
+                  key={gastoRuta.idgasto_ruta}
+                  className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 ease-in-out group"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm font-bold text-gray-900 bg-gray-100 px-3 py-1 rounded-full">{gastoRuta.idgasto_ruta}</span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{gastoRuta.idruta}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(gastoRuta.ruta_fecha).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.nombre} {gastoRuta.paterno}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${parseFloat(gastoRuta.cantidad).toLocaleString('es-MX')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{gastoRuta.motivo}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <div className="flex items-center justify-center space-x-3">
+                      <button onClick={() => handleEdit(gastoRuta.idgasto_ruta)} className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110" title="Editar"><Edit className="h-4 w-4" /></button>
+                      <button onClick={() => handleDelete(gastoRuta.idgasto_ruta)} className="p-2 text-red-600 hover:text-white hover:bg-red-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-110" title="Eliminar"><Trash2 className="h-4 w-4" /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </ListTable>
           </div>
         </div>
       </div>
