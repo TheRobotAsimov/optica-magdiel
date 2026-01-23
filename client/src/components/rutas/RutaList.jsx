@@ -30,6 +30,7 @@ const RutaList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -141,7 +142,7 @@ const RutaList = () => {
               placeholder="Buscar por ID o estatus..."
               newItemLabel="Nueva Ruta"
               newItemLink="/rutas/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

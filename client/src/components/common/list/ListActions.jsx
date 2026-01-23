@@ -3,13 +3,34 @@ import { Search, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router';
 
 const ListActions = ({
-    searchTerm,
+    searchTerm = '',
     onSearchChange,
     placeholder = "Buscar...",
     newItemLabel,
     newItemLink,
     onApplyFilter
 }) => {
+    const [localSearchTerm, setLocalSearchTerm] = React.useState(searchTerm);
+
+    const handleSearchChange = (value) => {
+        setLocalSearchTerm(value);
+        if (onSearchChange) {
+            onSearchChange(value);
+        }
+    };
+
+    const handleApplyFilter = () => {
+        if (onApplyFilter) {
+            onApplyFilter(localSearchTerm);
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleApplyFilter();
+        }
+    };
+
     return (
         <div className="mb-8">
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mb-6">
@@ -20,14 +41,15 @@ const ListActions = ({
                         <input
                             type="text"
                             placeholder={placeholder}
-                            value={searchTerm}
-                            onChange={(e) => onSearchChange(e.target.value)}
+                            value={localSearchTerm}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            onKeyPress={handleKeyPress}
                             className="w-full pl-10 pr-4 py-2 bg-gray-200 border-0 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors"
                         />
                     </div>
-                    {onApplyFilter && (
+                    {(onApplyFilter) && (
                         <button
-                            onClick={onApplyFilter}
+                            onClick={handleApplyFilter}
                             className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                         >
                             Aplicar filtro

@@ -25,6 +25,7 @@ const VentaList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -138,7 +139,7 @@ const VentaList = () => {
               placeholder="Buscar por folio, cliente o asesor..."
               newItemLabel="Nueva Venta"
               newItemLink="/ventas/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

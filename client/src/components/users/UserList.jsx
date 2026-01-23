@@ -20,6 +20,7 @@ const UserList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -71,7 +72,7 @@ const UserList = () => {
               placeholder="Buscar por correo o rol..."
               newItemLabel="Nuevo Usuario"
               newItemLink="/users/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

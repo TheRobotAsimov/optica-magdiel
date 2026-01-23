@@ -27,6 +27,7 @@ const ClientList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -184,7 +185,7 @@ const ClientList = () => {
               placeholder="Buscar por nombre, apellido o teléfono..."
               newItemLabel="Nuevo Cliente"
               newItemLink="/clients/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

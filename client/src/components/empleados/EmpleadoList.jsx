@@ -19,6 +19,7 @@ const EmpleadoList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -78,7 +79,7 @@ const EmpleadoList = () => {
               placeholder="Buscar por nombre, puesto o ID..."
               newItemLabel="Nuevo Empleado"
               newItemLink="/empleados/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

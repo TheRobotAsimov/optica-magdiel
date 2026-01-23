@@ -21,6 +21,7 @@ const GastoRutaList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -96,7 +97,7 @@ const GastoRutaList = () => {
               placeholder="Buscar por asesor o motivo..."
               newItemLabel="Nuevo Gasto"
               newItemLink="/gasto-rutas/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

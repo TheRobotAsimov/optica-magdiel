@@ -21,6 +21,7 @@ const PacienteList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -87,7 +88,7 @@ const PacienteList = () => {
               placeholder="Buscar por nombre o ID..."
               newItemLabel="Nuevo Paciente"
               newItemLink="/pacientes/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

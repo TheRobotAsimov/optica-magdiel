@@ -6,7 +6,7 @@ export const useListManager = (service, deleteMethodName, idFieldName, fetchMeth
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [appliedSearchTerm, setAppliedSearchTerm] = useState('');
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
@@ -25,7 +25,7 @@ export const useListManager = (service, deleteMethodName, idFieldName, fetchMeth
             const params = {
                 page: currentPage,
                 limit: itemsPerPage,
-                search: debouncedSearchTerm,
+                search: appliedSearchTerm,
                 ...JSON.parse(extraParamsString)
             };
 
@@ -45,7 +45,7 @@ export const useListManager = (service, deleteMethodName, idFieldName, fetchMeth
         } finally {
             setLoading(false);
         }
-    }, [service, fetchMethodName, currentPage, itemsPerPage, debouncedSearchTerm, extraParamsString]);
+    }, [service, fetchMethodName, currentPage, itemsPerPage, appliedSearchTerm, extraParamsString]);
 
     const handleDelete = async (id, deleteConfig = {}) => {
         const {
@@ -80,25 +80,22 @@ export const useListManager = (service, deleteMethodName, idFieldName, fetchMeth
         });
     };
 
-    // Debounce search term
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearchTerm(searchTerm);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchTerm]);
+    const handleSearch = (term) => {
+        setAppliedSearchTerm(term !== undefined ? term : searchTerm);
+        setCurrentPage(1);
+    };
 
-    // Reset to page 1 when search or extraParams changes
+    // Reset to page 1 when appliedSearchTerm or extraParams changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [debouncedSearchTerm, extraParamsString]);
+    }, [appliedSearchTerm, extraParamsString]);
 
-    // Auto-fetch when pagination changes
+    // Auto-fetch when pagination changes or appliedSearchTerm changes
     useEffect(() => {
         if (fetchMethodName) {
             fetchData();
         }
-    }, [fetchData, fetchMethodName, currentPage, itemsPerPage, debouncedSearchTerm, extraParamsString]);
+    }, [fetchData, fetchMethodName, currentPage, itemsPerPage, appliedSearchTerm, extraParamsString]);
 
     return {
         items,
@@ -107,6 +104,8 @@ export const useListManager = (service, deleteMethodName, idFieldName, fetchMeth
         error,
         searchTerm,
         setSearchTerm,
+        appliedSearchTerm,
+        handleSearch,
         currentPage,
         setCurrentPage,
         itemsPerPage,

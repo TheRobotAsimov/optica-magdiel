@@ -29,6 +29,7 @@ const EntregaList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -147,7 +148,7 @@ const EntregaList = () => {
               placeholder="Buscar por folio o estatus..."
               newItemLabel="Nueva Entrega"
               newItemLink="/entregas/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

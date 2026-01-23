@@ -22,6 +22,7 @@ const PagoList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -106,7 +107,7 @@ const PagoList = () => {
               placeholder="Buscar por folio o cliente..."
               newItemLabel="Nuevo Pago"
               newItemLink="/pagos/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable

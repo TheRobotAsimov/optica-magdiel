@@ -23,6 +23,7 @@ const LenteList = () => {
     error,
     searchTerm,
     setSearchTerm,
+    handleSearch,
     currentPage,
     setCurrentPage,
     itemsPerPage,
@@ -121,7 +122,7 @@ const LenteList = () => {
               placeholder="Buscar por folio, cliente u optometrista..."
               newItemLabel="Nuevo Lente"
               newItemLink="/lentes/new"
-              onApplyFilter={() => { }}
+              onApplyFilter={handleSearch}
             />
 
             <ListTable
