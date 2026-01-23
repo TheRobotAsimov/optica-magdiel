@@ -48,7 +48,8 @@ const RutaAsesor = () => {
       // Intentar restaurar ruta guardada en localStorage
       if (savedRouteId && savedWindow === '2') {
         try {
-          const rutas = await rutaService.getAllRutas();
+          const response = await rutaService.getAllRutas({ limit: 1000 });
+          const rutas = response.items || [];
           const restoredRoute = rutas.find(r => r.idruta === parseInt(savedRouteId));
 
           if (restoredRoute && restoredRoute.estatus === 'Activa') {
@@ -66,7 +67,8 @@ const RutaAsesor = () => {
       } else {
         // Buscar ruta activa del asesor actual
         try {
-          const rutas = await rutaService.getAllRutas();
+          const response = await rutaService.getAllRutas({ limit: 1000 });
+          const rutas = response.items || [];
           const restoredRoute = rutas.find(r => r.idasesor === user.idempleado && r.estatus === 'Activa');
           if (restoredRoute) {
             setCurrentRouteId(restoredRoute.idruta);
@@ -82,7 +84,8 @@ const RutaAsesor = () => {
 
       // Buscar ruta activa para hoy
       try {
-        const rutas = await rutaService.getAllRutas();
+        const response = await rutaService.getAllRutas({ limit: 1000 });
+        const rutas = response.items || [];
         const activeRoute = rutas.find(r =>
           r.idasesor === user.idempleado &&
           r.estatus === 'Activa' &&
@@ -111,7 +114,8 @@ const RutaAsesor = () => {
     if (currentRouteId && user && user.puesto === 'Asesor') {
       const refreshRouteData = async () => {
         try {
-          const rutas = await rutaService.getAllRutas();
+          const response = await rutaService.getAllRutas({ limit: 1000 });
+          const rutas = response.items || [];
           const currentRoute = rutas.find(r => r.idruta === currentRouteId);
           if (currentRoute) {
             setRouteData(currentRoute);
